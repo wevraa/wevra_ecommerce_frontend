@@ -17,8 +17,8 @@ export default function Home() {
         <CategoryNav />
         <HeroCarousel />
         <GoodDeals />
-        <SizeProductBlock />
-        <PlaceholderBanners />
+        {/* <SizeProductBlock /> */}
+        {/* <PlaceholderBanners /> */}
         <FeaturedProducts />
         <CustomerReviews />
         <Footer />

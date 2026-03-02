@@ -2,6 +2,7 @@ import Image from "next/image";
 import Link from "next/link";
 import type { Product } from "@/data/dummy";
 import styles from "./ProductCard.module.scss";
+import measure from "../../app/assests/icons/measure.svg"
 
 interface ProductCardProps {
   product: Product;
@@ -28,10 +29,7 @@ export default function ProductCard({ product, showShortDescription }: ProductCa
           sizes="(max-width: 768px) 50vw, (max-width: 1024px) 33vw, 25vw"
         />
         <span className={styles.overlayIcon} aria-hidden>
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-            <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" />
-            <polyline points="9 22 9 12 15 12 15 22" />
-          </svg>
+         <Image src={measure} alt="measure"/>
         </span>
       </Link>
       <div className={styles.body}>

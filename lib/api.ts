@@ -27,3 +27,36 @@ export async function getCategories(): Promise<ApiCategory[]> {
     return [];
   }
 }
+
+export async function getCollections(): Promise<ApiCategory[]> {
+  if (!API_BASE) {
+    return [];
+  }
+  try {
+    const res = await fetch(`${API_BASE}/v1/collections`, {
+      next: { revalidate: 60 },
+    });
+    if (!res.ok) return [];
+    const data = await res.json();
+    return Array.isArray(data) ? data : [];
+  } catch {
+    return [];
+  }
+}
+
+
+export async function getProducts(): Promise<ApiCategory[]> {
+  if (!API_BASE) {
+    return [];
+  }
+  try {
+    const res = await fetch(`${API_BASE}/v1/products`, {
+      next: { revalidate: 60 },
+    });
+    if (!res.ok) return [];
+    const data = await res.json();
+    return Array.isArray(data) ? data : [];
+  } catch {
+    return [];
+  }
+}
