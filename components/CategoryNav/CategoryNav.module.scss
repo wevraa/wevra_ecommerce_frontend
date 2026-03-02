@@ -43,11 +43,17 @@
 }
 
 .circle {
+  position: relative;
   width: 64px;
   height: 64px;
   border-radius: 50%;
   background: $color-light-pink;
   flex-shrink: 0;
+  overflow: hidden;
+}
+
+.circleImage {
+  object-fit: cover;
 }
 
 .label {
