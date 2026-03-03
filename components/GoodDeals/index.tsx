@@ -1,7 +1,8 @@
 import Image from "next/image";
+import Link from "next/link";
 import styles from "./GoodDeals.module.scss";
 import { getCollections } from "@/lib/api";
-
+import type { ApiCollectionListItem } from "@/lib/api";
 
 export default async function GoodDeals() {
   const collections = await getCollections();
@@ -13,23 +14,25 @@ export default async function GoodDeals() {
       </h2>
 
       <div className={styles.grid}>
-        {collections?.map((item:any) => (
-          <button key={item.id} type="button" className={styles.tile}>
-            {item.image && (
-              <span className={styles.tileImageWrap}>
-                <Image
-                  src={item.image}
-                  alt={item.title}
-                  fill
-                  className={styles.tileImage}
-                  sizes="(max-width: 768px) 50vw, 25vw"
-                />
-              </span>
-            )}
-
-            <span className={styles.tileTitle}>{item.title}</span>
-          </button>
-        ))}
+        {collections?.map((item: ApiCollectionListItem) => {
+          const imageUrl = item.image ?? item.thumbnailImage;
+          return (
+            <Link key={item.id} href={`/collection/${item.id}`} className={styles.tile}>
+              {imageUrl && (
+                <span className={styles.tileImageWrap}>
+                  <Image
+                    src={imageUrl}
+                    alt={item.title}
+                    fill
+                    className={styles.tileImage}
+                    sizes="(max-width: 768px) 50vw, 25vw"
+                  />
+                </span>
+              )}
+              <span className={styles.tileTitle}>{item.title}</span>
+            </Link>
+          );
+        })}
       </div>
     </section>
   );

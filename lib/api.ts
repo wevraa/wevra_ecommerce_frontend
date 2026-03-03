@@ -12,6 +12,69 @@ export interface ApiCategory {
   products: unknown[];
 }
 
+export interface ApiProductMedia {
+  id: string;
+  productId: string;
+  url: string;
+  type: string;
+  alt: string | null;
+  order: number;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface ApiProductCollectionEntry {
+  id: string;
+  collectionId: string;
+  productId: string;
+  createdAt: string;
+  collection: {
+    id: string;
+    title: string;
+  };
+}
+
+export interface ApiProduct {
+  id: string;
+  title: string;
+  productDescription: string | null;
+  productDetails: string | null;
+  fitAndFabric: string | null;
+  shippingAndReturns: string | null;
+  status: string;
+  publishOnlineStore: boolean;
+  publishPOS: boolean;
+  mrp: string | null;
+  compareAtPrice: string | null;
+  discountType: string | null;
+  discountValue: string | null;
+  finalPrice: string | null;
+  inventoryTracked: boolean;
+  quantity: number;
+  sku: string | null;
+  barcode: string | null;
+  shopLocation: string | null;
+  allowOutOfStockSales: boolean;
+  isPhysicalProduct: boolean;
+  packageType: string | null;
+  weight: string | null;
+  weightUnit: string | null;
+  countryOfOrigin: string | null;
+  hsCode: string | null;
+  categoryId: string | null;
+  vendorId: string | null;
+  productType: string;
+  themeTemplate: string;
+  tags: string[];
+  createdAt: string;
+  updatedAt: string;
+  deletedAt: string | null;
+  category: { id: string; name: string } | null;
+  vendor: { id: string; companyName: string } | null;
+  media: ApiProductMedia[];
+  collections: ApiProductCollectionEntry[];
+}
+
 export async function getCategories(): Promise<ApiCategory[]> {
   if (!API_BASE) {
     return [];
@@ -28,7 +91,24 @@ export async function getCategories(): Promise<ApiCategory[]> {
   }
 }
 
-export async function getCollections(): Promise<ApiCategory[]> {
+export interface ApiCollectionListItem {
+  id: string;
+  title: string;
+  image?: string | null;
+  thumbnailImage?: string | null;
+  [key: string]: unknown;
+}
+
+export interface ApiCollectionDetail {
+  id: string;
+  title: string;
+  image?: string | null;
+  // products shape for /collections/:id – array of { product: { ... } }
+  products?: unknown;
+  [key: string]: unknown;
+}
+
+export async function getCollections(): Promise<ApiCollectionListItem[]> {
   if (!API_BASE) {
     return [];
   }
@@ -38,14 +118,27 @@ export async function getCollections(): Promise<ApiCategory[]> {
     });
     if (!res.ok) return [];
     const data = await res.json();
-    return Array.isArray(data) ? data : [];
+    return Array.isArray(data) ? (data as ApiCollectionListItem[]) : [];
   } catch {
     return [];
   }
 }
 
+export async function getCollectionById(id: string): Promise<ApiCollectionDetail | null> {
+  if (!API_BASE) return null;
+  try {
+    const res = await fetch(`${API_BASE}/v1/collections/${id}`, {
+      next: { revalidate: 60 },
+    });
+    if (!res.ok) return null;
+    const data = await res.json();
+    return data as ApiCollectionDetail;
+  } catch {
+    return null;
+  }
+}
 
-export async function getProducts(): Promise<ApiCategory[]> {
+export async function getProducts(): Promise<ApiProduct[]> {
   if (!API_BASE) {
     return [];
   }
@@ -55,8 +148,24 @@ export async function getProducts(): Promise<ApiCategory[]> {
     });
     if (!res.ok) return [];
     const data = await res.json();
-    return Array.isArray(data) ? data : [];
+    return Array.isArray(data) ? (data as ApiProduct[]) : [];
   } catch {
     return [];
+  }
+}
+
+export async function getProductById(id: string): Promise<ApiProduct | null> {
+  if (!API_BASE) {
+    return null;
+  }
+  try {
+    const res = await fetch(`${API_BASE}/v1/products/${id}`, {
+      next: { revalidate: 60 },
+    });
+    if (!res.ok) return null;
+    const data = await res.json();
+    return data as ApiProduct;
+  } catch {
+    return null;
   }
 }

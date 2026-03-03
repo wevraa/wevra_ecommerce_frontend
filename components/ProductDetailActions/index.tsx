@@ -1,12 +1,18 @@
+"use client";
+
 import styles from "./ProductDetailActions.module.scss";
 
-export default function ProductDetailActions() {
+interface ProductDetailActionsProps {
+  onAddToBag?: () => void;
+}
+
+export default function ProductDetailActions({ onAddToBag }: ProductDetailActionsProps) {
   return (
     <div className={styles.wrap}>
       <button type="button" className={styles.buyNow}>
         BUY NOW
       </button>
-      <button type="button" className={styles.addToBag}>
+      <button type="button" className={styles.addToBag} onClick={onAddToBag}>
         ADD TO BAG
       </button>
     </div>

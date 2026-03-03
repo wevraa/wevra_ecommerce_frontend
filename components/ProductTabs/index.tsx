@@ -38,7 +38,7 @@ export default function ProductTabs({ details, fitFabric, shippingReturn }: Prod
         ))}
       </div>
       <div className={styles.panel} role="tabpanel">
-        {content}
+        <div dangerouslySetInnerHTML={{ __html: content }} />
       </div>
     </div>
   );
