@@ -32,12 +32,18 @@ export default function ProductCard({ product, showShortDescription }: ProductCa
          <Image src={measure} alt="measure"/>
         </span>
       </Link>
-      <div className={styles.body}>
-        {showShortDescription && product.shortDescription && (
+
+      <section className={styles.product_info}>
+        <div className={styles.body}>
+        
           <p className={styles.shortDescription}>{product.shortDescription}</p>
-        )}
+        
         <div className={styles.brand}>
           <span>{product.brand}</span>
+        </div>
+        <p className={styles.price}>{formatPrice(product.price)}</p>
+      </div>
+        <div>
           <Link href={`/product/${product.id}`} className={styles.addBtn} aria-label="View product">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
               <line x1="12" y1="5" x2="12" y2="19" />
@@ -45,8 +51,8 @@ export default function ProductCard({ product, showShortDescription }: ProductCa
             </svg>
           </Link>
         </div>
-        <p className={styles.price}>{formatPrice(product.price)}</p>
-      </div>
+      </section>
+      
     </article>
   );
 }
