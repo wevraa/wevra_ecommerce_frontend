@@ -13,11 +13,12 @@
 
 .content {
   display: flex;
-  flex-direction: column;
+  flex-direction: row;
   min-height: calc(100vh - 56px);
+  max-width: 100%;
+  overflow: hidden;
 
   @include mobile-first($desktop) {
-    flex-direction: row;
     max-width: $max-content-width;
     margin: 0 auto;
   }
@@ -26,13 +27,17 @@
 .left {
   flex: 1;
   min-width: 0;
+  overflow-y: auto;
+  overflow-x: hidden;
 }
 
 .right {
   flex-shrink: 0;
+  width: 120px;
+  min-width: 100px;
 
   @include mobile-first($desktop) {
-    width: 50%;
+    width: 360px;
     min-width: 320px;
   }
 }

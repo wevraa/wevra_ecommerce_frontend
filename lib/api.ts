@@ -169,3 +169,65 @@ export async function getProductById(id: string): Promise<ApiProduct | null> {
     return null;
   }
 }
+
+// Banners (hero carousel)
+export interface ApiBanner {
+  id: string;
+  image?: string | null;
+  url?: string | null;
+  title?: string | null;
+  alt?: string | null;
+  [key: string]: unknown;
+}
+
+export async function getBanners(): Promise<ApiBanner[]> {
+  if (!API_BASE) return [];
+  try {
+    const res = await fetch(`${API_BASE}/v1/banners`, { next: { revalidate: 60 } });
+    if (!res.ok) return [];
+    const data = await res.json();
+    return Array.isArray(data) ? (data as ApiBanner[]) : [];
+  } catch {
+    return [];
+  }
+}
+
+// Reviews
+export interface ApiReview {
+  id: string;
+  customerId: string;
+  productId: string;
+  rating: number;
+  reviewText: string;
+  status: string;
+  customerImageUrl: string | null;
+  createdAt: string;
+  updatedAt: string;
+  customer: { id: string; name: string; email: string };
+  product: { id: string; title: string };
+}
+
+export interface ApiReviewsResponse {
+  data: ApiReview[];
+  total: number;
+  page: number;
+  limit: number;
+}
+
+const REVIEWS_LIMIT = 10;
+
+export async function getReviews(limit: number = REVIEWS_LIMIT): Promise<ApiReview[]> {
+  if (!API_BASE) return [];
+  try {
+    const res = await fetch(`${API_BASE}/v1/reviews?limit=${limit}`, {
+      next: { revalidate: 60 },
+    });
+    if (!res.ok) return [];
+    const json = await res.json();
+    const response = json as ApiReviewsResponse;
+    const list = response?.data ?? [];
+    return Array.isArray(list) ? list.slice(0, limit) : [];
+  } catch {
+    return [];
+  }
+}

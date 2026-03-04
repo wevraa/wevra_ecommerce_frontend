@@ -1,8 +1,35 @@
+"use client";
+
+import { useEffect, useState } from "react";
 import Image from "next/image";
-import { reviews } from "@/data/dummy";
 import styles from "./CustomerReviews.module.scss";
 
+const API_BASE = process.env.NEXT_PUBLIC_API_BASE_URL ?? "";
+const REVIEWS_LIMIT = 10;
+
+interface ApiReview {
+  id: string;
+  reviewText: string;
+  customerImageUrl: string | null;
+  customer: { name: string };
+}
+
 export default function CustomerReviews() {
+  const [reviews, setReviews] = useState<ApiReview[]>([]);
+
+  useEffect(() => {
+    if (!API_BASE) return;
+    fetch(`${API_BASE}/v1/reviews?limit=${REVIEWS_LIMIT}`)
+      .then((res) => (res.ok ? res.json() : { data: [] }))
+      .then((json: { data?: ApiReview[] }) => {
+        const list = Array.isArray(json?.data) ? json.data : [];
+        setReviews(list.slice(0, REVIEWS_LIMIT));
+      })
+      .catch(() => setReviews([]));
+  }, []);
+
+  if (reviews.length === 0) return null;
+
   return (
     <section className={styles.section} aria-labelledby="reviews-title">
       <h2 id="reviews-title" className={styles.title}>
@@ -11,10 +38,10 @@ export default function CustomerReviews() {
       <div className={styles.scroll}>
         {reviews.map((review) => (
           <div key={review.id} className={styles.card}>
-            {review.avatar && (
+            {review.customerImageUrl && (
               <div className={styles.avatarWrap}>
                 <Image
-                  src={review.avatar}
+                  src={review.customerImageUrl}
                   alt=""
                   fill
                   className={styles.avatar}
@@ -22,8 +49,8 @@ export default function CustomerReviews() {
                 />
               </div>
             )}
-            <p className={styles.quote}>{review.quote}</p>
-            <p className={styles.author}>— {review.author}</p>
+            <p className={styles.quote}>{review.reviewText}</p>
+            <p className={styles.author}>— {review.customer?.name ?? "Customer"}</p>
           </div>
         ))}
       </div>

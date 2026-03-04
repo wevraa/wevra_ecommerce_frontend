@@ -13,6 +13,11 @@ const nextConfig: NextConfig = {
         hostname: "txfwxhyfvdovpdeqahsm.supabase.co",
         pathname: "/**",
       },
+      {
+        protocol: "https",
+        hostname: "api.wevraa.in",
+        pathname: "/**",
+      },
     ],
   },
 };
