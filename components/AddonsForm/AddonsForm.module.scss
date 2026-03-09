@@ -2,7 +2,6 @@
 @use "../../styles/mixins" as *;
 
 .wrap {
-  padding: $space-lg $space-md $space-2xl;
   background: #f5f5f5;
   min-height: 100vh;
 }
