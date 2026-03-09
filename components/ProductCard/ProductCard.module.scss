@@ -88,8 +88,11 @@
 
 .price {
   margin: 0 !important;
-  padding-top: 0.4rem;
   font-size: $font-size-base;
   font-weight: $font-weight-semibold;
   color: $color-text;
+}
+
+.addbtn{
+  cursor: pointer;
 }

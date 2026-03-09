@@ -3,6 +3,7 @@ import Link from "next/link";
 import type { Product } from "@/data/dummy";
 import styles from "./ProductCard.module.scss";
 import measure from "../../app/assests/icons/measure.svg"
+import add from "../../app/assests/icons/add.svg"
 
 interface ProductCardProps {
   product: Product;
@@ -18,6 +19,7 @@ function formatPrice(price: number) {
 }
 
 export default function ProductCard({ product, showShortDescription }: ProductCardProps) {
+  console.log(product,"sjsjiwjiwjiwjiwjij")
   return (
     <article className={styles.card}>
       <Link href={`/product/${product.id}`} className={styles.imageWrap}>
@@ -43,13 +45,8 @@ export default function ProductCard({ product, showShortDescription }: ProductCa
         </div>
         <p className={styles.price}>{formatPrice(product.price)}</p>
       </div>
-        <div>
-          <Link href={`/product/${product.id}`} className={styles.addBtn} aria-label="View product">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-              <line x1="12" y1="5" x2="12" y2="19" />
-              <line x1="5" y1="12" x2="19" y2="12" />
-            </svg>
-          </Link>
+        <div className={styles.addbtn}>
+          <Image src={add} alt="addbtn"/>
         </div>
       </section>
       

@@ -51,7 +51,6 @@
   font-weight: $font-weight-medium;
   color: $color-text;
   cursor: pointer;
-  border-radius: 8px;
 
   &:hover {
     border-color: $color-deep-red;
@@ -68,6 +67,8 @@
 .measurements {
   font-size: $font-size-sm;
   color: $color-text-muted;
+  display: flex;
+  justify-content: center;
 }
 
 @include mobile-first($desktop) {

@@ -14,6 +14,13 @@ interface CollectionProductSummary {
   mrp: string | null;
   finalPrice: string | null;
   productDescription: string | null;
+  media?: {
+    id: string;
+    url: string;
+    type: string;
+    alt: string | null;
+    order: number;
+  }[];
 }
 
 interface CollectionPageClientProps {
@@ -26,30 +33,51 @@ export default function CollectionPageClient({ id }: CollectionPageClientProps) 
 
   useEffect(() => {
     if (!API_BASE) return;
-    setLoading(true);
-    fetch(`${API_BASE}/v1/collections/${id}`)
-      .then((res) => (res.ok ? res.json() : null))
-      .then((data: ApiCollectionDetail | null) => {
+
+    const fetchCollection = async () => {
+      try {
+        setLoading(true);
+        const res = await fetch(`${API_BASE}/v1/collections/${id}`);
+
+        if (!res.ok) {
+          setCollection(null);
+          return;
+        }
+
+        const data: ApiCollectionDetail = await res.json();
         setCollection(data);
-      })
-      .catch(() => setCollection(null))
-      .finally(() => setLoading(false));
+      } catch (error) {
+        console.error("Failed to fetch collection:", error);
+        setCollection(null);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchCollection();
   }, [id]);
 
   if (!API_BASE) return null;
   if (loading) return <div className={styles.section}>Loading...</div>;
-  if (!collection) return <div className={styles.section}>Collection not found.</div>;
+  if (!collection)
+    return <div className={styles.section}>Collection not found.</div>;
 
-  const entryList = Array.isArray(collection.products) ? collection.products : [];
+  const entryList = Array.isArray(collection.products)
+    ? collection.products
+    : [];
 
   const products: Product[] = entryList
     .map((entry: any) => {
       const p: CollectionProductSummary | undefined = entry?.product;
       if (!p) return null;
+
       const price = Number(p.finalPrice ?? p.mrp ?? 0) || 0;
+
       const image =
-        (typeof collection.image === "string" && collection.image) ||
-        "/images/placeholder-rect.svg";
+        p?.media && p.media.length > 0
+          ? p.media[0].url
+          : "/images/placeholder-rect.svg";
+
       return {
         id: p.id,
         brand: p.title,
@@ -66,12 +94,17 @@ export default function CollectionPageClient({ id }: CollectionPageClientProps) 
       <h1 id="collection-title" className={styles.title}>
         {collection.title}
       </h1>
+
       {products.length === 0 ? (
         <p className={styles.empty}>No products in this collection yet.</p>
       ) : (
         <div className={styles.grid}>
           {products.map((product) => (
-            <ProductCard key={product.id} product={product} showShortDescription />
+            <ProductCard
+              key={product.id}
+              product={product}
+              showShortDescription
+            />
           ))}
         </div>
       )}

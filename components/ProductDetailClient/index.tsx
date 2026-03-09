@@ -11,6 +11,7 @@ import type { CartItem } from "@/data/dummy";
 import type { ApiProduct } from "@/lib/api";
 import { addToCart } from "@/lib/cartStorage";
 
+
 const API_BASE = process.env.NEXT_PUBLIC_API_BASE_URL ?? "";
 
 interface ProductDetailClientProps {
