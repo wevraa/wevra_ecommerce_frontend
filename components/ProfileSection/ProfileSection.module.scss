@@ -49,15 +49,14 @@
 
 .editBtn {
   display: block;
-  margin: 0 auto;
   padding: $space-sm $space-lg;
   border: none;
+  margin-top: 0.8rem;
   background: $color-deep-red;
   color: $color-white;
   font-size: $font-size-sm;
   font-weight: $font-weight-bold;
   cursor: pointer;
-  border-radius: 8px;
 
   &:hover {
     background: #6f0f2a;

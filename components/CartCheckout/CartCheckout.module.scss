@@ -17,15 +17,10 @@
   text-transform: uppercase;
   letter-spacing: 0.05em;
   cursor: pointer;
-  border-radius: 10px;
   display: flex;
   align-items: center;
   justify-content: center;
   gap: $space-sm;
-
-  &:hover {
-    background: #6f0f2a;
-  }
 }
 
 @include mobile-first($desktop) {
