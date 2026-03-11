@@ -1,0 +1,61 @@
+@use "../../styles/variables" as *;
+@use "../../styles/mixins" as *;
+
+.wrap {
+  padding-top: $space-sm;
+}
+
+.title {
+  text-align: center;
+  font-size: $font-size-xs;
+  font-weight: $font-weight-semibold;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  margin: 0 0 $space-md;
+  color: $color-text;
+}
+
+.sizeGrid {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: $space-lg $space-2xl;
+  margin-bottom: $space-md;
+}
+
+.sizeBtn {
+  min-width: 40px;
+  height: 40px;
+  padding: 0 $space-md;
+  border: 1px solid rgba(0, 0, 0, 0.2);
+  background: $color-white;
+  font-size: $font-size-sm;
+  font-weight: $font-weight-medium;
+  color: $color-text;
+  cursor: pointer;
+  border-radius: 4px;
+
+  &:hover {
+    border-color: $color-deep-red;
+    color: $color-deep-red;
+  }
+}
+
+.active {
+  border-color: $color-deep-red;
+  color: $color-deep-red;
+  background: $color-light-pink;
+}
+
+.divider {
+  height: 1px;
+  background: rgba(0, 0, 0, 0.16);
+  margin-bottom: $space-sm;
+}
+
+.measurements {
+  text-align: center;
+  font-size: $font-size-xs;
+  color: $color-text-muted;
+}
+

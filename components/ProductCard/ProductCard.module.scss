@@ -75,15 +75,10 @@
   height: 28px;
   padding: 0;
   border: none;
-  background: $color-light-pink;
   color: $color-deep-red;
   border-radius: 50%;
   cursor: pointer;
   flex-shrink: 0;
-
-  &:hover {
-    background: $color-pink;
-  }
 }
 
 .price {
@@ -94,5 +89,5 @@
 }
 
 .addbtn{
-  cursor: pointer;
+  @extend .addBtn;
 }
