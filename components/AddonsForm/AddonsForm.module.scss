@@ -2,17 +2,13 @@
 @use "../../styles/mixins" as *;
 
 .wrap {
-  background: #f5f5f5;
-  min-height: 100vh;
+  width: 100%;
 }
 
 .inner {
-  max-width: 520px;
-  margin: 0 auto;
   background: $color-white;
   border-radius: 12px;
-  padding: $space-lg;
-  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06);
+  padding: 38px;
 }
 
 .intro {
@@ -20,6 +16,8 @@
   color: $color-text;
   margin-bottom: $space-lg;
 }
+
+/* ROWS */
 
 .row {
   display: flex;
@@ -43,16 +41,18 @@
   color: $color-text-muted;
 }
 
+/* TOGGLE SWITCH */
+
 .toggle {
   position: relative;
   width: 48px;
   height: 28px;
   border: none;
-  border-radius: 14px;
+  border-radius: 20px;
   background: #ccc;
   cursor: pointer;
   flex-shrink: 0;
-  transition: background 0.2s;
+  transition: background 0.25s ease;
 
   &.on {
     background: $color-deep-red;
@@ -68,34 +68,40 @@
   border-radius: 50%;
   background: $color-white;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
-  transition: transform 0.2s;
+  transition: transform 0.25s ease;
 
   .toggle.on & {
     transform: translateX(20px);
   }
 }
 
+/* SEGMENT BUTTONS */
+
 .segmentWrap {
   margin-top: $space-sm;
+  margin-bottom: $space-lg;
 }
 
 .segment {
   display: flex;
-  border-radius: 10px;
+  border-radius: 40px;
   overflow: hidden;
-  border: 1px solid $color-deep-red;
   width: 100%;
+  background: $color-deep-red;
+  padding: 4px;
 }
 
 .segmentBtn {
   flex: 1;
-  padding: $space-sm $space-md;
+  padding: 12px 0;
   border: none;
   font-size: $font-size-sm;
-  font-weight: $font-weight-medium;
+  font-weight: $font-weight-bold;
   cursor: pointer;
-  background: $color-deep-red;
+  background: transparent;
   color: $color-white;
+  border-radius: 40px;
+  transition: all 0.25s ease;
 
   &.selected {
     background: $color-white;
@@ -103,65 +109,77 @@
   }
 }
 
-.segmentBtnMuted {
-  background: #6b7280;
-  color: $color-white;
+/* HOOKS GREY SEGMENT */
 
-  &.selected {
-    background: $color-white;
-    color: $color-text;
-  }
+.segmentBtnMuted {
+  color: $color-white;
 }
+
+.segmentWrap:has(.segmentBtnMuted) .segment {
+  background: #8c8c8c;
+}
+
+/* SECTION TITLES */
 
 .sectionTitle {
   font-size: $font-size-base;
   font-weight: $font-weight-bold;
   color: $color-deep-red;
   margin: $space-xl 0 $space-xs;
+  text-align: center;
 }
 
 .sectionTitleMuted {
-  color: $color-text;
+  color: $color-deep-red;
 }
 
 .subtitle {
   font-size: $font-size-xs;
   color: $color-text-muted;
-  margin-bottom: $space-md;
+  margin: 0 0 8px 0;
+  text-align: center;
 }
+
+/* TWO COLUMN LAYOUT */
 
 .twoCol {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: $space-md;
+  gap: 24px;
   margin-bottom: $space-xl;
 }
 
+/* UPLOAD CARD */
+
 .uploadCard {
-  min-height: 120px;
-  border-radius: 12px;
-  background: #e0f2f7;
-  border: 2px dashed #99c4d4;
+  height: 140px;
+  border-radius: 20px;
+  background: #dbe9f2;
   display: flex;
   align-items: center;
   justify-content: center;
   padding: $space-md;
 }
 
-.uploadCardFilled {
-  border-style: solid;
-}
+/* PLUS ICON */
 
 .uploadPlus {
-  color: $color-deep-red;
-  font-size: 32px;
-  line-height: 1;
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  background: $color-deep-red;
+  color: $color-white;
+  font-size: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
+
+/* CTA BUTTON */
 
 .cta {
   display: block;
   width: 100%;
-  max-width: 100%;
   padding: $space-md $space-lg;
   border: none;
   background: $color-deep-red;
@@ -171,8 +189,8 @@
   text-transform: uppercase;
   letter-spacing: 0.05em;
   cursor: pointer;
-  border-radius: 8px;
-  margin: $space-xl auto 0;
+  border-radius: 40px;
+  margin-top: $space-xl;
   text-align: center;
   box-sizing: border-box;
 
@@ -181,6 +199,8 @@
   }
 }
 
+/* DESKTOP */
+
 @include mobile-first($desktop) {
   .wrap {
     padding: $space-2xl $space-lg;
@@ -188,6 +208,7 @@
 
   .inner {
     max-width: 600px;
+    margin: auto;
     padding: $space-xl;
   }
 }

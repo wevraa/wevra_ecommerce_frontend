@@ -1,6 +1,9 @@
+"use client"
+
 import Image from "next/image";
 import type { Boutique } from "@/data/dummy";
 import styles from "./BoutiqueCard.module.scss";
+import { useRouter } from "next/navigation";
 
 interface BoutiqueCardProps {
   boutique: Boutique;
@@ -8,6 +11,7 @@ interface BoutiqueCardProps {
 
 function StarRating({ rating }: { rating: number }) {
   const full = Math.floor(rating);
+  
   return (
     <span className={styles.stars} aria-label={`${rating} out of 5 stars`}>
       {Array.from({ length: 5 }).map((_, i) => (
@@ -29,6 +33,7 @@ function StarRating({ rating }: { rating: number }) {
 }
 
 export default function BoutiqueCard({ boutique }: BoutiqueCardProps) {
+  const router = useRouter()
   return (
     <article className={`${styles.card} ${boutique.selected ? styles.selected : ""}`}>
       <div className={styles.imageWrap}>
@@ -50,10 +55,11 @@ export default function BoutiqueCard({ boutique }: BoutiqueCardProps) {
         <div className={styles.infoRight}>
           <StarRating rating={boutique.rating} />
           <span className={styles.reviews}>{boutique.reviewCount} Reviews</span>
+          <button type="button" className={styles.viewBtn} onClick={() => router.push("/boutiques-selection")}>
+            View
+          </button>
         </div>
-        <button type="button" className={styles.viewBtn}>
-          View
-        </button>
+
       </div>
     </article>
   );

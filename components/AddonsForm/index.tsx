@@ -95,16 +95,28 @@ export default function AddonsForm() {
           </div>
         </div>
 
-        <h2 className={styles.sectionTitle}>HANGINGS</h2>
-        <p className={styles.subtitle}>Select or upload hangings or else leave blank</p>
-        <div className={styles.uploadCard}>
-          <span aria-hidden>🎀</span>
-        </div>
+        <div className={styles.twoCol}>
+          <div>
+            <h2 className={styles.sectionTitle}>HANGINGS</h2>
+            <p className={styles.subtitle}>
+              Select or upload hangings or else leave blank
+            </p>
+            <div className={styles.uploadCard}>
+              <span aria-hidden>🎀</span>
+            </div>
+          </div>
 
-        <h2 className={`${styles.sectionTitle} ${styles.sectionTitleMuted}`}>DRAWING IMAGE</h2>
-        <p className={styles.subtitle}>Upload your drawing pattern if required</p>
-        <div className={styles.uploadCard}>
-          <span className={styles.uploadPlus} aria-hidden>+</span>
+          <div>
+            <h2 className={`${styles.sectionTitle} ${styles.sectionTitleMuted}`}>
+              DRAWING IMAGE
+            </h2>
+            <p className={styles.subtitle}>
+              Upload your drawing pattern if required
+            </p>
+            <div className={styles.uploadCard}>
+              <span className={styles.uploadPlus}>+</span>
+            </div>
+          </div>
         </div>
 
         <Link href="/profile" className={styles.cta}>

@@ -197,7 +197,7 @@
   margin: 0 0 $space-sm;
   display: flex;
   align-items: center;
-  justify-content: space-between;
+ gap: 16px;
   cursor: pointer;
 }
 
@@ -213,15 +213,14 @@
   margin: 0;
   display: flex;
   align-items: center;
-  justify-content: space-between;
+  gap: 16px;
   cursor: pointer;
 }
 
 .productImage {
   flex-shrink: 0;
-  width: 80px;
+  width: 100px;
   height: 100px;
-  border-radius: 8px;
   background: $color-light-pink;
   overflow: hidden;
   position: relative;
@@ -233,21 +232,27 @@
   object-fit: cover;
 }
 
+.btn_wrap{
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
 .addItemsBtn {
-  width: 100%;
-  padding: $space-md $space-lg;
+  width: 250px;
+  padding: 12px;
   border: none;
   background: $color-deep-red;
   color: $color-white;
   font-size: $font-size-base;
   font-weight: $font-weight-bold;
   cursor: pointer;
-  border-radius: 12px;
+  border-radius: 26px;
   display: flex;
   align-items: center;
   justify-content: center;
   gap: $space-sm;
-  margin-bottom: $space-lg;
+  margin-bottom: 12px;
 
   &:hover {
     background: #6f0f2a;
@@ -273,13 +278,9 @@
   font-size: $font-size-base;
   font-weight: $font-weight-semibold;
   cursor: pointer;
-  border-radius: 8px;
+  border-radius: 26px;
   text-decoration: none;
   box-sizing: border-box;
-
-  &:hover {
-    background: #374151;
-  }
 }
 
 .sendBtn {
@@ -291,10 +292,6 @@
   font-size: $font-size-base;
   font-weight: $font-weight-semibold;
   cursor: pointer;
-  border-radius: 8px;
+  border-radius: 26px;
   box-sizing: border-box;
-
-  &:hover {
-    background: #1d4ed8;
-  }
 }

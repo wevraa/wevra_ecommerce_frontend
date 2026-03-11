@@ -4,6 +4,7 @@
 .section {
   padding: 0 $space-md $space-lg;
   background: $color-white;
+   position: relative;
 }
 
 .title {
@@ -16,8 +17,9 @@
 .grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: $space-md;
+  gap: 8px;
   margin-bottom: $space-md;
+ 
 }
 
 .card {
@@ -58,6 +60,11 @@
   color: $color-white;
   border-radius: 50%;
   cursor: pointer;
+  bottom: 40px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 999;
+  position: absolute;
 
   &:hover {
     background: #333;

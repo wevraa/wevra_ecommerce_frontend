@@ -10,7 +10,7 @@ interface BoutiqueSelectionHeaderProps {
 }
 
 export default function BoutiqueSelectionHeader({ count, names, children }: BoutiqueSelectionHeaderProps) {
-  const [expanded, setExpanded] = useState(false);
+  const [expanded, setExpanded] = useState(true);
 
   return (
     <header className={styles.header}>

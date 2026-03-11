@@ -89,10 +89,13 @@ export default function OrderQuotePageClient() {
           </div>
         ))}
 
-        <button type="button" className={styles.addItemsBtn}>
-          <span aria-hidden>+</span>
-          Add Items
-        </button>
+        <div className={styles.btn_wrap}>
+          <button type="button" className={styles.addItemsBtn}>
+            <span aria-hidden>+</span>
+            Add Items
+          </button>
+        </div>
+
 
         <div className={styles.footerBtns}>
           <Link href="/boutiques-selection" className={styles.cancelBtn}>

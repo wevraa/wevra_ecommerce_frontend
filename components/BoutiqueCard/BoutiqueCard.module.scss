@@ -3,21 +3,16 @@
 
 .card {
   position: relative;
-  border-radius: 12px;
   overflow: hidden;
-  background: $color-light-pink;
+  
   box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
   border: 2px solid transparent;
-
-  &.selected {
-    border-color: #2563eb;
-  }
 }
 
 .imageWrap {
   position: relative;
   width: 100%;
-  aspect-ratio: 4 / 3;
+  aspect-ratio: 6 / 3;
   overflow: hidden;
 }
 
@@ -43,7 +38,7 @@
 
 .info {
   padding: $space-md $space-lg;
-  background: $color-light-pink;
+  background: #FFB6C5;
   color: $color-text;
   display: flex;
   flex-wrap: wrap;
@@ -103,15 +98,15 @@
 
 .viewBtn {
   width: 100%;
+  min-width: 120px;
   margin-top: $space-xs;
-  padding: $space-xs $space-md;
+  padding: 10px;
   border: none;
   background: $color-deep-red;
   color: $color-white;
   font-size: $font-size-xs;
   font-weight: $font-weight-semibold;
   cursor: pointer;
-  border-radius: 8px;
 
   &:hover {
     background: #6f0f2a;
