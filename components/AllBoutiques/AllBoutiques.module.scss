@@ -118,6 +118,14 @@
   gap: $space-lg;
 }
 
+.empty {
+  text-align: center;
+  color: $color-text-muted;
+  font-size: $font-size-sm;
+  padding: $space-2xl $space-lg;
+  margin: 0;
+}
+
 @include mobile-first($desktop) {
   .section {
     max-width: $max-content-width;

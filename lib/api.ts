@@ -231,3 +231,38 @@ export async function getReviews(limit: number = REVIEWS_LIMIT): Promise<ApiRevi
     return [];
   }
 }
+
+// Tailors / Boutiques
+const TAILORS_API =
+  process.env.NEXT_PUBLIC_TAILORS_API_URL ?? `${API_BASE || "https://api.wevraa.in/api"}/v1/tailors`;
+
+export interface ApiTailor {
+  id: string;
+  name: string;
+  phone: string;
+  email: string;
+  experience: string;
+  status: string;
+  addressLine1: string;
+  addressLine2: string | null;
+  pincode: string;
+  specializations: string[];
+  hasGst: boolean;
+  gstNumber: string | null;
+  gstPercentage: string | null;
+  hsnCode: string | null;
+  categoryTags: string[];
+  createdAt: string;
+  updatedAt: string;
+}
+
+export async function getTailors(): Promise<ApiTailor[]> {
+  try {
+    const res = await fetch(TAILORS_API, { next: { revalidate: 60 } });
+    if (!res.ok) return [];
+    const data = await res.json();
+    return Array.isArray(data) ? (data as ApiTailor[]) : [];
+  } catch {
+    return [];
+  }
+}

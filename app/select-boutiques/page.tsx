@@ -5,14 +5,16 @@ import SelectedImages from "@/components/SelectedImages";
 import MeasurementAddonsRows from "@/components/MeasurementAddonsRows";
 import AllBoutiques from "@/components/AllBoutiques";
 import BottomNav from "@/components/BottomNav";
+import { getTailors } from "@/lib/api";
 import {
   userProfile,
   orderTypes,
   selectedImages,
-  boutiques,
 } from "@/data/dummy";
 
-export default function SelectBoutiquesPage() {
+export default async function SelectBoutiquesPage() {
+  const tailors = await getTailors();
+
   return (
     <>
       <SelectBoutiquesHeader />
@@ -21,7 +23,7 @@ export default function SelectBoutiquesPage() {
         <OrderTypeSelect types={orderTypes} />
         <SelectedImages images={selectedImages} />
         <MeasurementAddonsRows />
-        <AllBoutiques boutiques={boutiques} compact />
+        <AllBoutiques tailors={tailors} compact />
       </main>
       <BottomNav />
     </>
