@@ -7,7 +7,7 @@
   z-index: 100;
   background: $color-deep-red;
   padding: $space-md;
-  padding-bottom: $space-lg;
+  
 }
 
 .topRow {
@@ -43,7 +43,7 @@
 }
 
 .title {
-  font-size: $font-size-lg;
+  font-size: 38px;
   font-weight: $font-weight-bold;
   color: $color-white;
   margin: 0 0 2px 0;
@@ -68,7 +68,7 @@
   padding: 0 $space-md;
   background: $color-white;
   border: none;
-  border-radius: 10px;
+  border-radius: 30px;
   gap: $space-sm;
 }
 
@@ -94,5 +94,35 @@
 
   &:focus {
     outline: none;
+  }
+}
+
+.tabs {
+  display: flex;
+  gap: $space-sm;
+  overflow-x: auto;
+  padding: $space-sm 0 $space-md;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+  margin-top: 8px;
+
+  &::-webkit-scrollbar {
+    display: none;
+  }
+}
+
+.tab {
+  flex-shrink: 0;
+  padding: $space-sm $space-md;
+  border: none;
+  border-radius: 20px;
+  background: #373737;
+  color: $color-white;
+  font-size: $font-size-sm;
+  cursor: pointer;
+  white-space: nowrap;
+
+  &:hover {
+    background: darken($color-deep-red, 5%);
   }
 }

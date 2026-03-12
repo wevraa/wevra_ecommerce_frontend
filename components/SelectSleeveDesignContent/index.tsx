@@ -101,20 +101,7 @@ export default function SelectSleeveDesignContent() {
 
   return (
     <div className={styles.wrap}>
-      <div className={styles.tabs} role="tablist">
-        {CATEGORY_TABS.map((tab) => (
-          <button
-            key={tab}
-            type="button"
-            role="tab"
-            className={styles.tab}
-            onClick={() => setActiveTab(tab)}
-            aria-selected={activeTab === tab}
-          >
-            {tab}
-          </button>
-        ))}
-      </div>
+      
 
       <div className={styles.grid}>
         {DESIGN_CARDS.map((card) => (
@@ -137,14 +124,7 @@ export default function SelectSleeveDesignContent() {
                   sizes="(max-width: 768px) 50vw, 200px"
                 />
               ) : null}
-              {(card.type === "upload" || card.image) && (
-                <button type="button" className={styles.removeBtn} aria-label="Remove">
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                    <line x1="18" y1="6" x2="6" y2="18" />
-                    <line x1="6" y1="6" x2="18" y2="18" />
-                  </svg>
-                </button>
-              )}
+             
             </div>
             <div
               className={`${styles.cardLabel} ${

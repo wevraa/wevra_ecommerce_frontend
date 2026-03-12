@@ -1,7 +1,12 @@
+"use client"
+
 import Link from "next/link";
 import styles from "./SelectSleeveDesignHeader.module.scss";
+import { useState } from "react";
 
 export default function SelectSleeveDesignHeader() {
+  const CATEGORY_TABS = ["Boat Neck", "High Neck", "U Neck", "Collar", "V Neck", "Square Neck"];
+   const [activeTab, setActiveTab] = useState(CATEGORY_TABS[0]);
   return (
     <header className={styles.header}>
       <div className={styles.topRow}>
@@ -37,6 +42,20 @@ export default function SelectSleeveDesignHeader() {
             aria-label="Search designs"
           />
         </div>
+      </div>
+      <div className={styles.tabs} role="tablist">
+        {CATEGORY_TABS.map((tab) => (
+          <button
+            key={tab}
+            type="button"
+            role="tab"
+            className={styles.tab}
+            onClick={() => setActiveTab(tab)}
+            aria-selected={activeTab === tab}
+          >
+            {tab}
+          </button>
+        ))}
       </div>
     </header>
   );
