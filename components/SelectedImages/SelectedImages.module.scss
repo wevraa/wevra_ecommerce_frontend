@@ -27,6 +27,13 @@
   aspect-ratio: 3 / 4;
   overflow: hidden;
   background: $color-light-pink;
+  border: none;
+  padding: 0;
+  cursor: default;
+}
+
+.cardInteractive {
+  cursor: pointer;
 }
 
 .image {
@@ -46,6 +53,22 @@
   font-size: $font-size-xs;
   font-weight: $font-weight-semibold;
   text-align: center;
+}
+
+.plusBadge {
+  position: absolute;
+  top: $space-sm;
+  right: $space-sm;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: $color-white;
+  color: $color-deep-red;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: $font-weight-bold;
+  font-size: $font-size-sm;
 }
 
 .expandBtn {

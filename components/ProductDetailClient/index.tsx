@@ -10,8 +10,8 @@ import { getCompleteTheLookAndSimilar } from "@/data/dummy";
 import type { CartItem } from "@/data/dummy";
 import type { ApiProduct } from "@/lib/api";
 import { addToCart } from "@/lib/cartStorage";
-
-
+import BottomSheet from "@/components/BottomSheet";
+import AddedToBagSheet from "@/components/AddedToBagSheet";
 const API_BASE = process.env.NEXT_PUBLIC_API_BASE_URL ?? "";
 
 interface ProductDetailClientProps {
@@ -21,6 +21,7 @@ interface ProductDetailClientProps {
 export default function ProductDetailClient({ id }: ProductDetailClientProps) {
   const [product, setProduct] = useState<ApiProduct | null>(null);
   const [loading, setLoading] = useState(true);
+  const [isAddedSheetOpen, setIsAddedSheetOpen] = useState(false);
 
   useEffect(() => {
     if (!API_BASE) return;
@@ -68,11 +69,12 @@ export default function ProductDetailClient({ id }: ProductDetailClientProps) {
       quantity: 1,
     };
     await addToCart(cartItem);
+    setIsAddedSheetOpen(true);
   };
 
   return (
     <>
-      <ProductImageCarousel images={images} alt={product.title} />
+      <ProductImageCarousel images={images} alt={product.title} productId={product.id} />
       <ProductDetailInfo brand={product.title} price={priceNumber} />
       <ProductDetailActions onAddToBag={handleAddToBag} />
       <ProductTabs
@@ -90,6 +92,12 @@ export default function ProductDetailClient({ id }: ProductDetailClientProps) {
         products={similarStyles}
         showShortDescription
       />
+      <BottomSheet
+        open={isAddedSheetOpen}
+        onClose={() => setIsAddedSheetOpen(false)}
+      >
+        <AddedToBagSheet />
+      </BottomSheet>
     </>
   );
 }

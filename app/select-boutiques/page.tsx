@@ -9,11 +9,30 @@ import { getTailors } from "@/lib/api";
 import {
   userProfile,
   orderTypes,
-  selectedImages,
+  selectedImages as defaultSelectedImages,
 } from "@/data/dummy";
 
-export default async function SelectBoutiquesPage() {
+interface SelectBoutiquesPageProps {
+  searchParams?: { [key: string]: string | string[] | undefined };
+}
+
+export default async function SelectBoutiquesPage({
+  searchParams,
+}: SelectBoutiquesPageProps) {
   const tailors = await getTailors();
+  const selectedImageFromProduct =
+    (searchParams?.image as string | undefined) ?? undefined;
+
+  const images =
+    selectedImageFromProduct && defaultSelectedImages.length > 0
+      ? [
+          {
+            ...defaultSelectedImages[0],
+            image: selectedImageFromProduct,
+          },
+          ...defaultSelectedImages.slice(1),
+        ]
+      : defaultSelectedImages;
 
   return (
     <>
@@ -21,7 +40,7 @@ export default async function SelectBoutiquesPage() {
       <main className="main-with-bottom-nav">
         <ProfileBlock profile={userProfile} />
         <OrderTypeSelect types={orderTypes} />
-        <SelectedImages images={selectedImages} />
+        <SelectedImages images={images} />
         <MeasurementAddonsRows />
         <AllBoutiques tailors={tailors} compact />
       </main>

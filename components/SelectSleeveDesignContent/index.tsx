@@ -121,7 +121,7 @@ export default function SelectSleeveDesignContent() {
                   alt={card.alt ?? card.label}
                   fill
                   className={styles.cardImageContent}
-                  sizes="(max-width: 768px) 50vw, 200px"
+                  sizes="(max-width: 768px) 50vw, 200px"  
                 />
               ) : null}
              
