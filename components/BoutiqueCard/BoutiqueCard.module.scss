@@ -4,9 +4,14 @@
 .card {
   position: relative;
   overflow: hidden;
-  
   box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
   border: 2px solid transparent;
+  transition: border-color 0.15s ease;
+}
+
+.cardSelected {
+  border-color: $color-deep-red;
+  box-shadow: 0 2px 16px rgba(139, 15, 45, 0.15);
 }
 
 .imageWrap {
@@ -96,25 +101,55 @@
   color: $color-text;
 }
 
-.viewBtn {
-  width: 100%;
-  min-width: 120px;
+.actionBtns {
+  display: flex;
+  gap: $space-xs;
   margin-top: $space-xs;
-  padding: 10px;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+
+.selectBtn {
+  padding: 6px $space-sm;
+  border: 1px solid $color-deep-red;
+  background: transparent;
+  color: $color-deep-red;
+  font-size: $font-size-xs;
+  font-weight: $font-weight-semibold;
+  cursor: pointer;
+  border-radius: 4px;
+  transition: background 0.15s ease, color 0.15s ease;
+
+  &:hover:not(:disabled) {
+    background: $color-light-pink;
+  }
+
+  &:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+  }
+}
+
+.selectBtnActive {
+  background: $color-deep-red;
+  color: $color-white;
+
+  &:hover:not(:disabled) {
+    background: #6f0f2a;
+  }
+}
+
+.viewBtn {
+  padding: 6px $space-sm;
   border: none;
   background: $color-deep-red;
   color: $color-white;
   font-size: $font-size-xs;
   font-weight: $font-weight-semibold;
   cursor: pointer;
+  border-radius: 4px;
 
   &:hover {
     background: #6f0f2a;
-  }
-
-  @include mobile-first($tablet) {
-    width: auto;
-    margin-left: auto;
-    margin-top: $space-sm;
   }
 }

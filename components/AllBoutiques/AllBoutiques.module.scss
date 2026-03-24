@@ -90,21 +90,26 @@
 
 .nextBtn {
   padding: $space-sm $space-lg;
-  border: none;
+  border: 1px solid $color-white;
   background: $color-deep-red;
   color: $color-white;
   font-size: $font-size-sm;
   font-weight: $font-weight-semibold;
   cursor: pointer;
   border-radius: 8px;
-  border: 1px solid $color-white;
   text-decoration: none;
   display: inline-flex;
   align-items: center;
   justify-content: center;
+  transition: background 0.15s ease, opacity 0.15s ease;
 
-  &:hover {
+  &:hover:not(:disabled) {
     background: #6f0f2a;
+  }
+
+  &:disabled {
+    opacity: 0.45;
+    cursor: not-allowed;
   }
 
   .barCompact & {

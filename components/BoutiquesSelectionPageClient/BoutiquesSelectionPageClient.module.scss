@@ -1,0 +1,53 @@
+@use "../../styles/variables" as *;
+@use "../../styles/mixins" as *;
+
+.header {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  padding: $space-md;
+  background: $color-white;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+}
+
+.backBtn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  padding: 0;
+  border: none;
+  background: transparent;
+  color: $color-text;
+  cursor: pointer;
+  border-radius: 8px;
+
+  &:hover {
+    background: $color-light-pink;
+  }
+}
+
+.selectionSection {
+  background: $color-white;
+
+  @include mobile-first($desktop) {
+    max-width: $max-content-width;
+    margin: 0 auto;
+  }
+}
+
+.empty {
+  padding: $space-2xl $space-lg;
+  text-align: center;
+  color: $color-text-muted;
+  font-size: $font-size-sm;
+}
+
+.emptyLink {
+  display: inline-block;
+  margin-top: $space-md;
+  color: $color-deep-red;
+  font-weight: $font-weight-medium;
+  text-decoration: underline;
+}
