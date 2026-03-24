@@ -95,14 +95,27 @@ const DESIGN_CARDS: DesignCard[] = [
   },
 ];
 
-export default function SelectSleeveDesignContent() {
+interface SelectSleeveDesignContentProps {
+  productId?: string;
+  returnImage?: string;
+}
+
+export default function SelectSleeveDesignContent({ productId, returnImage }: SelectSleeveDesignContentProps) {
   const router = useRouter();
   const setFrontNeckDesign = useBoutiqueOrderStore((s) => s.setFrontNeckDesign);
+  const setSleeveDesign = useBoutiqueOrderStore((s) => s.setSleeveDesign);
 
   const handleSelectDesign = (card: DesignCard) => {
     if (card.type === "image" && card.image) {
+      if (productId) {
+        setSleeveDesign(productId, card.image);
+      }
       setFrontNeckDesign(card.image);
-      router.push("/select-boutiques");
+
+      const params = new URLSearchParams();
+      if (productId) params.set("productId", productId);
+      if (returnImage) params.set("image", returnImage);
+      router.push(params.size > 0 ? `/select-boutiques?${params.toString()}` : "/select-boutiques");
     }
   };
 

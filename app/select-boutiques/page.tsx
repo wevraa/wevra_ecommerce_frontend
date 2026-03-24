@@ -29,6 +29,14 @@ export default async function SelectBoutiquesPage({
         ? raw[0]
         : undefined;
 
+  const rawProductId = sp.productId;
+  const productId =
+    typeof rawProductId === "string"
+      ? rawProductId
+      : Array.isArray(rawProductId)
+        ? rawProductId[0]
+        : undefined;
+
   const images = defaultSelectedImages.map((item) =>
     item.id === "1" && selectedImageFromProduct
       ? { ...item, image: selectedImageFromProduct }
@@ -41,7 +49,11 @@ export default async function SelectBoutiquesPage({
       <main className="main-with-bottom-nav">
         <ProfileBlock profile={userProfile} />
         <OrderTypeSelect types={orderTypes} />
-        <SelectedImages images={images} />
+        <SelectedImages
+          images={images}
+          productId={productId}
+          productImage={selectedImageFromProduct}
+        />
         <MeasurementAddonsRows />
         <AllBoutiques tailors={tailors} compact />
       </main>

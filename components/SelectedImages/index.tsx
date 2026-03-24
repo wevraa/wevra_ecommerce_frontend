@@ -9,23 +9,28 @@ import styles from "./SelectedImages.module.scss";
 
 interface SelectedImagesProps {
   images: SelectedImage[];
+  productId?: string;
+  productImage?: string;
 }
 
-export default function SelectedImages({ images }: SelectedImagesProps) {
+export default function SelectedImages({ images, productId, productImage }: SelectedImagesProps) {
   const router = useRouter();
-  const frontNeckDesignImage = useBoutiqueOrderStore(
-    (s) => s.frontNeckDesignImage
-  );
+  const frontNeckDesignImage = useBoutiqueOrderStore((s) => s.frontNeckDesignImage);
+  const sleeveDesigns = useBoutiqueOrderStore((s) => s.sleeveDesigns);
+
+  const effectiveDesign = productId
+    ? (sleeveDesigns[productId] ?? frontNeckDesignImage)
+    : frontNeckDesignImage;
 
   const displayImages = useMemo(() => {
     return images.map((item) => {
       const isFrontNeck = item.label.toLowerCase().includes("front neck");
-      if (isFrontNeck && frontNeckDesignImage) {
-        return { ...item, image: frontNeckDesignImage };
+      if (isFrontNeck && effectiveDesign) {
+        return { ...item, image: effectiveDesign };
       }
       return item;
     });
-  }, [images, frontNeckDesignImage]);
+  }, [images, effectiveDesign]);
 
   return (
     <section className={styles.section}>
@@ -33,7 +38,7 @@ export default function SelectedImages({ images }: SelectedImagesProps) {
       <div className={styles.grid}>
         {displayImages.map((item) => {
           const isFrontNeck = item.label.toLowerCase().includes("front neck");
-          const showPlusBadge = isFrontNeck && !frontNeckDesignImage;
+          const showPlusBadge = isFrontNeck && !effectiveDesign;
           return (
             <button
               key={item.id}
@@ -43,7 +48,14 @@ export default function SelectedImages({ images }: SelectedImagesProps) {
               }`}
               onClick={() => {
                 if (isFrontNeck) {
-                  router.push("/select-sleeve-design");
+                  const params = new URLSearchParams();
+                  if (productId) params.set("productId", productId);
+                  if (productImage) params.set("image", productImage);
+                  router.push(
+                    params.size > 0
+                      ? `/select-sleeve-design?${params.toString()}`
+                      : "/select-sleeve-design"
+                  );
                 }
               }}
             >
@@ -83,4 +95,3 @@ export default function SelectedImages({ images }: SelectedImagesProps) {
     </section>
   );
 }
-
