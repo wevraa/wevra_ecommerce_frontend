@@ -13,26 +13,27 @@ import {
 } from "@/data/dummy";
 
 interface SelectBoutiquesPageProps {
-  searchParams?: { [key: string]: string | string[] | undefined };
+  searchParams?: Promise<{ [key: string]: string | string[] | undefined }>;
 }
 
 export default async function SelectBoutiquesPage({
   searchParams,
 }: SelectBoutiquesPageProps) {
   const tailors = await getTailors();
+  const sp = searchParams ? await searchParams : {};
+  const raw = sp.image;
   const selectedImageFromProduct =
-    (searchParams?.image as string | undefined) ?? undefined;
+    typeof raw === "string"
+      ? raw
+      : Array.isArray(raw)
+        ? raw[0]
+        : undefined;
 
-  const images =
-    selectedImageFromProduct && defaultSelectedImages.length > 0
-      ? [
-          {
-            ...defaultSelectedImages[0],
-            image: selectedImageFromProduct,
-          },
-          ...defaultSelectedImages.slice(1),
-        ]
-      : defaultSelectedImages;
+  const images = defaultSelectedImages.map((item) =>
+    item.id === "1" && selectedImageFromProduct
+      ? { ...item, image: selectedImageFromProduct }
+      : item
+  );
 
   return (
     <>

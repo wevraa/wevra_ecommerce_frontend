@@ -2,7 +2,9 @@
 
 import Image from "next/image";
 import { useRouter } from "next/navigation";
+import { useMemo } from "react";
 import type { SelectedImage } from "@/data/dummy";
+import { useBoutiqueOrderStore } from "@/lib/stores/boutiqueOrderStore";
 import styles from "./SelectedImages.module.scss";
 
 interface SelectedImagesProps {
@@ -11,13 +13,27 @@ interface SelectedImagesProps {
 
 export default function SelectedImages({ images }: SelectedImagesProps) {
   const router = useRouter();
+  const frontNeckDesignImage = useBoutiqueOrderStore(
+    (s) => s.frontNeckDesignImage
+  );
+
+  const displayImages = useMemo(() => {
+    return images.map((item) => {
+      const isFrontNeck = item.label.toLowerCase().includes("front neck");
+      if (isFrontNeck && frontNeckDesignImage) {
+        return { ...item, image: frontNeckDesignImage };
+      }
+      return item;
+    });
+  }, [images, frontNeckDesignImage]);
 
   return (
     <section className={styles.section}>
       <h2 className={styles.title}>Selected Images</h2>
       <div className={styles.grid}>
-        {images.map((item) => {
+        {displayImages.map((item) => {
           const isFrontNeck = item.label.toLowerCase().includes("front neck");
+          const showPlusBadge = isFrontNeck && !frontNeckDesignImage;
           return (
             <button
               key={item.id}
@@ -38,7 +54,7 @@ export default function SelectedImages({ images }: SelectedImagesProps) {
                 className={styles.image}
                 sizes="50vw"
               />
-              {isFrontNeck && (
+              {showPlusBadge && (
                 <span className={styles.plusBadge} aria-hidden>
                   +
                 </span>

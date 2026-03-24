@@ -1,10 +1,9 @@
 "use client";
 
 import Image from "next/image";
-import { useState } from "react";
+import { useRouter } from "next/navigation";
+import { useBoutiqueOrderStore } from "@/lib/stores/boutiqueOrderStore";
 import styles from "./SelectSleeveDesignContent.module.scss";
-
-const CATEGORY_TABS = ["Boat Neck", "High Neck", "U Neck", "Collar", "V Neck", "Square Neck"];
 
 interface DesignCard {
   id: string;
@@ -97,15 +96,38 @@ const DESIGN_CARDS: DesignCard[] = [
 ];
 
 export default function SelectSleeveDesignContent() {
-  const [activeTab, setActiveTab] = useState(CATEGORY_TABS[0]);
+  const router = useRouter();
+  const setFrontNeckDesign = useBoutiqueOrderStore((s) => s.setFrontNeckDesign);
+
+  const handleSelectDesign = (card: DesignCard) => {
+    if (card.type === "image" && card.image) {
+      setFrontNeckDesign(card.image);
+      router.push("/select-boutiques");
+    }
+  };
 
   return (
     <div className={styles.wrap}>
       
 
       <div className={styles.grid}>
-        {DESIGN_CARDS.map((card) => (
-          <article key={card.id} className={`${styles.card} ${!card.image && card.type !== "upload" ? styles.placeholderCard : ""}`}>
+        {DESIGN_CARDS.map((card) => {
+          const isSelectable = card.type === "image" && Boolean(card.image);
+          return (
+            <article
+              key={card.id}
+              role={isSelectable ? "button" : undefined}
+              tabIndex={isSelectable ? 0 : undefined}
+              className={`${styles.card} ${!card.image && card.type !== "upload" ? styles.placeholderCard : ""} ${isSelectable ? styles.cardSelectable : ""}`}
+              onClick={() => isSelectable && handleSelectDesign(card)}
+              onKeyDown={(e) => {
+                if (!isSelectable) return;
+                if (e.key === "Enter" || e.key === " ") {
+                  e.preventDefault();
+                  handleSelectDesign(card);
+                }
+              }}
+            >
             <div className={styles.cardImage}>
               {card.type === "upload" ? (
                 <div className={styles.uploadPlaceholder}>
@@ -134,7 +156,8 @@ export default function SelectSleeveDesignContent() {
               {card.label}
             </div>
           </article>
-        ))}
+          );
+        })}
       </div>
     </div>
   );
