@@ -1,0 +1,208 @@
+@use "../../styles/variables" as *;
+
+/* ── Primitives ── */
+
+.box {
+  display: block;
+  flex-shrink: 0;
+}
+
+.circle {
+  display: block;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.textGroup {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+}
+
+/* ── ProductCard ── */
+
+.productCard {
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  border-radius: 8px;
+  background: $color-white;
+}
+
+.productCardBody {
+  padding: $space-sm $space-sm $space-sm;
+  display: flex;
+  flex-direction: column;
+  gap: $space-xs;
+}
+
+.productCardFooter {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: $space-xs;
+}
+
+/* ── TailorCard ── */
+
+.tailorCard {
+  background: $color-white;
+  border-radius: 12px;
+  padding: $space-lg;
+  display: flex;
+  flex-direction: column;
+  gap: $space-md;
+  border: 2px solid rgba(0, 0, 0, 0.06);
+}
+
+.tailorCardHeader {
+  display: flex;
+  align-items: flex-start;
+  gap: $space-md;
+}
+
+.tailorCardHeaderText {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: $space-xs;
+}
+
+.tailorCardTags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: $space-xs;
+}
+
+.tailorCardFooter {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-top: $space-md;
+  border-top: 1px solid rgba(0, 0, 0, 0.08);
+}
+
+.tailorCardBtns {
+  display: flex;
+  gap: $space-sm;
+}
+
+/* ── BoutiqueCard ── */
+
+.boutiqueCard {
+  background: $color-white;
+  overflow: hidden;
+}
+
+.boutiqueCardInfo {
+  padding: $space-md $space-lg;
+  background: $color-light-pink;
+  display: flex;
+  gap: $space-md;
+}
+
+.boutiqueCardLeft {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: $space-xs;
+}
+
+.boutiqueCardRight {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: $space-xs;
+}
+
+/* ── CartItem ── */
+
+.cartItem {
+  display: flex;
+  gap: $space-md;
+  padding: $space-md;
+  background: $color-white;
+  border-radius: 8px;
+}
+
+.cartItemInfo {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: $space-xs;
+}
+
+.cartItemFooter {
+  display: flex;
+  align-items: center;
+  gap: $space-sm;
+  margin-top: $space-sm;
+}
+
+/* ── OrderCard ── */
+
+.orderCard {
+  background: $color-white;
+  border-radius: 12px;
+  padding: $space-md;
+}
+
+.orderCardHeader {
+  display: flex;
+  gap: $space-md;
+}
+
+.orderCardInfo {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: $space-xs;
+}
+
+/* ── Header ── */
+
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: $space-md;
+  padding: $space-md;
+  background: $color-white;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+  height: 56px;
+}
+
+.searchHeader {
+  display: flex;
+  align-items: center;
+  gap: $space-sm;
+  padding: $space-md;
+  background: $color-white;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+}
+
+/* ── ProfileBlock ── */
+
+.profileBlock {
+  display: flex;
+  align-items: center;
+  gap: $space-md;
+  padding: $space-md $space-lg;
+  background: $color-white;
+}
+
+.profileBlockText {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: $space-xs;
+}
+
+/* ── SelectedImages ── */
+
+.selectedImages {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: $space-md;
+  padding: $space-md;
+}

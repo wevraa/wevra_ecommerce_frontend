@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import ProductCard from "@/components/ProductCard";
+import { SkeletonBox, SkeletonProductCard } from "@/components/Skeleton";
 import type { Product } from "@/data/dummy";
 import type { ApiCollectionDetail } from "@/lib/api";
 import styles from "./CollectionPageClient.module.scss";
@@ -58,7 +59,20 @@ export default function CollectionPageClient({ id }: CollectionPageClientProps) 
   }, [id]);
 
   if (!API_BASE) return null;
-  if (loading) return <div className={styles.section}>Loading...</div>;
+
+  if (loading) {
+    return (
+      <section className={styles.section} aria-busy aria-label="Loading collection">
+        <SkeletonBox width={200} height={22} borderRadius={6} />
+        <div className={styles.grid} style={{ marginTop: 24 }}>
+          {Array.from({ length: 8 }).map((_, i) => (
+            <SkeletonProductCard key={i} />
+          ))}
+        </div>
+      </section>
+    );
+  }
+
   if (!collection)
     return <div className={styles.section}>Collection not found.</div>;
 

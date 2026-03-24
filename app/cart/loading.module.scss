@@ -1,0 +1,41 @@
+@use "../../styles/variables" as *;
+
+.page {
+  min-height: 100vh;
+  background: #f9f6f6;
+  padding-bottom: $bottom-nav-height;
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: $space-md;
+  padding: $space-md;
+  background: $color-white;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+  height: 56px;
+}
+
+.items {
+  padding: $space-md;
+  display: flex;
+  flex-direction: column;
+  gap: $space-md;
+}
+
+.checkout {
+  background: $color-white;
+  margin: 0 $space-md;
+  padding: $space-lg;
+  border-radius: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: $space-md;
+}
+
+.checkoutRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}

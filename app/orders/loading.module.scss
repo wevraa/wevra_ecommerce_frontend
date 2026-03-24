@@ -1,0 +1,33 @@
+@use "../../styles/variables" as *;
+
+.page {
+  min-height: 100vh;
+  background: #f9f6f6;
+  padding-bottom: $bottom-nav-height;
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: $space-md;
+  padding: $space-md;
+  background: $color-white;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+  height: 56px;
+}
+
+.tabs {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  background: $color-white;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+  margin-bottom: $space-md;
+}
+
+.cards {
+  padding: 0 $space-md;
+  display: flex;
+  flex-direction: column;
+  gap: $space-md;
+}

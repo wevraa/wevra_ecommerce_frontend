@@ -1,0 +1,57 @@
+@use "../../styles/variables" as *;
+
+.page {
+  min-height: 100vh;
+  background: #f9f6f6;
+  padding-bottom: $bottom-nav-height;
+}
+
+.header {
+  background: $color-white;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+  padding-bottom: $space-sm;
+}
+
+.topRow {
+  display: flex;
+  align-items: flex-start;
+  gap: $space-md;
+  padding: $space-md;
+}
+
+.titleBlock {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: $space-xs;
+}
+
+.search {
+  padding: $space-sm $space-md;
+}
+
+.tabs {
+  display: flex;
+  gap: $space-sm;
+  padding: $space-sm $space-md;
+  overflow: hidden;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 1px;
+  background: rgba(0, 0, 0, 0.06);
+  padding: $space-md;
+  gap: $space-md;
+}
+
+.card {
+  background: $color-white;
+  border-radius: 8px;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  gap: $space-xs;
+  padding-bottom: $space-xs;
+}

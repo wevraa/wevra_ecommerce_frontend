@@ -1,0 +1,75 @@
+@use "../styles/variables" as *;
+
+.page {
+  min-height: 100vh;
+  background: #f9f6f6;
+  padding-bottom: $bottom-nav-height;
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: $space-md;
+  background: $color-white;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+  height: 56px;
+  gap: $space-md;
+}
+
+.headerIcons {
+  display: flex;
+  gap: $space-sm;
+}
+
+.categoryNav {
+  display: flex;
+  gap: $space-sm;
+  padding: $space-sm $space-md;
+  overflow: hidden;
+  background: $color-white;
+}
+
+.section {
+  padding: $space-lg $space-md;
+  display: flex;
+  flex-direction: column;
+  gap: $space-md;
+  background: $color-white;
+  margin-bottom: $space-sm;
+}
+
+.dealsGrid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: $space-sm;
+}
+
+.dealCard {
+  display: flex;
+  flex-direction: column;
+  gap: $space-xs;
+  align-items: center;
+}
+
+.productsGrid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: $space-md;
+
+  @media (min-width: 768px) {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+.reviewsGrid {
+  display: flex;
+  flex-direction: column;
+  gap: $space-md;
+}
+
+.reviewCard {
+  background: $color-light-pink;
+  border-radius: 12px;
+  padding: $space-md;
+}

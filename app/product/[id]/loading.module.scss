@@ -1,0 +1,83 @@
+@use "../../../styles/variables" as *;
+
+.page {
+  min-height: 100vh;
+  background: #f9f6f6;
+  padding-bottom: $bottom-nav-height;
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: $space-md;
+  padding: $space-sm $space-md;
+  background: $color-white;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+  height: 56px;
+}
+
+.info {
+  background: $color-white;
+  padding: $space-md;
+  display: flex;
+  flex-direction: column;
+  gap: $space-md;
+  margin-bottom: $space-sm;
+}
+
+.sizeSection {
+  background: $color-white;
+  padding: $space-md;
+  display: flex;
+  flex-direction: column;
+  gap: $space-md;
+  margin-bottom: $space-sm;
+}
+
+.sizeRow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: $space-sm;
+}
+
+.actions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: $space-md;
+  padding: $space-md;
+  background: $color-white;
+  margin-bottom: $space-sm;
+}
+
+.tabSection {
+  background: $color-white;
+  margin-bottom: $space-sm;
+}
+
+.tabRow {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+}
+
+.tabContent {
+  padding: $space-md;
+  display: flex;
+  flex-direction: column;
+  gap: $space-sm;
+}
+
+.recommendSection {
+  background: $color-white;
+  padding: $space-md;
+  display: flex;
+  flex-direction: column;
+  gap: $space-md;
+}
+
+.recommendGrid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: $space-md;
+}

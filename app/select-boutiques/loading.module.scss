@@ -1,0 +1,68 @@
+@use "../../styles/variables" as *;
+
+.page {
+  min-height: 100vh;
+  background: #f9f6f6;
+  padding-bottom: $bottom-nav-height;
+}
+
+.main {
+  display: flex;
+  flex-direction: column;
+  gap: $space-sm;
+  background: #f9f6f6;
+}
+
+.orderTypes {
+  display: flex;
+  gap: $space-sm;
+  padding: $space-md;
+  background: $color-white;
+  flex-wrap: wrap;
+}
+
+.section {
+  background: $color-white;
+  padding: $space-md;
+  display: flex;
+  flex-direction: column;
+  gap: $space-md;
+}
+
+.addonRow {
+  display: flex;
+  align-items: center;
+  gap: $space-md;
+}
+
+.addonText {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: $space-xs;
+}
+
+.divider {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: $space-md;
+  background: $color-white;
+}
+
+.summaryBar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: $space-md $space-lg;
+  background: $color-white;
+  border-radius: 10px;
+  margin: 0 $space-md;
+}
+
+.cards {
+  padding: $space-md;
+  display: flex;
+  flex-direction: column;
+  gap: $space-md;
+}
