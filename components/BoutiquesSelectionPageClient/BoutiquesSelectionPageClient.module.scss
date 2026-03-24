@@ -50,4 +50,9 @@
   color: $color-deep-red;
   font-weight: $font-weight-medium;
   text-decoration: underline;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  font-size: $font-size-sm;
+  padding: 0;
 }

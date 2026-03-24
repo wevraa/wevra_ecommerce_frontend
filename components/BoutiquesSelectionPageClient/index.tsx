@@ -1,6 +1,6 @@
 "use client";
 
-import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useBoutiquesSelectionStore } from "@/lib/stores/boutiquesSelectionStore";
 import BoutiqueSelectionHeader from "@/components/BoutiqueSelectionHeader";
 import BoutiqueSelectionList from "@/components/BoutiqueSelectionList";
@@ -10,7 +10,9 @@ import styles from "./BoutiquesSelectionPageClient.module.scss";
 const ICON_COLORS = ["orange", "yellow", "purple", "darkpurple", "lightgray"];
 
 export default function BoutiquesSelectionPageClient() {
-  const { selectedBoutiques } = useBoutiquesSelectionStore();
+  const router = useRouter();
+  const { selectedBoutiques, clearSelection, orderContext } =
+    useBoutiquesSelectionStore();
 
   const names =
     selectedBoutiques.length > 0
@@ -23,12 +25,25 @@ export default function BoutiquesSelectionPageClient() {
     iconColor: ICON_COLORS[i % ICON_COLORS.length],
   }));
 
-  const backHref = "/select-boutiques";
+  const handleBack = () => {
+    clearSelection();
+    const params = new URLSearchParams();
+    if (orderContext.productId) params.set("productId", orderContext.productId);
+    if (orderContext.productImage) params.set("image", orderContext.productImage);
+    router.push(
+      params.size > 0 ? `/select-boutiques?${params.toString()}` : "/select-boutiques"
+    );
+  };
 
   return (
     <>
       <header className={styles.header}>
-        <Link href={backHref} className={styles.backBtn} aria-label="Back">
+        <button
+          type="button"
+          onClick={handleBack}
+          className={styles.backBtn}
+          aria-label="Back"
+        >
           <svg
             width="24"
             height="24"
@@ -39,15 +54,19 @@ export default function BoutiquesSelectionPageClient() {
           >
             <polyline points="15 18 9 12 15 6" />
           </svg>
-        </Link>
+        </button>
       </header>
       <section className={styles.selectionSection}>
         {selectedBoutiques.length === 0 ? (
           <div className={styles.empty}>
             <p>No boutiques selected.</p>
-            <Link href="/select-boutiques" className={styles.emptyLink}>
+            <button
+              type="button"
+              onClick={handleBack}
+              className={styles.emptyLink}
+            >
               Go back and select boutiques
-            </Link>
+            </button>
           </div>
         ) : (
           <BoutiqueSelectionHeader count={selectedBoutiques.length} names={names}>

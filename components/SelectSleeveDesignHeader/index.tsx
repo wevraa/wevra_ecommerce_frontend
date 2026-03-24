@@ -1,8 +1,9 @@
 "use client"
 
-import Link from "next/link";
-import styles from "./SelectSleeveDesignHeader.module.scss";
 import { useState } from "react";
+import { useRouter } from "next/navigation";
+import styles from "./SelectSleeveDesignHeader.module.scss";
+import { useBoutiqueOrderStore } from "@/lib/stores/boutiqueOrderStore";
 
 interface SelectSleeveDesignHeaderProps {
   productId?: string;
@@ -11,23 +12,40 @@ interface SelectSleeveDesignHeaderProps {
 
 export default function SelectSleeveDesignHeader({ productId, returnImage }: SelectSleeveDesignHeaderProps) {
   const CATEGORY_TABS = ["Boat Neck", "High Neck", "U Neck", "Collar", "V Neck", "Square Neck"];
-   const [activeTab, setActiveTab] = useState(CATEGORY_TABS[0]);
+  const [activeTab, setActiveTab] = useState(CATEGORY_TABS[0]);
+  const router = useRouter();
+  const clearSleeveDesign = useBoutiqueOrderStore((s) => s.clearSleeveDesign);
+  const clearFrontNeckDesign = useBoutiqueOrderStore((s) => s.clearFrontNeckDesign);
 
-  const backParams = new URLSearchParams();
-  if (productId) backParams.set("productId", productId);
-  if (returnImage) backParams.set("image", returnImage);
-  const backHref = backParams.size > 0
-    ? `/select-boutiques?${backParams.toString()}`
-    : "/select-boutiques";
+  const handleBack = () => {
+    if (productId) {
+      clearSleeveDesign(productId);
+    }
+    clearFrontNeckDesign();
+
+    const backParams = new URLSearchParams();
+    if (productId) backParams.set("productId", productId);
+    if (returnImage) backParams.set("image", returnImage);
+    router.push(
+      backParams.size > 0
+        ? `/select-boutiques?${backParams.toString()}`
+        : "/select-boutiques"
+    );
+  };
 
   return (
     <header className={styles.header}>
       <div className={styles.topRow}>
-        <Link href={backHref} className={styles.backBtn} aria-label="Back">
+        <button
+          type="button"
+          onClick={handleBack}
+          className={styles.backBtn}
+          aria-label="Back"
+        >
           <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
             <polyline points="15 18 9 12 15 6" />
           </svg>
-        </Link>
+        </button>
         <div className={styles.titleBlock}>
           <h1 className={styles.title}>Select Sleeve Design</h1>
           <p className={styles.subtitle}>Select Design or Upload Your Own</p>
