@@ -23,7 +23,7 @@ const iconMap: Record<BottomNavItemType["icon"], string> = {
 
 const navPaths: Record<string, string> = {
   home:    "/",
-  search:  "/",
+  search:  "/search",
   measure: "/measurement",
   profile: "/profile",
   cart:    "/cart",
