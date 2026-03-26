@@ -23,32 +23,55 @@
 
 .item {
   display: flex;
-  flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 2px;
-  padding: $space-xs $space-sm;
+  padding: $space-sm;
   border: none;
   background: transparent;
-  color: $color-text-muted;
-  font-size: $font-size-xs;
   cursor: pointer;
-  border-radius: 8px;
-  min-width: 56px;
+  border-radius: 10px;
+  min-width: 48px;
+  min-height: 48px;
   text-decoration: none;
+  position: relative;
+  transition: background 0.15s ease;
 
   &:hover {
-    color: $color-deep-red;
     background: $color-light-pink;
   }
 
-  &.active {
-    color: $color-deep-red;
-    font-weight: $font-weight-medium;
+  /* inactive: greyscale icons */
+  .icon {
+    filter: brightness(0) saturate(100%) opacity(0.45);
+    transition: filter 0.15s ease;
+  }
+
+  /* active: deep-red tint (#BB2649) */
+  &.active .icon {
+    filter: brightness(0) saturate(100%)
+      invert(18%)
+      sepia(80%)
+      saturate(600%)
+      hue-rotate(315deg)
+      brightness(95%);
+  }
+
+  /* active indicator dot */
+  &.active::after {
+    content: "";
+    position: absolute;
+    bottom: 4px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 4px;
+    height: 4px;
+    border-radius: 50%;
+    background: $color-deep-red;
   }
 }
 
 .icon {
   width: 24px;
   height: 24px;
+  display: block;
 }
