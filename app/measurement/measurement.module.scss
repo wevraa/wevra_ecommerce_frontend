@@ -2,19 +2,19 @@
 @use "../../styles/mixins" as *;
 
 .main {
-  min-height: 100vh;
-  background: $color-white;
-  padding-bottom: $bottom-nav-height;
+  background: #f0f2f5;
+  overflow: hidden;
+  height: calc(100dvh - $header-height - $bottom-nav-height);
 
   @include mobile-first($desktop) {
-    padding-bottom: 0;
+    height: calc(100dvh - $header-height);
   }
 }
 
 .content {
   display: flex;
   flex-direction: row;
-  min-height: calc(100vh - 56px);
+  height: 100%;
   max-width: 100%;
   overflow: hidden;
 
@@ -29,15 +29,36 @@
   min-width: 0;
   overflow-y: auto;
   overflow-x: hidden;
+  padding: $space-sm $space-sm $space-md;
+
+  /* smooth momentum scrolling on iOS */
+  -webkit-overflow-scrolling: touch;
+
+  scrollbar-width: thin;
+  scrollbar-color: rgba(0, 0, 0, 0.15) transparent;
+
+  &::-webkit-scrollbar {
+    width: 4px;
+  }
+  &::-webkit-scrollbar-thumb {
+    background: rgba(0, 0, 0, 0.15);
+    border-radius: 4px;
+  }
 }
 
 .right {
   flex-shrink: 0;
-  width: 120px;
-  min-width: 100px;
+  width: 155px;
+  background: #e8ecf0;
+  position: relative;
+  overflow: hidden;
+
+  @include mobile-first(480px) {
+    width: 185px;
+  }
 
   @include mobile-first($desktop) {
-    width: 360px;
+    width: 380px;
     min-width: 320px;
   }
 }

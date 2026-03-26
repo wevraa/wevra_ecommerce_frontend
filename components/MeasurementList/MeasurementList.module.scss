@@ -1,58 +1,54 @@
 @use "../../styles/variables" as *;
 @use "../../styles/mixins" as *;
 
-$measure-blue: #1e3a5f;
+$measure-blue: #1a3560;
 
 .wrap {
-  padding: $space-md;
-  background: $color-white;
-}
-
-.scrollHint {
   display: flex;
-  align-items: center;
-  gap: $space-sm;
-  margin-bottom: $space-md;
-  font-size: $font-size-xs;
-  color: $color-text-muted;
+  flex-direction: column;
+  gap: 0;
 }
 
 .list {
   display: flex;
   flex-direction: column;
-  gap: $space-md;
+  gap: $space-sm;
 }
 
 .card {
-  border-radius: 12px;
+  border-radius: 10px;
   overflow: hidden;
-  border: 1px solid rgba(0, 0, 0, 0.08);
   background: $color-white;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1), 0 0 1px rgba(0, 0, 0, 0.08);
 }
 
+/* ── Blue label bar ─────────────────────────────────── */
 .bar {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: $space-sm $space-md;
+  padding: 7px 12px;
   background: $measure-blue;
   color: $color-white;
   font-size: $font-size-sm;
   font-weight: $font-weight-semibold;
+  line-height: 1.2;
 }
 
 .barName {
   text-transform: capitalize;
+  letter-spacing: 0.01em;
 }
 
 .barValue {
   font-variant-numeric: tabular-nums;
+  letter-spacing: 0.02em;
 }
 
+/* ── Ruler strip (navy bg + white ticks) ────────────── */
 .ruler {
-  padding: $space-md;
-  background: $color-white;
-  min-height: 48px;
+  background: $measure-blue;
+  padding: 8px 0 10px;
   overflow-x: scroll;
   overflow-y: hidden;
   cursor: grab;
@@ -60,7 +56,6 @@ $measure-blue: #1e3a5f;
   -webkit-overflow-scrolling: touch;
   touch-action: pan-x;
 
-  /* Hide scrollbar; scroll still works via drag/wheel on the ruler lines */
   scrollbar-width: none;
   -ms-overflow-style: none;
 
@@ -75,33 +70,67 @@ $measure-blue: #1e3a5f;
 
 .rulerTrack {
   display: flex;
-  align-items: center;
+  align-items: flex-end;
   min-width: min-content;
   width: max-content;
-  height: 24px;
+  height: 28px;
+  padding: 0 8px;
 }
 
 .rulerLine {
   display: flex;
-  align-items: center;
-  gap: 4px;
-  height: 24px;
+  align-items: flex-end;
+  gap: 3px;
+  height: 28px;
   flex-shrink: 0;
 }
 
+/* minor tick */
 .tick {
-  width: 1px;
-  height: 8px;
-  background: rgba(0, 0, 0, 0.2);
+  width: 1.5px;
+  height: 10px;
+  background: rgba(255, 255, 255, 0.35);
+  border-radius: 1px;
+  flex-shrink: 0;
 }
 
+/* major tick (every 5th) */
 .tickMajor {
-  height: 12px;
-  background: rgba(0, 0, 0, 0.4);
+  height: 20px;
+  background: rgba(255, 255, 255, 0.9);
+  width: 2px;
 }
 
 @include mobile-first($desktop) {
-  .wrap {
-    padding: $space-lg;
+  .list {
+    gap: $space-md;
+  }
+
+  .bar {
+    padding: 8px 16px;
+    font-size: $font-size-base;
+  }
+
+  .ruler {
+    padding: 10px 0 12px;
+  }
+
+  .rulerTrack {
+    height: 36px;
+  }
+
+  .rulerLine {
+    height: 36px;
+    gap: 4px;
+  }
+
+  .tick {
+    height: 13px;
+    width: 2px;
+  }
+
+  .tickMajor {
+    height: 26px;
+    width: 2.5px;
   }
 }

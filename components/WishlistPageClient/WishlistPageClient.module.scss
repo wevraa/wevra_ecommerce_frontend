@@ -1,0 +1,160 @@
+@use "../../styles/variables" as *;
+@use "../../styles/mixins" as *;
+
+/* ── Header ── */
+.header {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: $header-height;
+  padding: 0 $space-md;
+  background: $color-white;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+}
+
+.backBtn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border: none;
+  background: transparent;
+  color: $color-text;
+  cursor: pointer;
+  border-radius: 8px;
+  flex-shrink: 0;
+
+  &:hover {
+    background: $color-light-pink;
+  }
+}
+
+.title {
+  font-size: $font-size-lg;
+  font-weight: $font-weight-bold;
+  color: $color-text;
+  margin: 0;
+}
+
+.placeholder {
+  width: 40px;
+}
+
+/* ── Main ── */
+.main {
+  min-height: calc(100vh - #{$header-height} - #{$bottom-nav-height});
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #fdf8f8;
+}
+
+/* ── Empty state ── */
+.emptyState {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  padding: $space-2xl $space-xl;
+  max-width: 320px;
+}
+
+/* Icon */
+.iconWrap {
+  position: relative;
+  width: 120px;
+  height: 120px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: $space-xl;
+}
+
+.iconCircle {
+  width: 100px;
+  height: 100px;
+  border-radius: 50%;
+  background: $color-light-pink;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 8px 32px rgba(187, 38, 73, 0.15);
+}
+
+.heartIcon {
+  filter: brightness(0) saturate(100%)
+    invert(18%) sepia(80%) saturate(600%)
+    hue-rotate(315deg) brightness(95%);
+}
+
+/* Decorative dots */
+.dot {
+  position: absolute;
+  border-radius: 50%;
+  background: $color-deep-red;
+  opacity: 0.25;
+}
+
+.dot1 {
+  width: 10px;
+  height: 10px;
+  top: 6px;
+  right: 10px;
+}
+
+.dot2 {
+  width: 7px;
+  height: 7px;
+  bottom: 10px;
+  left: 6px;
+}
+
+.dot3 {
+  width: 5px;
+  height: 5px;
+  top: 30px;
+  left: 14px;
+}
+
+/* Text */
+.heading {
+  font-size: $font-size-xl;
+  font-weight: $font-weight-bold;
+  color: $color-text;
+  margin: 0 0 $space-sm;
+}
+
+.subtext {
+  font-size: $font-size-sm;
+  color: $color-text-muted;
+  line-height: 1.6;
+  margin: 0 0 $space-xl;
+}
+
+/* CTA button */
+.exploreBtn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: $space-md $space-2xl;
+  background: $color-deep-red;
+  color: $color-white;
+  font-size: $font-size-base;
+  font-weight: $font-weight-semibold;
+  border-radius: 26px;
+  text-decoration: none;
+  transition: background 0.15s ease, transform 0.1s ease;
+
+  &:hover {
+    background: #6f0f2a;
+    transform: translateY(-1px);
+  }
+
+  &:active {
+    transform: translateY(0);
+  }
+}

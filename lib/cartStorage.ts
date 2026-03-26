@@ -86,21 +86,32 @@ export async function addToCart(newItem: CartItem): Promise<void> {
     ];
     await setCartItems(updated);
   }
+  dispatchCartUpdate();
 }
 
 export async function updateCartItemQuantity(id: string, quantity: number): Promise<void> {
   const items = await getCartItems();
   const updated = items.map((i) => (i.id === id ? { ...i, quantity } : i));
   await setCartItems(updated);
+  dispatchCartUpdate();
 }
 
 export async function removeCartItem(id: string): Promise<void> {
   const items = await getCartItems();
   const updated = items.filter((i) => i.id !== id);
   await setCartItems(updated);
+  dispatchCartUpdate();
 }
 
 export async function clearCart(): Promise<void> {
   await setCartItems([]);
+  dispatchCartUpdate();
+}
+
+/** Dispatches a browser event so any listener (e.g. Header badge) can refresh the cart count. */
+function dispatchCartUpdate() {
+  if (typeof window !== "undefined") {
+    window.dispatchEvent(new Event("cart-updated"));
+  }
 }
 

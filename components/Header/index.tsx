@@ -1,46 +1,91 @@
+"use client";
+
+import { useState, useEffect } from "react";
+import Image from "next/image";
+import Link from "next/link";
 import SearchBar from "@/components/SearchBar";
 import PromoBanner from "@/components/PromoBanner";
+import Sidebar from "@/components/Sidebar";
+import { getCartItems } from "@/lib/cartStorage";
 import styles from "./Header.module.scss";
 
+import cartIcon from "../../app/assests/icons/bag.svg";
+import heartIcon from "../../app/assests/icons/heart.svg";
+
 export default function Header() {
+  const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [cartCount, setCartCount] = useState(0);
+
+  const refreshCartCount = () => {
+    getCartItems().then((items) => {
+      const total = items.reduce((sum, i) => sum + i.quantity, 0);
+      setCartCount(total);
+    });
+  };
+
+  useEffect(() => {
+    refreshCartCount();
+    window.addEventListener("cart-updated", refreshCartCount);
+    return () => window.removeEventListener("cart-updated", refreshCartCount);
+  }, []);
+
   return (
-    <header className={styles.header}>
-      <div className={styles.topBar}>
-        <div className={styles.left}>
-          <button
-            type="button"
-            className={styles.menuButton}
-            aria-label="Open menu"
-          >
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <line x1="3" y1="6" x2="21" y2="6" />
-              <line x1="3" y1="12" x2="21" y2="12" />
-              <line x1="3" y1="18" x2="21" y2="18" />
-            </svg>
-          </button>
-          <span className={styles.logo}>WEVRAA</span>
+    <>
+      <header className={styles.header}>
+        <div className={styles.topBar}>
+          <div className={styles.left}>
+            {/* Hamburger — opens sidebar on mobile */}
+            <button
+              type="button"
+              className={styles.menuButton}
+              aria-label="Open menu"
+              aria-expanded={sidebarOpen}
+              onClick={() => setSidebarOpen(true)}
+            >
+              <svg
+                width="24"
+                height="24"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              >
+                <line x1="3" y1="6" x2="21" y2="6" />
+                <line x1="3" y1="12" x2="21" y2="12" />
+                <line x1="3" y1="18" x2="21" y2="18" />
+              </svg>
+            </button>
+            <span className={styles.logo}>WEVRAA</span>
+          </div>
+
+          <div className={styles.actions}>
+            {/* Wishlist */}
+            <Link href="/wishlist" className={styles.iconButton} aria-label="Wishlist">
+              <Image src={heartIcon} alt="Wishlist" width={22} height={22} />
+            </Link>
+            {/* Cart with count badge */}
+            <Link href="/cart" className={styles.iconButton} aria-label={`Cart${cartCount > 0 ? `, ${cartCount} items` : ""}`}>
+              <Image src={cartIcon} alt="Cart" width={22} height={22} />
+              {cartCount > 0 && (
+                <span className={styles.cartBadge} aria-hidden>
+                  {cartCount > 99 ? "99+" : cartCount}
+                </span>
+              )}
+            </Link>
+          </div>
         </div>
-        <div className={styles.actions}>
-          <button type="button" className={styles.iconButton} aria-label="Wishlist">
-            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
-            </svg>
-          </button>
-          <button type="button" className={styles.iconButton} aria-label="Cart">
-            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z" />
-              <line x1="3" y1="6" x2="21" y2="6" />
-              <path d="M16 10a4 4 0 0 1-8 0" />
-            </svg>
-          </button>
+
+        <div className={styles.searchPromoWrap}>
+          <div className={styles.searchWrap}>
+            <SearchBar />
+          </div>
+          <PromoBanner />
         </div>
-      </div>
-      <div className={styles.searchPromoWrap}>
-        <div className={styles.searchWrap}>
-          <SearchBar />
-        </div>
-        <PromoBanner />
-      </div>
-    </header>
+      </header>
+
+      <Sidebar open={sidebarOpen} onClose={() => setSidebarOpen(false)} />
+    </>
   );
 }

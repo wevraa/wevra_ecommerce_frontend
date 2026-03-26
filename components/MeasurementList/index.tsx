@@ -137,9 +137,6 @@ export default function MeasurementList({ items }: MeasurementListProps) {
 
   return (
     <div className={styles.wrap}>
-      <p className={styles.scrollHint}>
-        <span aria-hidden>→</span> Scroll to Select
-      </p>
       <div className={styles.list}>
         {items.map((item) => (
           <div key={item.id} className={styles.card}>

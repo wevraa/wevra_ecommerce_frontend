@@ -21,13 +21,23 @@ export default function CategoryNav() {
 
   const activeCategories = categories.filter((c) => c.status === "ACTIVE");
 
-  if (activeCategories.length === 0) {
-    return null;
-  }
-
   return (
     <div className={styles.wrap}>
       <div className={styles.scroll} role="list">
+        {/* Static "All Products" item always shown first */}
+        <Link href="/" className={styles.item} role="listitem">
+          <span className={styles.circle}>
+            <Image
+              src="/images/product-1.svg"
+              alt=""
+              fill
+              className={styles.circleImage}
+              sizes="64px"
+            />
+          </span>
+          <span className={styles.label}>All Products</span>
+        </Link>
+
         {activeCategories.map((cat) => (
           <Link
             key={cat.id}
