@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { useBoutiqueOrderStore } from "@/lib/stores/boutiqueOrderStore";
@@ -23,6 +23,20 @@ export default function SelectSleeveDesignContent({
   const [designs, setDesigns] = useState<ApiDesign[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const handleUploadClick = () => {
+    fileInputRef.current?.click();
+  };
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const objectUrl = URL.createObjectURL(file);
+    handleSelectDesign(objectUrl);
+    // reset so the same file can be re-selected if needed
+    e.target.value = "";
+  };
 
   useEffect(() => {
     let cancelled = false;
@@ -72,7 +86,28 @@ export default function SelectSleeveDesignContent({
     <div className={styles.wrap}>
       <div className={styles.grid}>
         {/* Static upload card always shown first */}
-        <article className={styles.card}>
+        <article
+          className={`${styles.card} ${styles.cardSelectable}`}
+          role="button"
+          tabIndex={0}
+          aria-label="Upload your own design"
+          onClick={handleUploadClick}
+          onKeyDown={(e) => {
+            if (e.key === "Enter" || e.key === " ") {
+              e.preventDefault();
+              handleUploadClick();
+            }
+          }}
+        >
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept="image/*"
+            className={styles.hiddenInput}
+            onChange={handleFileChange}
+            aria-hidden
+            tabIndex={-1}
+          />
           <div className={styles.cardImage}>
             <div className={styles.uploadPlaceholder}>
               <svg
@@ -86,11 +121,7 @@ export default function SelectSleeveDesignContent({
                 <line x1="12" y1="5" x2="12" y2="19" />
                 <line x1="5" y1="12" x2="19" y2="12" />
               </svg>
-              Upload photo
             </div>
-          </div>
-          <div className={`${styles.cardLabel} ${styles.cardLabelPrimary}`}>
-            Front Design
           </div>
         </article>
 
