@@ -266,3 +266,29 @@ export async function getTailors(): Promise<ApiTailor[]> {
     return [];
   }
 }
+
+// Sleeve / Neck Designs
+export interface ApiDesign {
+  id: string;
+  designName: string;
+  description: string | null;
+  categoryId: string;
+  subcategoryId: string;
+  imageUrl: string;
+  createdAt: string;
+  updatedAt: string;
+  category: { id: string; name: string };
+  subcategory: { id: string; name: string };
+}
+
+export async function getDesigns(): Promise<ApiDesign[]> {
+  const base = API_BASE || "https://api.wevraa.in/api";
+  try {
+    const res = await fetch(`${base}/v1/designs`, { next: { revalidate: 60 } });
+    if (!res.ok) return [];
+    const data = await res.json();
+    return Array.isArray(data) ? (data as ApiDesign[]) : [];
+  } catch {
+    return [];
+  }
+}

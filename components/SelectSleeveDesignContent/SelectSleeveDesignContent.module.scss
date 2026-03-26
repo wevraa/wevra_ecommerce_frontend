@@ -137,3 +137,17 @@
     background: #d0d0d0;
   }
 }
+
+.cardLabelSkeleton {
+  height: 32px;
+  margin: 0;
+  border-radius: 0;
+}
+
+.errorMsg {
+  grid-column: 1 / -1;
+  text-align: center;
+  color: $color-text-muted;
+  font-size: $font-size-sm;
+  padding: $space-lg 0;
+}

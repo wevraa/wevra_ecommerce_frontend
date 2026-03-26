@@ -1,176 +1,151 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { useBoutiqueOrderStore } from "@/lib/stores/boutiqueOrderStore";
+import type { ApiDesign } from "@/lib/api";
 import styles from "./SelectSleeveDesignContent.module.scss";
-
-interface DesignCard {
-  id: string;
-  type: "upload" | "image";
-  label: string;
-  labelVariant: "primary" | "secondary";
-  image?: string;
-  alt?: string;
-}
-
-const DESIGN_CARDS: DesignCard[] = [
-  {
-    id: "1",
-    type: "upload",
-    label: "Front Design",
-    labelVariant: "primary",
-  },
-  {
-    id: "2",
-    type: "image",
-    label: "Sleeve Design",
-    labelVariant: "primary",
-    image: "https://images.unsplash.com/photo-1594938298603-c8148c4dae35?w=400&h=533&fit=crop",
-    alt: "Yellow top with bell sleeves",
-  },
-  {
-    id: "3",
-    type: "image",
-    label: "Back Design",
-    labelVariant: "primary",
-    image: "https://images.unsplash.com/photo-1572804013309-59a88b7e92f1?w=400&h=533&fit=crop",
-    alt: "Blouse back design",
-  },
-  {
-    id: "4",
-    type: "image",
-    label: "Scrlet Blouse Design",
-    labelVariant: "secondary",
-    image: "https://images.unsplash.com/photo-1564257631407-4deb1f99d992?w=400&h=533&fit=crop",
-    alt: "Embroidered neck design",
-  },
-  {
-    id: "5",
-    type: "image",
-    label: "Scrlet Blouse Design",
-    labelVariant: "secondary",
-    image: "https://images.unsplash.com/photo-1595776613215-fe04b96de91d?w=400&h=533&fit=crop",
-    alt: "Sleeve design",
-  },
-  {
-    id: "6",
-    type: "image",
-    label: "Buy Premium Design Catalogue",
-    labelVariant: "secondary",
-    image: "https://images.unsplash.com/photo-1583391736752-1a1d2c9aafe2?w=400&h=533&fit=crop",
-    alt: "Premium design",
-  },
-  {
-    id: "7",
-    type: "image",
-    label: "Scrlet Blouse Design",
-    labelVariant: "secondary",
-    image: "https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?w=400&h=533&fit=crop",
-    alt: "Blouse neckline",
-  },
-  {
-    id: "8",
-    type: "image",
-    label: "Scrlet Blouse Design",
-    labelVariant: "secondary",
-    image: "https://images.unsplash.com/photo-1515372039744-b8f02a3ae446?w=400&h=533&fit=crop",
-    alt: "Blouse design",
-  },
-  {
-    id: "9",
-    type: "image",
-    label: "Scrlet Blouse Design",
-    labelVariant: "secondary",
-    image: "",
-    alt: "",
-  },
-  {
-    id: "10",
-    type: "image",
-    label: "Scrlet Blouse Design",
-    labelVariant: "secondary",
-    image: "",
-    alt: "",
-  },
-];
 
 interface SelectSleeveDesignContentProps {
   productId?: string;
   returnImage?: string;
 }
 
-export default function SelectSleeveDesignContent({ productId, returnImage }: SelectSleeveDesignContentProps) {
+export default function SelectSleeveDesignContent({
+  productId,
+  returnImage,
+}: SelectSleeveDesignContentProps) {
   const router = useRouter();
   const setFrontNeckDesign = useBoutiqueOrderStore((s) => s.setFrontNeckDesign);
   const setSleeveDesign = useBoutiqueOrderStore((s) => s.setSleeveDesign);
 
-  const handleSelectDesign = (card: DesignCard) => {
-    if (card.type === "image" && card.image) {
-      if (productId) {
-        setSleeveDesign(productId, card.image);
-      }
-      setFrontNeckDesign(card.image);
+  const [designs, setDesigns] = useState<ApiDesign[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(false);
 
-      const params = new URLSearchParams();
-      if (productId) params.set("productId", productId);
-      if (returnImage) params.set("image", returnImage);
-      router.push(params.size > 0 ? `/select-boutiques?${params.toString()}` : "/select-boutiques");
+  useEffect(() => {
+    let cancelled = false;
+    setLoading(true);
+    setError(false);
+
+    fetch("https://api.wevraa.in/api/v1/designs")
+      .then((r) => {
+        if (!r.ok) throw new Error("Failed");
+        return r.json();
+      })
+      .then((data: ApiDesign[]) => {
+        if (!cancelled) {
+          setDesigns(Array.isArray(data) ? data : []);
+          setLoading(false);
+        }
+      })
+      .catch(() => {
+        if (!cancelled) {
+          setError(true);
+          setLoading(false);
+        }
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  const handleSelectDesign = (imageUrl: string) => {
+    if (productId) {
+      setSleeveDesign(productId, imageUrl);
     }
+    setFrontNeckDesign(imageUrl);
+
+    const params = new URLSearchParams();
+    if (productId) params.set("productId", productId);
+    if (returnImage) params.set("image", returnImage);
+    router.push(
+      params.size > 0
+        ? `/select-boutiques?${params.toString()}`
+        : "/select-boutiques"
+    );
   };
 
   return (
     <div className={styles.wrap}>
-      
-
       <div className={styles.grid}>
-        {DESIGN_CARDS.map((card) => {
-          const isSelectable = card.type === "image" && Boolean(card.image);
-          return (
+        {/* Static upload card always shown first */}
+        <article className={styles.card}>
+          <div className={styles.cardImage}>
+            <div className={styles.uploadPlaceholder}>
+              <svg
+                className={styles.uploadIcon}
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                aria-hidden
+              >
+                <line x1="12" y1="5" x2="12" y2="19" />
+                <line x1="5" y1="12" x2="19" y2="12" />
+              </svg>
+              Upload photo
+            </div>
+          </div>
+          <div className={`${styles.cardLabel} ${styles.cardLabelPrimary}`}>
+            Front Design
+          </div>
+        </article>
+
+        {/* Loading skeletons */}
+        {loading &&
+          Array.from({ length: 5 }).map((_, i) => (
+            <article key={`skel-${i}`} className={styles.card}>
+              <div className={`${styles.cardImage} shimmer`} />
+              <div className={`${styles.cardLabelSkeleton} shimmer`} />
+            </article>
+          ))}
+
+        {/* Error state */}
+        {!loading && error && (
+          <p className={styles.errorMsg}>
+            Failed to load designs. Please try again.
+          </p>
+        )}
+
+        {/* API-fetched designs */}
+        {!loading &&
+          !error &&
+          designs.map((design) => (
             <article
-              key={card.id}
-              role={isSelectable ? "button" : undefined}
-              tabIndex={isSelectable ? 0 : undefined}
-              className={`${styles.card} ${!card.image && card.type !== "upload" ? styles.placeholderCard : ""} ${isSelectable ? styles.cardSelectable : ""}`}
-              onClick={() => isSelectable && handleSelectDesign(card)}
+              key={design.id}
+              role="button"
+              tabIndex={0}
+              className={`${styles.card} ${styles.cardSelectable}`}
+              onClick={() => handleSelectDesign(design.imageUrl)}
               onKeyDown={(e) => {
-                if (!isSelectable) return;
                 if (e.key === "Enter" || e.key === " ") {
                   e.preventDefault();
-                  handleSelectDesign(card);
+                  handleSelectDesign(design.imageUrl);
                 }
               }}
             >
-            <div className={styles.cardImage}>
-              {card.type === "upload" ? (
-                <div className={styles.uploadPlaceholder}>
-                  <svg className={styles.uploadIcon} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                    <line x1="12" y1="5" x2="12" y2="19" />
-                    <line x1="5" y1="12" x2="19" y2="12" />
-                  </svg>
-                  Upload photo
-                </div>
-              ) : card.image ? (
+              <div className={styles.cardImage}>
                 <Image
-                  src={card.image}
-                  alt={card.alt ?? card.label}
+                  src={design.imageUrl}
+                  alt={design.designName}
                   fill
                   className={styles.cardImageContent}
-                  sizes="(max-width: 768px) 50vw, 200px"  
+                  sizes="(max-width: 768px) 50vw, 200px"
                 />
-              ) : null}
-             
-            </div>
-            <div
-              className={`${styles.cardLabel} ${
-                card.labelVariant === "primary" ? styles.cardLabelPrimary : styles.cardLabelSecondary
-              }`}
-            >
-              {card.label}
-            </div>
-          </article>
-          );
-        })}
+              </div>
+              <div className={`${styles.cardLabel} ${styles.cardLabelSecondary}`}>
+                {design.designName}
+              </div>
+            </article>
+          ))}
+
+        {/* Empty state */}
+        {!loading && !error && designs.length === 0 && (
+          <p className={styles.errorMsg}>No designs available.</p>
+        )}
       </div>
     </div>
   );

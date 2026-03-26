@@ -3,7 +3,6 @@
 import Image from "next/image";
 import type { CartItem as CartItemType } from "@/data/dummy";
 import styles from "./CartItem.module.scss";
-import deleteIcon from "../../app/assests/icons/delete.svg"
 import add from "../../app/assests/icons/add.svg"
 
 
@@ -28,6 +27,12 @@ export default function CartItem({
 }: CartItemProps) {
   const handleIncrement = () => {
     onQuantityChange?.(item.id, item.quantity + 1);
+  };
+
+  const handleDecrement = () => {
+    if (item.quantity > 1) {
+      onQuantityChange?.(item.id, item.quantity - 1);
+    }
   };
 
   return (
@@ -64,11 +69,12 @@ export default function CartItem({
         <div className={styles.quantityWrap}>
           <button
             type="button"
-            className={styles.deleteBtn}
-            aria-label="Delete item"
-            onClick={() => onRemove?.(item.id)}
+            className={`${styles.qtyBtn} ${item.quantity <= 1 ? styles.qtyBtnDisabled : ""}`}
+            aria-label="Decrease quantity"
+            onClick={handleDecrement}
+            disabled={item.quantity <= 1}
           >
-             <Image src={deleteIcon} alt="deleteIcon"/>
+            <span aria-hidden>−</span>
           </button>
 
           <input
