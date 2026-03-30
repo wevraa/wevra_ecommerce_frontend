@@ -292,3 +292,26 @@ export async function getDesigns(): Promise<ApiDesign[]> {
     return [];
   }
 }
+
+// Add-ons → accessory options (addons page)
+export interface ApiAccessoryOption {
+  id: string;
+  name: string;
+  [key: string]: unknown;
+}
+
+export async function getAccessoryOptions(): Promise<ApiAccessoryOption[]> {
+  const base = API_BASE || "https://api.wevraa.in/api";
+  try {
+    const res = await fetch(`${base}/v1/addon/accessory-options`, {
+      next: { revalidate: 60 },
+    });
+    if (!res.ok) return [];
+    const json = await res.json();
+    const raw = Array.isArray(json) ? json : (json as { data?: unknown[] })?.data ?? [];
+    const list = Array.isArray(raw) ? raw : [];
+    return list.filter((item): item is ApiAccessoryOption => typeof item === "object" && item !== null && "name" in item);
+  } catch {
+    return [];
+  }
+}

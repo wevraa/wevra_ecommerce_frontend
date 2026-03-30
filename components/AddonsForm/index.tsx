@@ -1,99 +1,74 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
+import type { ApiAccessoryOption } from "@/lib/api";
 import styles from "./AddonsForm.module.scss";
 
+const API_BASE = process.env.NEXT_PUBLIC_API_BASE_URL ?? "https://api.wevraa.in/api";
+
 export default function AddonsForm() {
-  const [cups, setCups] = useState(true);
-  const [piping, setPiping] = useState(true);
-  const [zipType, setZipType] = useState(true);
-  const [zipPosition, setZipPosition] = useState<"back" | "front" | "side">("front");
-  const [hooks, setHooks] = useState(false);
-  const [hooksPosition, setHooksPosition] = useState<"back" | "front">("back");
+  const [accessoryOptions, setAccessoryOptions] = useState<ApiAccessoryOption[]>([]);
+  const [selected, setSelected] = useState<Record<string, boolean>>({});
+  const [loaded, setLoaded] = useState(false);
+
+  useEffect(() => {
+    if (!API_BASE) {
+      setLoaded(true);
+      return;
+    }
+    fetch(`${API_BASE}/v1/addon/accessory-options`)
+      .then((res) => (res.ok ? res.json() : null))
+      .then((json: unknown) => {
+        const raw = Array.isArray(json) ? json : (json as { data?: unknown[] })?.data ?? [];
+        const list = Array.isArray(raw) ? raw : [];
+        const options: ApiAccessoryOption[] = list.map((item: unknown, index: number) => {
+          const o = item as Record<string, unknown>;
+          const id = typeof o.id === "string" ? o.id : `opt-${index}`;
+          const name = typeof o.name === "string" ? o.name : "";
+          return { id, name };
+        }).filter((o) => o.name);
+        setAccessoryOptions(options);
+        setSelected((prev) => {
+          const next = { ...prev };
+          for (const opt of options) {
+            if (next[opt.id] === undefined) next[opt.id] = true;
+          }
+          return next;
+        });
+      })
+      .catch(() => setAccessoryOptions([]))
+      .finally(() => setLoaded(true));
+  }, []);
 
   return (
     <div className={styles.wrap}>
       <div className={styles.inner}>
         <p className={styles.intro}>Select Which you required</p>
 
-        <div className={styles.row}>
-          <span className={styles.label}>CUPS</span>
-          <button
-            type="button"
-            role="switch"
-            aria-checked={cups}
-            className={`${styles.toggle} ${cups ? styles.on : ""}`}
-            onClick={() => setCups(!cups)}
-          >
-            <span className={styles.toggleKnob} />
-          </button>
-        </div>
-        <div className={styles.row}>
-          <span className={styles.label}>PIPING</span>
-          <button
-            type="button"
-            role="switch"
-            aria-checked={piping}
-            className={`${styles.toggle} ${piping ? styles.on : ""}`}
-            onClick={() => setPiping(!piping)}
-          >
-            <span className={styles.toggleKnob} />
-          </button>
-        </div>
-        <div className={styles.row}>
-          <span className={styles.label}>ZIP TYPE</span>
-          <button
-            type="button"
-            role="switch"
-            aria-checked={zipType}
-            className={`${styles.toggle} ${zipType ? styles.on : ""}`}
-            onClick={() => setZipType(!zipType)}
-          >
-            <span className={styles.toggleKnob} />
-          </button>
-        </div>
-        <div className={styles.segmentWrap}>
-          <div className={styles.segment}>
-            {(["back", "front", "side"] as const).map((opt) => (
+        {loaded && accessoryOptions.length === 0 ? (
+          <p className={styles.intro}>No accessory options available.</p>
+        ) : null}
+        {!loaded ? (
+          <p className={styles.intro}>Loading accessory options…</p>
+        ) : (
+          accessoryOptions.map((option) => (
+            <div key={option.id} className={styles.row}>
+              <span className={styles.label}>{option.name}</span>
               <button
-                key={opt}
                 type="button"
-                className={`${styles.segmentBtn} ${zipPosition === opt ? styles.selected : ""}`}
-                onClick={() => setZipPosition(opt)}
+                role="switch"
+                aria-checked={!!selected[option.id]}
+                className={`${styles.toggle} ${selected[option.id] ? styles.on : ""}`}
+                onClick={() =>
+                  setSelected((prev) => ({ ...prev, [option.id]: !prev[option.id] }))
+                }
               >
-                {opt.charAt(0).toUpperCase() + opt.slice(1)}
+                <span className={styles.toggleKnob} />
               </button>
-            ))}
-          </div>
-        </div>
-
-        <div className={styles.row}>
-          <span className={`${styles.label} ${styles.labelMuted}`}>HOOKS</span>
-          <button
-            type="button"
-            role="switch"
-            aria-checked={hooks}
-            className={`${styles.toggle} ${hooks ? styles.on : ""}`}
-            onClick={() => setHooks(!hooks)}
-          >
-            <span className={styles.toggleKnob} />
-          </button>
-        </div>
-        <div className={styles.segmentWrap}>
-          <div className={styles.segment}>
-            {(["back", "front"] as const).map((opt) => (
-              <button
-                key={opt}
-                type="button"
-                className={`${styles.segmentBtn} ${styles.segmentBtnMuted} ${hooksPosition === opt ? styles.selected : ""}`}
-                onClick={() => setHooksPosition(opt)}
-              >
-                {opt.charAt(0).toUpperCase() + opt.slice(1)}
-              </button>
-            ))}
-          </div>
-        </div>
+            </div>
+          ))
+        )}
 
         <div className={styles.twoCol}>
           <div>

@@ -12,7 +12,14 @@ import styles from "./Header.module.scss";
 import cartIcon from "../../app/assests/icons/bag.svg";
 import heartIcon from "../../app/assests/icons/heart.svg";
 
-export default function Header() {
+interface HeaderProps {
+  /** Show search bar (default true for home). */
+  showSearch?: boolean;
+  /** Show promo strip, e.g. “Discounts, Gifts…” (default true for home). */
+  showPromo?: boolean;
+}
+
+export default function Header({ showSearch = true, showPromo = true }: HeaderProps) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [cartCount, setCartCount] = useState(0);
 
@@ -77,12 +84,16 @@ export default function Header() {
           </div>
         </div>
 
-        <div className={styles.searchPromoWrap}>
-          <div className={styles.searchWrap}>
-            <SearchBar />
+        {(showSearch || showPromo) && (
+          <div className={styles.searchPromoWrap}>
+            {showSearch && (
+              <div className={styles.searchWrap}>
+                <SearchBar />
+              </div>
+            )}
+            {showPromo && <PromoBanner />}
           </div>
-          <PromoBanner />
-        </div>
+        )}
       </header>
 
       <Sidebar open={sidebarOpen} onClose={() => setSidebarOpen(false)} />

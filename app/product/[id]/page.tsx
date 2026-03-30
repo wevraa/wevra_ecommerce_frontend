@@ -1,4 +1,4 @@
-import ProductDetailHeader from "@/components/ProductDetailHeader";
+import Header from "@/components/Header";
 import ProductDetailClient from "@/components/ProductDetailClient";
 import BottomNav from "@/components/BottomNav";
 
@@ -11,7 +11,7 @@ export default async function ProductPage({ params }: ProductPageProps) {
 
   return (
     <>
-      <ProductDetailHeader />
+      <Header showSearch={false} showPromo={false} />
       <main className="main-with-bottom-nav">
         <ProductDetailClient id={id} />
       </main>
