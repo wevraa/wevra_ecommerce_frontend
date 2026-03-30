@@ -1,7 +1,12 @@
 import Link from "next/link";
 import styles from "./CollectionHeader.module.scss";
 
-export default function CollectionHeader() {
+interface CollectionHeaderProps {
+  /** Center label in the sticky bar (main title is still shown in page content). */
+  label?: string;
+}
+
+export default function CollectionHeader({ label = "Collection" }: CollectionHeaderProps) {
   return (
     <header className={styles.header}>
       <Link href="/" className={styles.backBtn} aria-label="Back">
@@ -9,7 +14,7 @@ export default function CollectionHeader() {
           <polyline points="15 18 9 12 15 6" />
         </svg>
       </Link>
-      <h1 className={styles.title}>Collection</h1>
+      <h1 className={styles.title}>{label}</h1>
     </header>
   );
 }

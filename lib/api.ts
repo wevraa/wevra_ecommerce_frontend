@@ -91,6 +91,44 @@ export async function getCategories(): Promise<ApiCategory[]> {
   }
 }
 
+/** Single category (optional embedded products). */
+export interface ApiCategoryDetail extends Omit<ApiCategory, "products"> {
+  products?: unknown;
+}
+
+export async function getCategoryById(id: string): Promise<ApiCategoryDetail | null> {
+  if (!API_BASE) return null;
+  try {
+    const res = await fetch(`${API_BASE}/v1/categories/${id}`, {
+      next: { revalidate: 60 },
+    });
+    if (!res.ok) return null;
+    const data = await res.json();
+    return data as ApiCategoryDetail;
+  } catch {
+    return null;
+  }
+}
+
+/** Normalize category.products or collection-style { product } rows into full product list. */
+export function normalizeCategoryProductsPayload(raw: unknown): ApiProduct[] {
+  if (!Array.isArray(raw)) return [];
+  const result: ApiProduct[] = [];
+  for (const item of raw) {
+    if (!item || typeof item !== "object") continue;
+    const o = item as Record<string, unknown>;
+    if (o.product && typeof o.product === "object") {
+      const p = o.product as ApiProduct;
+      if (p?.id && p?.title) result.push(p);
+      continue;
+    }
+    if (typeof o.id === "string" && typeof o.title === "string") {
+      result.push(item as ApiProduct);
+    }
+  }
+  return result;
+}
+
 export interface ApiCollectionListItem {
   id: string;
   title: string;
