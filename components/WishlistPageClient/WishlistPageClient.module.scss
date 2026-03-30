@@ -48,9 +48,104 @@
 .main {
   min-height: calc(100vh - #{$header-height} - #{$bottom-nav-height});
   display: flex;
-  align-items: center;
-  justify-content: center;
+  flex-direction: column;
+  align-items: stretch;
+  justify-content: flex-start;
   background: #fdf8f8;
+  padding-bottom: $space-lg;
+}
+
+.loading {
+  text-align: center;
+  padding: $space-2xl;
+  color: $color-text-muted;
+}
+
+.list {
+  list-style: none;
+  margin: 0;
+  padding: $space-md;
+  display: flex;
+  flex-direction: column;
+  gap: $space-md;
+  max-width: $max-content-width;
+  width: 100%;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.row {
+  display: flex;
+  gap: $space-md;
+  background: $color-white;
+  border-radius: 12px;
+  padding: $space-md;
+  border: 1px solid rgba(0, 0, 0, 0.06);
+  align-items: flex-start;
+}
+
+.thumbWrap {
+  position: relative;
+  width: 88px;
+  height: 110px;
+  flex-shrink: 0;
+  border-radius: 8px;
+  overflow: hidden;
+  background: $color-light-pink;
+}
+
+.thumb {
+  object-fit: cover;
+}
+
+.rowBody {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: $space-xs;
+}
+
+.rowTitle {
+  font-size: $font-size-base;
+  font-weight: $font-weight-semibold;
+  color: $color-text;
+  text-decoration: none;
+  line-height: 1.3;
+
+  &:hover {
+    color: $color-deep-red;
+  }
+}
+
+.rowPrice {
+  font-size: $font-size-sm;
+  font-weight: $font-weight-semibold;
+  color: $color-deep-red;
+  margin: 0;
+}
+
+.removeBtn {
+  align-self: flex-start;
+  margin-top: $space-sm;
+  padding: $space-xs $space-md;
+  border: 1px solid rgba(0, 0, 0, 0.12);
+  background: $color-white;
+  color: $color-text-muted;
+  font-size: $font-size-xs;
+  font-family: inherit;
+  border-radius: 8px;
+  cursor: pointer;
+
+  &:hover:not(:disabled) {
+    border-color: $color-deep-red;
+    color: $color-deep-red;
+  }
+
+  &:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+  }
 }
 
 /* ── Empty state ── */
@@ -58,9 +153,12 @@
   display: flex;
   flex-direction: column;
   align-items: center;
+  justify-content: center;
   text-align: center;
   padding: $space-2xl $space-xl;
   max-width: 320px;
+  margin: 0 auto;
+  flex: 1;
 }
 
 /* Icon */
@@ -147,6 +245,9 @@
   font-weight: $font-weight-semibold;
   border-radius: 26px;
   text-decoration: none;
+  border: none;
+  cursor: pointer;
+  font-family: inherit;
   transition: background 0.15s ease, transform 0.1s ease;
 
   &:hover {

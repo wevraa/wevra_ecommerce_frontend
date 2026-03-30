@@ -51,6 +51,12 @@ export default function Header({ showSearch = true, showPromo = true }: HeaderPr
     return () => window.removeEventListener("cart-updated", refreshCartCount);
   }, []);
 
+  useEffect(() => {
+    const open = () => setLoginOpen(true);
+    window.addEventListener("open-login", open);
+    return () => window.removeEventListener("open-login", open);
+  }, []);
+
   return (
     <>
       <header className={styles.header}>

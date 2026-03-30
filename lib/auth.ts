@@ -4,6 +4,11 @@ export const AUTH_ACCESS_TOKEN_KEY = "wevraa_access_token";
 export const AUTH_REFRESH_TOKEN_KEY = "wevraa_refresh_token";
 export const AUTH_USER_KEY = "wevraa_user";
 
+export function getAccessToken(): string | null {
+  if (typeof window === "undefined") return null;
+  return localStorage.getItem(AUTH_ACCESS_TOKEN_KEY);
+}
+
 /** Format phone as in API examples: "+91 9876543210" */
 export function normalizePhoneForApi(input: string): string {
   const digits = input.replace(/\D/g, "");

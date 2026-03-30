@@ -69,8 +69,21 @@
   border-radius: 50%;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
 
-  &:hover {
+  &:hover:not(:disabled) {
     color: $color-deep-red;
+  }
+
+  &:disabled {
+    opacity: 0.65;
+    cursor: wait;
+  }
+}
+
+.wishlistBtnActive {
+  color: $color-deep-red;
+
+  &:hover:not(:disabled) {
+    color: #9a1f3c;
   }
 }
 
