@@ -118,14 +118,152 @@
   color: $color-text;
 }
 
-.monthSelect {
+.monthPicker {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 0;
+  max-width: min(100%, 280px);
+  flex-shrink: 0;
+}
+
+.monthPickerLabel {
+  font-size: 10px;
+  font-weight: $font-weight-semibold;
+  color: $color-text-muted;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  line-height: 1.25;
+}
+
+.monthSelectTrigger {
+  display: inline-flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: $space-sm;
+  width: 100%;
+  min-height: 44px;
+  padding: $space-sm $space-md;
+  border: 1px solid rgba(0, 0, 0, 0.12);
+  border-radius: 12px;
+  background: $color-white;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+  font-family: inherit;
   font-size: $font-size-sm;
-  font-weight: $font-weight-medium;
+  font-weight: $font-weight-semibold;
   color: $color-text;
-  border: none;
-  background: transparent;
   cursor: pointer;
-  padding: 0;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+
+  &:hover {
+    border-color: rgba(0, 0, 0, 0.18);
+  }
+
+  &:focus {
+    outline: none;
+  }
+
+  &[data-state="open"] {
+    border-color: $color-deep-red;
+    box-shadow: 0 0 0 3px rgba($color-deep-red, 0.14);
+  }
+
+  &[data-placeholder] {
+    color: $color-text-muted;
+    font-weight: $font-weight-medium;
+  }
+
+  &[data-state="open"] .monthSelectIcon {
+    transform: rotate(180deg);
+  }
+}
+
+.monthSelectIcon {
+  display: flex;
+  flex-shrink: 0;
+  color: $color-deep-red;
+  opacity: 0.9;
+  transition: transform 0.2s ease;
+}
+
+.monthSelectContent {
+  z-index: 100;
+  overflow: hidden;
+  border-radius: 12px;
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  background: $color-white;
+  box-shadow:
+    0 4px 6px -1px rgba(0, 0, 0, 0.08),
+    0 10px 24px -4px rgba(0, 0, 0, 0.12);
+}
+
+.monthSelectViewport {
+  padding: $space-xs;
+}
+
+.monthSelectItem {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: $space-sm;
+  min-height: 48px;
+  padding: $space-sm $space-md;
+  padding-right: $space-xl;
+  border-radius: 8px;
+  font-size: $font-size-sm;
+  color: $color-text;
+  cursor: pointer;
+  outline: none;
+  user-select: none;
+
+  &[data-highlighted] {
+    background: rgba($color-deep-red, 0.07);
+    color: $color-text;
+  }
+
+  &[data-state="checked"] {
+    font-weight: $font-weight-semibold;
+  }
+}
+
+.monthItemBody {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 2px;
+  min-width: 0;
+  flex: 1;
+}
+
+.monthItemTitle {
+  line-height: 1.25;
+}
+
+.monthItemYear {
+  font-weight: $font-weight-semibold;
+  color: $color-text-muted;
+}
+
+.monthItemBadge {
+  font-size: 10px;
+  font-weight: $font-weight-semibold;
+  color: $color-deep-red;
+  letter-spacing: 0.02em;
+}
+
+.monthItemIndicator {
+  position: absolute;
+  right: $space-md;
+  top: 50%;
+  transform: translateY(-50%);
+  display: flex;
+  color: $color-deep-red;
+}
+
+@include mobile-first($tablet) {
+  .monthPicker {
+    max-width: 300px;
+  }
 }
 
 .dateStrip {
