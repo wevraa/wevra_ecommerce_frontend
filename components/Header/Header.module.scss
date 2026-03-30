@@ -52,7 +52,25 @@
 .actions {
   display: flex;
   align-items: center;
-  gap: $space-sm;
+  gap: $space-xs;
+}
+
+.loginBtn {
+  flex-shrink: 0;
+  padding: $space-xs $space-sm;
+  border: none;
+  background: transparent;
+  color: $color-deep-red;
+  font-size: $font-size-sm;
+  font-weight: $font-weight-semibold;
+  font-family: inherit;
+  cursor: pointer;
+  border-radius: 8px;
+  white-space: nowrap;
+
+  &:hover {
+    background: $color-light-pink;
+  }
 }
 
 .iconButton {

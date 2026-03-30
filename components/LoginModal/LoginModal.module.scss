@@ -1,0 +1,193 @@
+@use "../../styles/variables" as *;
+@use "../../styles/mixins" as *;
+
+.overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  background: rgba(0, 0, 0, 0.52);
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  padding: 0;
+
+  @include mobile-first($tablet) {
+    align-items: center;
+    padding: $space-md;
+  }
+}
+
+.modal {
+  width: 100%;
+  max-width: 420px;
+  max-height: 100%;
+  overflow-y: auto;
+  background: $color-white;
+  border-radius: 16px 16px 0 0;
+  box-shadow: 0 -4px 32px rgba(0, 0, 0, 0.15);
+  position: relative;
+  padding: $space-xl $space-lg $space-2xl;
+
+  @include mobile-first($tablet) {
+    border-radius: 16px;
+    box-shadow: 0 16px 48px rgba(0, 0, 0, 0.2);
+  }
+}
+
+.closeBtn {
+  position: absolute;
+  top: $space-md;
+  right: $space-md;
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  background: transparent;
+  color: $color-text-muted;
+  cursor: pointer;
+  border-radius: 8px;
+  font-size: 22px;
+  line-height: 1;
+
+  &:hover {
+    background: $color-light-pink;
+    color: $color-deep-red;
+  }
+}
+
+.welcome {
+  font-size: $font-size-lg;
+  font-weight: $font-weight-bold;
+  color: $color-text;
+  line-height: 1.35;
+  margin: 0 0 $space-lg 0;
+  padding-right: $space-xl;
+}
+
+.dividerWrap {
+  position: relative;
+  text-align: center;
+  margin: $space-xl 0 $space-md;
+}
+
+.dividerLine {
+  height: 1px;
+  background: rgba(0, 0, 0, 0.12);
+  width: 100%;
+}
+
+.dividerLabel {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  background: $color-white;
+  padding: 0 $space-md;
+  font-size: $font-size-sm;
+  font-weight: $font-weight-semibold;
+  color: $color-text-muted;
+}
+
+.hint {
+  font-size: $font-size-sm;
+  color: $color-text-muted;
+  margin: 0 0 $space-lg 0;
+  line-height: 1.45;
+}
+
+.input {
+  width: 100%;
+  padding: $space-md $space-md;
+  font-size: $font-size-base;
+  font-family: inherit;
+  color: $color-text;
+  border: 1px solid rgba(0, 0, 0, 0.12);
+  border-radius: 10px;
+  margin-bottom: $space-md;
+  box-sizing: border-box;
+
+  &::placeholder {
+    color: #9ca3af;
+  }
+
+  &:focus {
+    outline: none;
+    border-color: $color-deep-red;
+    box-shadow: 0 0 0 3px rgba($color-deep-red, 0.15);
+  }
+}
+
+.continueBtn {
+  width: 100%;
+  padding: $space-md;
+  margin-top: $space-sm;
+  border: none;
+  border-radius: 10px;
+  background: $color-deep-red;
+  color: $color-white;
+  font-size: $font-size-base;
+  font-weight: $font-weight-semibold;
+  font-family: inherit;
+  cursor: pointer;
+  transition: background 0.2s;
+
+  &:hover:not(:disabled) {
+    background: #9a1f3c;
+  }
+
+  &:disabled {
+    opacity: 0.55;
+    cursor: not-allowed;
+  }
+}
+
+.backLink {
+  display: block;
+  margin-top: $space-md;
+  background: none;
+  border: none;
+  padding: 0;
+  font-size: $font-size-sm;
+  color: $color-deep-red;
+  cursor: pointer;
+  text-decoration: underline;
+  font-family: inherit;
+
+  &:hover {
+    color: $color-red;
+  }
+}
+
+.legal {
+  font-size: $font-size-xs;
+  color: $color-text-muted;
+  text-align: center;
+  margin: $space-xl 0 0;
+  line-height: 1.45;
+}
+
+.link {
+  color: $color-deep-red;
+  text-decoration: underline;
+  font-weight: $font-weight-medium;
+}
+
+.error {
+  font-size: $font-size-sm;
+  color: $color-red;
+  margin: 0 0 $space-md 0;
+}
+
+.otpHint {
+  font-size: $font-size-sm;
+  color: $color-text;
+  margin: 0 0 $space-sm 0;
+}
+
+.otpMeta {
+  font-size: $font-size-xs;
+  color: $color-text-muted;
+  margin: 0 0 $space-md 0;
+}

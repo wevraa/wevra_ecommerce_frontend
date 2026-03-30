@@ -6,7 +6,12 @@ import Link from "next/link";
 import SearchBar from "@/components/SearchBar";
 import PromoBanner from "@/components/PromoBanner";
 import Sidebar from "@/components/Sidebar";
+import LoginModal from "@/components/LoginModal";
 import { getCartItems } from "@/lib/cartStorage";
+import {
+  AUTH_ACCESS_TOKEN_KEY,
+  clearAuthSession,
+} from "@/lib/auth";
 import styles from "./Header.module.scss";
 
 import cartIcon from "../../app/assests/icons/bag.svg";
@@ -22,6 +27,16 @@ interface HeaderProps {
 export default function Header({ showSearch = true, showPromo = true }: HeaderProps) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [cartCount, setCartCount] = useState(0);
+  const [loginOpen, setLoginOpen] = useState(false);
+  const [loggedIn, setLoggedIn] = useState(false);
+
+  useEffect(() => {
+    const sync = () =>
+      setLoggedIn(typeof window !== "undefined" && !!localStorage.getItem(AUTH_ACCESS_TOKEN_KEY));
+    sync();
+    window.addEventListener("auth-changed", sync);
+    return () => window.removeEventListener("auth-changed", sync);
+  }, []);
 
   const refreshCartCount = () => {
     getCartItems().then((items) => {
@@ -68,6 +83,21 @@ export default function Header({ showSearch = true, showPromo = true }: HeaderPr
           </div>
 
           <div className={styles.actions}>
+            {loggedIn ? (
+              <button
+                type="button"
+                className={styles.loginBtn}
+                onClick={() => {
+                  clearAuthSession();
+                }}
+              >
+                Log out
+              </button>
+            ) : (
+              <button type="button" className={styles.loginBtn} onClick={() => setLoginOpen(true)}>
+                Login
+              </button>
+            )}
             {/* Wishlist */}
             <Link href="/wishlist" className={styles.iconButton} aria-label="Wishlist">
               <Image src={heartIcon} alt="Wishlist" width={22} height={22} />
@@ -97,6 +127,7 @@ export default function Header({ showSearch = true, showPromo = true }: HeaderPr
       </header>
 
       <Sidebar open={sidebarOpen} onClose={() => setSidebarOpen(false)} />
+      <LoginModal open={loginOpen} onClose={() => setLoginOpen(false)} />
     </>
   );
 }
