@@ -272,6 +272,12 @@
   overflow-x: auto;
   padding: $space-sm 0;
   -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+
+  &::-webkit-scrollbar {
+    display: none;
+  }
 }
 
 .dateCard {
@@ -339,9 +345,15 @@
   cursor: pointer;
 }
 
-.measurementOk {
+.selectionPositive {
   font-size: $font-size-sm;
   color: #16a34a;
+  margin: 0 0 2px;
+}
+
+.measurementPending {
+  font-size: $font-size-sm;
+  color: $color-deep-red;
   margin: 0 0 2px;
 }
 
@@ -413,6 +425,20 @@
   }
 }
 
+.addItemsPlus {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  background: $color-white;
+  color: $color-deep-red;
+  border-radius: 50%;
+  font-size: $font-size-lg;
+  font-weight: $font-weight-bold;
+  line-height: 1;
+}
+
 .footerBtns {
   display: grid;
   grid-template-columns: 1fr 1fr;
@@ -441,7 +467,7 @@
   width: 100%;
   padding: $space-md $space-lg;
   border: none;
-  background: $color-deep-red;
+  background: #1847B5;
   color: $color-white;
   font-size: $font-size-base;
   font-weight: $font-weight-semibold;

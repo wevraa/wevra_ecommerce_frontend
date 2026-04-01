@@ -409,12 +409,22 @@ export interface UserProfile {
   name: string;
   mobile: string;
   avatar: string;
+  addressLine1?: string;
+  addressLine2?: string;
+  state?: string;
+  city?: string;
+  pincode?: string;
 }
 
 export const userProfile: UserProfile = {
   name: "Karthik Vijayakumar Reddy",
   mobile: "99646 39704",
   avatar: "/images/review-1.svg",
+  addressLine1: "",
+  addressLine2: "",
+  state: "",
+  city: "",
+  pincode: "",
 };
 
 export const orderTypes = [
@@ -432,6 +442,8 @@ export interface SelectedImage {
 export const selectedImages: SelectedImage[] = [
   { id: "1", image: "/images/product-1.svg", label: "Fabric" },
   { id: "2", image: "/images/product-2.svg", label: "Front Neck Design" },
+  { id: "3", image: "/images/product-3.svg", label: "Sleeve Design" },
+  { id: "4", image: "/images/product-4.svg", label: "Back Detail" },
 ];
 
 export interface Boutique {

@@ -12,6 +12,10 @@ export interface OrderContext {
   productId?: string;
   productImage?: string;
   sleeveDesignImage?: string;
+  /** True when at least one add-on toggle is on (from /addons). */
+  hasAddonsSelected?: boolean;
+  /** True when measurement sliders differ from defaults (from /measurement). */
+  hasMeasurementSelected?: boolean;
 }
 
 interface BoutiquesSelectionState {
@@ -40,7 +44,8 @@ export const useBoutiquesSelectionStore = create<BoutiquesSelectionState>()(
           if (state.selectedBoutiques.length >= MAX_BOUTIQUE_SELECTION) return state;
           return { selectedBoutiques: [...state.selectedBoutiques, boutique] };
         }),
-      setOrderContext: (ctx) => set({ orderContext: ctx }),
+      setOrderContext: (ctx) =>
+        set((state) => ({ orderContext: { ...state.orderContext, ...ctx } })),
       clearSelection: () => set({ selectedBoutiques: [], orderContext: {} }),
     }),
     { name: "boutiques-selection-store" }

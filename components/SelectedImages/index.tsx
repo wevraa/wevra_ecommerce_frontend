@@ -2,7 +2,7 @@
 
 import Image from "next/image";
 import { useRouter } from "next/navigation";
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import type { SelectedImage } from "@/data/dummy";
 import { useBoutiqueOrderStore } from "@/lib/stores/boutiqueOrderStore";
 import styles from "./SelectedImages.module.scss";
@@ -15,6 +15,7 @@ interface SelectedImagesProps {
 
 export default function SelectedImages({ images, productId, productImage }: SelectedImagesProps) {
   const router = useRouter();
+  const [expanded, setExpanded] = useState(false);
   const frontNeckDesignImage = useBoutiqueOrderStore((s) => s.frontNeckDesignImage);
   const sleeveDesigns = useBoutiqueOrderStore((s) => s.sleeveDesigns);
 
@@ -32,66 +33,80 @@ export default function SelectedImages({ images, productId, productImage }: Sele
     });
   }, [images, effectiveDesign]);
 
+  const primaryImages = displayImages.slice(0, 2);
+  const extraImages = displayImages.slice(2, 4);
+  const canExpand = extraImages.length > 0;
+
+  const renderCard = (item: (typeof displayImages)[0]) => {
+    const isFrontNeck = item.label.toLowerCase().includes("front neck");
+    const showPlusBadge = isFrontNeck && !effectiveDesign;
+    return (
+      <button
+        key={item.id}
+        type="button"
+        className={`${styles.card} ${isFrontNeck ? styles.cardInteractive : ""}`}
+        onClick={() => {
+          if (isFrontNeck) {
+            const params = new URLSearchParams();
+            if (productId) params.set("productId", productId);
+            if (productImage) params.set("image", productImage);
+            router.push(
+              params.size > 0
+                ? `/select-sleeve-design?${params.toString()}`
+                : "/select-sleeve-design"
+            );
+          }
+        }}
+      >
+        <Image
+          src={item.image}
+          alt=""
+          fill
+          className={styles.image}
+          sizes="50vw"
+        />
+        {showPlusBadge && (
+          <span className={styles.plusBadge} aria-hidden>
+            +
+          </span>
+        )}
+        <span className={styles.label}>{item.label}</span>
+      </button>
+    );
+  };
+
   return (
     <section className={styles.section}>
       <h2 className={styles.title}>Selected Images</h2>
-      <div className={styles.grid}>
-        {displayImages.map((item) => {
-          const isFrontNeck = item.label.toLowerCase().includes("front neck");
-          const showPlusBadge = isFrontNeck && !effectiveDesign;
-          return (
+      <div className={styles.layout}>
+        <div className={styles.primaryRowWrap}>
+          <div className={styles.gridRow}>{primaryImages.map(renderCard)}</div>
+          {canExpand ? (
             <button
-              key={item.id}
               type="button"
-              className={`${styles.card} ${
-                isFrontNeck ? styles.cardInteractive : ""
-              }`}
-              onClick={() => {
-                if (isFrontNeck) {
-                  const params = new URLSearchParams();
-                  if (productId) params.set("productId", productId);
-                  if (productImage) params.set("image", productImage);
-                  router.push(
-                    params.size > 0
-                      ? `/select-sleeve-design?${params.toString()}`
-                      : "/select-sleeve-design"
-                  );
-                }
-              }}
+              className={`${styles.expandBtn} ${expanded ? styles.expandBtnOpen : ""}`}
+              aria-expanded={expanded}
+              aria-label={expanded ? "Show fewer images" : "Show more images"}
+              onClick={() => setExpanded((v) => !v)}
             >
-              <Image
-                src={item.image}
-                alt=""
-                fill
-                className={styles.image}
-                sizes="50vw"
-              />
-              {showPlusBadge && (
-                <span className={styles.plusBadge} aria-hidden>
-                  +
-                </span>
-              )}
-              <span className={styles.label}>{item.label}</span>
+              <svg
+                width="20"
+                height="20"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                aria-hidden
+              >
+                <polyline points="6 9 12 15 18 9" />
+              </svg>
             </button>
-          );
-        })}
+          ) : null}
+        </div>
+        {canExpand && expanded ? (
+          <div className={styles.gridRow}>{extraImages.map(renderCard)}</div>
+        ) : null}
       </div>
-      <button
-        type="button"
-        className={styles.expandBtn}
-        aria-label="View more"
-      >
-        <svg
-          width="20"
-          height="20"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          strokeWidth="2"
-        >
-          <polyline points="6 9 12 15 18 9" />
-        </svg>
-      </button>
     </section>
   );
 }

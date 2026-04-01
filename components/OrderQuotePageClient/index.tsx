@@ -4,6 +4,7 @@ import { useMemo, useState } from "react";
 import * as Select from "@radix-ui/react-select";
 import Link from "next/link";
 import Image from "next/image";
+import { useRouter } from "next/navigation";
 import { useBoutiquesSelectionStore } from "@/lib/stores/boutiquesSelectionStore";
 import styles from "./OrderQuotePageClient.module.scss";
 
@@ -63,6 +64,7 @@ function isoBelongsToMonth(iso: string, year: number, monthIndex: number): boole
 }
 
 export default function OrderQuotePageClient() {
+  const router = useRouter();
   const now = useMemo(() => new Date(), []);
   const monthSlots = useMemo(() => buildMonthsThisYearFrom(now), [now]);
   const initialYM = monthSlots[0]?.value ?? `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}`;
@@ -87,6 +89,9 @@ export default function OrderQuotePageClient() {
   const hasProduct =
     Boolean(orderContext.productImage) ||
     Boolean(orderContext.sleeveDesignImage);
+
+  const hasAddonsSelected = orderContext.hasAddonsSelected === true;
+  const hasMeasurementSelected = orderContext.hasMeasurementSelected === true;
 
   const applyViewYM = (value: string) => {
     setViewYM(value);
@@ -258,12 +263,28 @@ export default function OrderQuotePageClient() {
         <div className={styles.productCard}>
           <div className={styles.productInfo}>
             <h3 className={styles.productName}>Machine Embroidery Blouse</h3>
-            <p className={styles.addonsWarning}>No Add-ons selected</p>
+            <p
+              className={
+                hasAddonsSelected ? styles.selectionPositive : styles.addonsWarning
+              }
+            >
+              {hasAddonsSelected ? "Add ons selected" : "No Add-ons Selected"}
+            </p>
             <Link href="/addons" className={styles.addonsLink}>
               Add-ons to quote better
               <span aria-hidden>›</span>
             </Link>
-            <p className={styles.measurementOk}>Measurement added</p>
+            <p
+              className={
+                hasMeasurementSelected
+                  ? styles.selectionPositive
+                  : styles.measurementPending
+              }
+            >
+              {hasMeasurementSelected
+                ? "Measurement added"
+                : "No measurement selected"}
+            </p>
             <Link href="/measurement" className={styles.measurementLink}>
               Tap to Select Measurement
               <span aria-hidden>›</span>
@@ -318,8 +339,14 @@ export default function OrderQuotePageClient() {
         </div>
 
         <div className={styles.btn_wrap}>
-          <button type="button" className={styles.addItemsBtn}>
-            <span aria-hidden>+</span>
+          <button
+            type="button"
+            className={styles.addItemsBtn}
+            onClick={() => router.push("/")}
+          >
+            <span className={styles.addItemsPlus} aria-hidden>
+              +
+            </span>
             Add Items
           </button>
         </div>
@@ -329,7 +356,7 @@ export default function OrderQuotePageClient() {
             Cancel
           </Link>
           <button type="button" className={styles.sendBtn}>
-            Selected
+            Send
           </button>
         </div>
       </div>

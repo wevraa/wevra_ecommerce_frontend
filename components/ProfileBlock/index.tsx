@@ -17,7 +17,7 @@ export default function ProfileBlock({ profile }: ProfileBlockProps) {
         <div className={styles.info}>
           <h1 className={styles.name}>{profile.name}</h1>
           <p className={styles.mobile}>Mobile : {profile.mobile}</p>
-          <Link href="/profile" className={styles.editBtn}>
+          <Link href="/edit-profile" className={styles.editBtn}>
             Edit Profile
           </Link>
         </div>

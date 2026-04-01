@@ -55,6 +55,8 @@ $measure-blue: #1a3560;
   user-select: none;
   -webkit-overflow-scrolling: touch;
   touch-action: pan-x;
+  scroll-behavior: smooth;
+  overscroll-behavior-x: contain;
 
   scrollbar-width: none;
   -ms-overflow-style: none;

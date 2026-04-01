@@ -161,6 +161,41 @@
   padding: $space-md;
 }
 
+.uploadCardButton {
+  width: 100%;
+  border: none;
+  font: inherit;
+  padding: 0;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+
+  &:focus-visible {
+    outline: 2px solid $color-deep-red;
+    outline-offset: 2px;
+  }
+}
+
+.hiddenFileInput {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+.uploadPreview {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 20px;
+  display: block;
+  pointer-events: none;
+}
+
 /* PLUS ICON */
 
 .uploadPlus {

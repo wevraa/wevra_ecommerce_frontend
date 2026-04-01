@@ -1,16 +1,43 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import type { ApiAccessoryOption } from "@/lib/api";
+import { useBoutiquesSelectionStore } from "@/lib/stores/boutiquesSelectionStore";
 import styles from "./AddonsForm.module.scss";
 
 const API_BASE = process.env.NEXT_PUBLIC_API_BASE_URL ?? "https://api.wevraa.in/api";
 
+type GarmentView = "back" | "front" | "side";
+
+const VIEWS: { key: GarmentView; label: string }[] = [
+  { key: "back", label: "Back" },
+  { key: "front", label: "Front" },
+  { key: "side", label: "Side" },
+];
+
+const emptyDrawings: Record<GarmentView, string | null> = {
+  back: null,
+  front: null,
+  side: null,
+};
+
 export default function AddonsForm() {
+  const setOrderContext = useBoutiquesSelectionStore((s) => s.setOrderContext);
   const [accessoryOptions, setAccessoryOptions] = useState<ApiAccessoryOption[]>([]);
   const [selected, setSelected] = useState<Record<string, boolean>>({});
   const [loaded, setLoaded] = useState(false);
+  const [activeView, setActiveView] = useState<GarmentView>("front");
+  const [drawingPreviews, setDrawingPreviews] =
+    useState<Record<GarmentView, string | null>>(emptyDrawings);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const drawingPreviewsRef = useRef(drawingPreviews);
+  drawingPreviewsRef.current = drawingPreviews;
+
+  useEffect(() => {
+    const hasAny = Object.values(selected).some(Boolean);
+    setOrderContext({ hasAddonsSelected: hasAny });
+  }, [selected, setOrderContext]);
 
   useEffect(() => {
     if (!API_BASE) {
@@ -41,6 +68,34 @@ export default function AddonsForm() {
       .finally(() => setLoaded(true));
   }, []);
 
+  useEffect(() => {
+    return () => {
+      Object.values(drawingPreviewsRef.current).forEach((url) => {
+        if (url) URL.revokeObjectURL(url);
+      });
+    };
+  }, []);
+
+  const handleDrawingPickClick = () => {
+    fileInputRef.current?.click();
+  };
+
+  const handleDrawingFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    e.target.value = "";
+    if (!file || !file.type.startsWith("image/")) return;
+    setDrawingPreviews((prev) => {
+      const old = prev[activeView];
+      if (old) URL.revokeObjectURL(old);
+      return {
+        ...prev,
+        [activeView]: URL.createObjectURL(file),
+      };
+    });
+  };
+
+  const currentDrawing = drawingPreviews[activeView];
+
   return (
     <div className={styles.wrap}>
       <div className={styles.inner}>
@@ -70,6 +125,23 @@ export default function AddonsForm() {
           ))
         )}
 
+        <div className={styles.segmentWrap}>
+          <div className={styles.segment} role="tablist" aria-label="Garment view">
+            {VIEWS.map(({ key, label }) => (
+              <button
+                key={key}
+                type="button"
+                role="tab"
+                aria-selected={activeView === key}
+                className={`${styles.segmentBtn} ${activeView === key ? styles.selected : ""}`}
+                onClick={() => setActiveView(key)}
+              >
+                {label}
+              </button>
+            ))}
+          </div>
+        </div>
+
         <div className={styles.twoCol}>
           <div>
             <h2 className={styles.sectionTitle}>HANGINGS</h2>
@@ -88,9 +160,33 @@ export default function AddonsForm() {
             <p className={styles.subtitle}>
               Upload your drawing pattern if required
             </p>
-            <div className={styles.uploadCard}>
-              <span className={styles.uploadPlus}>+</span>
-            </div>
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept="image/*"
+              className={styles.hiddenFileInput}
+              aria-hidden
+              tabIndex={-1}
+              onChange={handleDrawingFileChange}
+            />
+            <button
+              type="button"
+              className={`${styles.uploadCard} ${styles.uploadCardButton}`}
+              onClick={handleDrawingPickClick}
+              aria-label={`Select drawing image for ${activeView} view`}
+            >
+              {currentDrawing ? (
+                <img
+                  src={currentDrawing}
+                  alt={`Drawing preview (${activeView})`}
+                  className={styles.uploadPreview}
+                />
+              ) : (
+                <span className={styles.uploadPlus} aria-hidden>
+                  +
+                </span>
+              )}
+            </button>
           </div>
         </div>
 

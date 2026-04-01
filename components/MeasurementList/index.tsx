@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
 import type { MeasurementItem } from "@/data/measurement";
+import { useBoutiquesSelectionStore } from "@/lib/stores/boutiquesSelectionStore";
 import styles from "./MeasurementList.module.scss";
 
 interface MeasurementListProps {
@@ -40,6 +41,7 @@ function scrollOffsetToValue(scrollLeft: number, scrollWidth: number, clientWidt
 }
 
 export default function MeasurementList({ items }: MeasurementListProps) {
+  const setOrderContext = useBoutiquesSelectionStore((s) => s.setOrderContext);
   const [values, setValues] = useState<Record<string, number>>(() =>
     Object.fromEntries(items.map((item) => [item.id, item.value]))
   );
@@ -48,6 +50,9 @@ export default function MeasurementList({ items }: MeasurementListProps) {
   const touchStartX = useRef<Record<string, number>>({});
   const touchStartScrollLeft = useRef<Record<string, number>>({});
   const activeTouchRulerId = useRef<string | null>(null);
+  const wheelAccumRef = useRef<Record<string, number>>({});
+  const wheelRafRef = useRef<number | null>(null);
+  const wheelEndTimerRef = useRef<Record<string, ReturnType<typeof setTimeout> | undefined>>({});
 
   const updateValue = useCallback((id: string, value: number) => {
     setValues((prev) => ({ ...prev, [id]: value }));
@@ -87,15 +92,40 @@ export default function MeasurementList({ items }: MeasurementListProps) {
     isScrollingRef.current[id] = false;
   }, []);
 
+  const flushWheelAccum = useCallback(() => {
+    wheelRafRef.current = null;
+    for (const id of Object.keys(wheelAccumRef.current)) {
+      const acc = wheelAccumRef.current[id];
+      if (!acc) continue;
+      wheelAccumRef.current[id] = 0;
+      const el = rulerRefs.current[id];
+      if (!el) continue;
+      isScrollingRef.current[id] = true;
+      el.scrollLeft += acc;
+      const value = scrollOffsetToValue(el.scrollLeft, el.scrollWidth, el.clientWidth);
+      updateValue(id, value);
+    }
+  }, [updateValue]);
+
   const handleWheel = useCallback(
     (e: React.WheelEvent<HTMLDivElement>, id: string) => {
       const el = rulerRefs.current[id];
       if (!el) return;
-      const dx = e.deltaX !== 0 ? e.deltaX : e.deltaY;
-      el.scrollLeft += dx;
       e.preventDefault();
+      const raw = e.deltaX !== 0 ? e.deltaX : e.deltaY;
+      const dx = raw * 0.55;
+      wheelAccumRef.current[id] = (wheelAccumRef.current[id] || 0) + dx;
+      if (wheelRafRef.current === null) {
+        wheelRafRef.current = requestAnimationFrame(flushWheelAccum);
+      }
+      const prevT = wheelEndTimerRef.current[id];
+      if (prevT) clearTimeout(prevT);
+      wheelEndTimerRef.current[id] = setTimeout(() => {
+        handleScrollEnd(id);
+        wheelEndTimerRef.current[id] = undefined;
+      }, 140);
     },
-    []
+    [flushWheelAccum, handleScrollEnd]
   );
 
   const handleTouchStart = useCallback((e: React.TouchEvent<HTMLDivElement>, id: string) => {
@@ -134,6 +164,26 @@ export default function MeasurementList({ items }: MeasurementListProps) {
     document.addEventListener("touchmove", onTouchMove, touchMoveOpts);
     return () => document.removeEventListener("touchmove", onTouchMove);
   }, [handleTouchMove]);
+
+  useEffect(() => {
+    const EPS = 0.001;
+    const customized = items.some((item) => {
+      const v = values[item.id] ?? item.value;
+      return Math.abs(v - item.value) > EPS;
+    });
+    setOrderContext({ hasMeasurementSelected: customized });
+  }, [values, items, setOrderContext]);
+
+  useEffect(() => {
+    return () => {
+      if (wheelRafRef.current !== null) {
+        cancelAnimationFrame(wheelRafRef.current);
+      }
+      for (const t of Object.values(wheelEndTimerRef.current)) {
+        if (t) clearTimeout(t);
+      }
+    };
+  }, []);
 
   return (
     <div className={styles.wrap}>
