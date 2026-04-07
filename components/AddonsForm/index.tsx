@@ -2,8 +2,10 @@
 
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import type { ApiAccessoryOption } from "@/lib/api";
 import { useBoutiquesSelectionStore } from "@/lib/stores/boutiquesSelectionStore";
+import { useBoutiqueOrderStore } from "@/lib/stores/boutiqueOrderStore";
 import styles from "./AddonsForm.module.scss";
 
 const API_BASE = process.env.NEXT_PUBLIC_API_BASE_URL ?? "https://api.wevraa.in/api";
@@ -23,7 +25,11 @@ const emptyDrawings: Record<GarmentView, string | null> = {
 };
 
 export default function AddonsForm() {
+  const router = useRouter();
   const setOrderContext = useBoutiquesSelectionStore((s) => s.setOrderContext);
+  const selectedImageByProductAndSlot = useBoutiqueOrderStore(
+    (s) => s.selectedImageByProductAndSlot
+  );
   const [accessoryOptions, setAccessoryOptions] = useState<ApiAccessoryOption[]>([]);
   const [selected, setSelected] = useState<Record<string, boolean>>({});
   const [loaded, setLoaded] = useState(false);
@@ -95,6 +101,8 @@ export default function AddonsForm() {
   };
 
   const currentDrawing = drawingPreviews[activeView];
+  const hangingSlotId = `hanging-${activeView}`;
+  const hangingImage = selectedImageByProductAndSlot.global?.[hangingSlotId] ?? null;
 
   return (
     <div className={styles.wrap}>
@@ -148,9 +156,27 @@ export default function AddonsForm() {
             <p className={styles.subtitle}>
               Select or upload hangings or else leave blank
             </p>
-            <div className={styles.uploadCard}>
-              <span aria-hidden>🎀</span>
-            </div>
+            <button
+              type="button"
+              className={`${styles.uploadCard} ${styles.uploadCardButton}`}
+              onClick={() => {
+                const params = new URLSearchParams();
+                params.set("slot", hangingSlotId);
+                params.set("returnTo", "addons");
+                router.push(`/select-sleeve-design?${params.toString()}`);
+              }}
+              aria-label={`Select hanging design for ${activeView} view`}
+            >
+              {hangingImage ? (
+                <img
+                  src={hangingImage}
+                  alt={`Hanging preview (${activeView})`}
+                  className={styles.uploadPreview}
+                />
+              ) : (
+                <span aria-hidden>🎀</span>
+              )}
+            </button>
           </div>
 
           <div>

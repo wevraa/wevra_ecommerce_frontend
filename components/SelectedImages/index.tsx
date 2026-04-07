@@ -18,44 +18,44 @@ export default function SelectedImages({ images, productId, productImage }: Sele
   const [expanded, setExpanded] = useState(false);
   const frontNeckDesignImage = useBoutiqueOrderStore((s) => s.frontNeckDesignImage);
   const sleeveDesigns = useBoutiqueOrderStore((s) => s.sleeveDesigns);
+  const selectedImageByProductAndSlot = useBoutiqueOrderStore(
+    (s) => s.selectedImageByProductAndSlot
+  );
 
   const effectiveDesign = productId
     ? (sleeveDesigns[productId] ?? frontNeckDesignImage)
     : frontNeckDesignImage;
 
   const displayImages = useMemo(() => {
+    const key = productId ?? "global";
+    const slotMap = selectedImageByProductAndSlot[key] ?? {};
     return images.map((item) => {
+      const override = slotMap[item.id];
+      if (override) return { ...item, image: override };
+      // backward-compat: keep supporting old "front neck" selection
       const isFrontNeck = item.label.toLowerCase().includes("front neck");
-      if (isFrontNeck && effectiveDesign) {
-        return { ...item, image: effectiveDesign };
-      }
+      if (isFrontNeck && effectiveDesign) return { ...item, image: effectiveDesign };
       return item;
     });
-  }, [images, effectiveDesign]);
+  }, [images, effectiveDesign, productId, selectedImageByProductAndSlot]);
 
   const primaryImages = displayImages.slice(0, 2);
   const extraImages = displayImages.slice(2, 4);
   const canExpand = extraImages.length > 0;
 
   const renderCard = (item: (typeof displayImages)[0]) => {
-    const isFrontNeck = item.label.toLowerCase().includes("front neck");
-    const showPlusBadge = isFrontNeck && !effectiveDesign;
+    const showPlusBadge = false;
     return (
       <button
         key={item.id}
         type="button"
-        className={`${styles.card} ${isFrontNeck ? styles.cardInteractive : ""}`}
+        className={`${styles.card} ${styles.cardInteractive}`}
         onClick={() => {
-          if (isFrontNeck) {
-            const params = new URLSearchParams();
-            if (productId) params.set("productId", productId);
-            if (productImage) params.set("image", productImage);
-            router.push(
-              params.size > 0
-                ? `/select-sleeve-design?${params.toString()}`
-                : "/select-sleeve-design"
-            );
-          }
+          const params = new URLSearchParams();
+          params.set("slot", item.id);
+          if (productId) params.set("productId", productId);
+          if (productImage) params.set("image", productImage);
+          router.push(`/select-sleeve-design?${params.toString()}`);
         }}
       >
         <Image

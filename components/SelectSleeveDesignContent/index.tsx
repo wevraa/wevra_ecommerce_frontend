@@ -10,15 +10,20 @@ import styles from "./SelectSleeveDesignContent.module.scss";
 interface SelectSleeveDesignContentProps {
   productId?: string;
   returnImage?: string;
+  slotId?: string;
+  returnTo?: string;
 }
 
 export default function SelectSleeveDesignContent({
   productId,
   returnImage,
+  slotId,
+  returnTo,
 }: SelectSleeveDesignContentProps) {
   const router = useRouter();
   const setFrontNeckDesign = useBoutiqueOrderStore((s) => s.setFrontNeckDesign);
   const setSleeveDesign = useBoutiqueOrderStore((s) => s.setSleeveDesign);
+  const setSelectedImageForSlot = useBoutiqueOrderStore((s) => s.setSelectedImageForSlot);
 
   const [designs, setDesigns] = useState<ApiDesign[]>([]);
   const [loading, setLoading] = useState(true);
@@ -67,6 +72,10 @@ export default function SelectSleeveDesignContent({
   }, []);
 
   const handleSelectDesign = (imageUrl: string) => {
+    const key = productId ?? "global";
+    if (slotId) {
+      setSelectedImageForSlot(key, slotId, imageUrl);
+    }
     if (productId) {
       setSleeveDesign(productId, imageUrl);
     }
@@ -75,11 +84,12 @@ export default function SelectSleeveDesignContent({
     const params = new URLSearchParams();
     if (productId) params.set("productId", productId);
     if (returnImage) params.set("image", returnImage);
-    router.push(
-      params.size > 0
-        ? `/select-boutiques?${params.toString()}`
-        : "/select-boutiques"
-    );
+    if (slotId) params.set("slot", slotId);
+    if (returnTo === "addons") {
+      router.push("/addons");
+      return;
+    }
+    router.push(params.size > 0 ? `/select-boutiques?${params.toString()}` : "/select-boutiques");
   };
 
   return (

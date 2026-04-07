@@ -8,16 +8,28 @@ import { useBoutiqueOrderStore } from "@/lib/stores/boutiqueOrderStore";
 interface SelectSleeveDesignHeaderProps {
   productId?: string;
   returnImage?: string;
+  slotId?: string;
+  returnTo?: string;
 }
 
-export default function SelectSleeveDesignHeader({ productId, returnImage }: SelectSleeveDesignHeaderProps) {
+export default function SelectSleeveDesignHeader({
+  productId,
+  returnImage,
+  slotId,
+  returnTo,
+}: SelectSleeveDesignHeaderProps) {
   const CATEGORY_TABS = ["Boat Neck", "High Neck", "U Neck", "Collar", "V Neck", "Square Neck"];
   const [activeTab, setActiveTab] = useState(CATEGORY_TABS[0]);
   const router = useRouter();
   const clearSleeveDesign = useBoutiqueOrderStore((s) => s.clearSleeveDesign);
   const clearFrontNeckDesign = useBoutiqueOrderStore((s) => s.clearFrontNeckDesign);
+  const clearSelectedImageForSlot = useBoutiqueOrderStore((s) => s.clearSelectedImageForSlot);
 
   const handleBack = () => {
+    const key = productId ?? "global";
+    if (slotId) {
+      clearSelectedImageForSlot(key, slotId);
+    }
     if (productId) {
       clearSleeveDesign(productId);
     }
@@ -26,11 +38,12 @@ export default function SelectSleeveDesignHeader({ productId, returnImage }: Sel
     const backParams = new URLSearchParams();
     if (productId) backParams.set("productId", productId);
     if (returnImage) backParams.set("image", returnImage);
-    router.push(
-      backParams.size > 0
-        ? `/select-boutiques?${backParams.toString()}`
-        : "/select-boutiques"
-    );
+    if (slotId) backParams.set("slot", slotId);
+    if (returnTo === "addons") {
+      router.push("/addons");
+      return;
+    }
+    router.push(backParams.size > 0 ? `/select-boutiques?${backParams.toString()}` : "/select-boutiques");
   };
 
   return (
