@@ -55,11 +55,25 @@
   padding-bottom: $space-lg;
 }
 
-.loading {
-  text-align: center;
-  padding: $space-2xl;
-  color: $color-text-muted;
+/* ── Skeleton loading rows ── */
+.thumbSkeleton {
+  width: 88px;
+  height: 110px;
+  flex-shrink: 0;
+  border-radius: 8px;
+  display: block;
 }
+
+.skelLine {
+  display: block;
+  border-radius: 6px;
+  height: 14px;
+}
+
+.skelTitle     { width: 75%; }
+.skelTitleShort{ width: 50%; }
+.skelPrice     { width: 35%; height: 16px; margin-top: $space-xs; }
+.skelBtn       { width: 68px; height: 28px; border-radius: 8px; margin-top: $space-sm; }
 
 .list {
   list-style: none;

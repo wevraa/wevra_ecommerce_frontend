@@ -1,0 +1,213 @@
+@use "../../styles/variables" as *;
+@use "../../styles/mixins" as *;
+
+/* ── Header ── */
+.header {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: $header-height;
+  padding: 0 $space-md;
+  background: $color-white;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+}
+
+.backBtn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border: none;
+  background: transparent;
+  color: $color-text;
+  cursor: pointer;
+  border-radius: 8px;
+  flex-shrink: 0;
+
+  &:hover {
+    background: $color-light-pink;
+  }
+}
+
+.title {
+  font-size: $font-size-lg;
+  font-weight: $font-weight-bold;
+  color: $color-text;
+  margin: 0;
+}
+
+.headerSpacer {
+  width: 40px;
+}
+
+/* ── Main ── */
+.main {
+  min-height: calc(100vh - #{$header-height} - #{$bottom-nav-height});
+  background: #fdf8f8;
+  padding: $space-md;
+}
+
+/* ── Form card ── */
+.card {
+  background: $color-white;
+  border-radius: 14px;
+  padding: $space-lg;
+  display: flex;
+  flex-direction: column;
+  gap: $space-md;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06);
+  max-width: 520px;
+  margin: 0 auto;
+}
+
+.sectionLabel {
+  font-size: $font-size-xs;
+  font-weight: $font-weight-semibold;
+  color: $color-deep-red;
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  margin: 0;
+}
+
+/* ── Field ── */
+.fieldGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  flex: 1;
+}
+
+.label {
+  font-size: $font-size-xs;
+  font-weight: $font-weight-semibold;
+  color: $color-text-muted;
+  letter-spacing: 0.02em;
+}
+
+.input {
+  height: 44px;
+  padding: 0 $space-md;
+  border: 1.5px solid rgba(0, 0, 0, 0.12);
+  border-radius: 10px;
+  font-size: $font-size-base;
+  font-family: inherit;
+  color: $color-text;
+  background: $color-white;
+  outline: none;
+  transition: border-color 0.15s;
+  width: 100%;
+  box-sizing: border-box;
+
+  &::placeholder {
+    color: rgba(0, 0, 0, 0.28);
+  }
+
+  &:focus {
+    border-color: $color-deep-red;
+  }
+}
+
+/* 2-column row for city + state */
+.row2 {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: $space-md;
+}
+
+/* ── Feedback messages ── */
+.errorMsg {
+  font-size: $font-size-sm;
+  color: $color-red;
+  background: #fff0f0;
+  border: 1px solid rgba(183, 28, 28, 0.2);
+  border-radius: 8px;
+  padding: $space-sm $space-md;
+  margin: 0;
+}
+
+.successMsg {
+  font-size: $font-size-sm;
+  color: #1a6b2e;
+  background: #f0fff4;
+  border: 1px solid rgba(26, 107, 46, 0.2);
+  border-radius: 8px;
+  padding: $space-sm $space-md;
+  margin: 0;
+  text-align: center;
+}
+
+/* ── Save button ── */
+.saveBtn {
+  height: 50px;
+  border: none;
+  border-radius: 26px;
+  background: $color-deep-red;
+  color: $color-white;
+  font-size: $font-size-base;
+  font-weight: $font-weight-bold;
+  font-family: inherit;
+  cursor: pointer;
+  margin-top: $space-sm;
+  transition: background 0.15s, transform 0.1s;
+
+  &:hover:not(:disabled) {
+    background: #6f0f2a;
+    transform: translateY(-1px);
+  }
+
+  &:active:not(:disabled) {
+    transform: translateY(0);
+  }
+
+  &:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+  }
+}
+
+/* ── Skeleton ── */
+.skelIcon {
+  display: block;
+  width: 40px;
+  height: 40px;
+  border-radius: 8px;
+}
+
+.skelTitle {
+  display: block;
+  width: 120px;
+  height: 20px;
+  border-radius: 6px;
+}
+
+.skelLabel {
+  display: block;
+  width: 70px;
+  height: 12px;
+  border-radius: 4px;
+}
+
+.skelInput {
+  display: block;
+  width: 100%;
+  height: 44px;
+  border-radius: 10px;
+}
+
+.skelSaveBtn {
+  display: block;
+  width: 100%;
+  height: 50px;
+  border-radius: 26px;
+  margin-top: $space-sm;
+}
+
+@include mobile-first($desktop) {
+  .main {
+    padding: $space-xl;
+  }
+}

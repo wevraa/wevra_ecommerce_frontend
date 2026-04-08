@@ -127,7 +127,19 @@ export default function WishlistPageClient() {
 
       <main className={`${styles.main} main-with-bottom-nav`}>
         {loading ? (
-          <p className={styles.loading}>Loading…</p>
+          <ul className={styles.list} aria-busy aria-label="Loading wishlist">
+            {Array.from({ length: 4 }).map((_, i) => (
+              <li key={i} className={styles.row}>
+                <span className={`${styles.thumbSkeleton} shimmer`} aria-hidden />
+                <div className={styles.rowBody}>
+                  <span className={`${styles.skelLine} ${styles.skelTitle} shimmer`} aria-hidden />
+                  <span className={`${styles.skelLine} ${styles.skelTitleShort} shimmer`} aria-hidden />
+                  <span className={`${styles.skelLine} ${styles.skelPrice} shimmer`} aria-hidden />
+                  <span className={`${styles.skelLine} ${styles.skelBtn} shimmer`} aria-hidden />
+                </div>
+              </li>
+            ))}
+          </ul>
         ) : !loggedIn ? (
           renderNotLoggedIn()
         ) : items.length === 0 ? (
