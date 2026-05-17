@@ -1,3 +1,4 @@
+import Link from "next/link";
 import Accordion from "@/components/Accordion";
 import {
   footerShortDesc,
@@ -7,6 +8,14 @@ import {
   socialLinks,
 } from "@/data/dummy";
 import styles from "./Footer.module.scss";
+
+const LEGAL_LINKS = [
+  { href: "/contact",  label: "Contact Us" },
+  { href: "/privacy",  label: "Privacy Policy" },
+  { href: "/terms",    label: "Terms & Conditions" },
+  { href: "/refund",   label: "Refund & Cancellation" },
+  { href: "/shipping", label: "Shipping & Delivery" },
+];
 
 export default function Footer() {
   return (
@@ -22,7 +31,7 @@ export default function Footer() {
                 </li>
               ))}
             </ul>
-            <div className={styles.social}>
+            {/* <div className={styles.social}>
               {socialLinks.map((link) => (
                 <a
                   key={link.id}
@@ -33,13 +42,28 @@ export default function Footer() {
                   {link.icon.toUpperCase()}
                 </a>
               ))}
-            </div>
+            </div> */}
           </div>
           <div className={styles.accordionWrap}>
             <Accordion items={footerAccordionItems} />
           </div>
         </div>
+
+        {/* ── Legal links ── */}
+        <nav className={styles.legalNav} aria-label="Legal">
+          {LEGAL_LINKS.map((l) => (
+            <Link key={l.href} href={l.href} className={styles.legalLink}>
+              {l.label}
+            </Link>
+          ))}
+        </nav>
+
         <p className={styles.longDesc}>{footerLongDesc}</p>
+
+        <p className={styles.copyright}>
+          Copyright &copy; 2026 Wevraa. All rights reserved. A{" "}
+          <span className={styles.printeasy}>Printeasy</span> Company.
+        </p>
       </div>
     </footer>
   );

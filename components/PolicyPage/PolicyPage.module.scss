@@ -1,0 +1,163 @@
+@use "../../styles/variables" as *;
+@use "../../styles/mixins" as *;
+
+/* ── Header ── */
+.header {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: $header-height;
+  padding: 0 $space-md;
+  background: $color-white;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+}
+
+.backBtn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border: none;
+  background: transparent;
+  color: $color-text;
+  cursor: pointer;
+  border-radius: 8px;
+  flex-shrink: 0;
+
+  &:hover { background: $color-light-pink; }
+}
+
+.title {
+  font-size: $font-size-base;
+  font-weight: $font-weight-bold;
+  color: $color-text;
+  margin: 0;
+  flex: 1;
+  text-align: center;
+}
+
+.spacer { width: 40px; }
+
+/* ── Main ── */
+.main {
+  background: #fdf8f8;
+  min-height: calc(100vh - #{$header-height} - #{$bottom-nav-height});
+  padding: $space-lg $space-md $space-2xl;
+}
+
+/* ── Article (content container) ── */
+.article {
+  max-width: 680px;
+  margin: 0 auto;
+  background: $color-white;
+  border-radius: 14px;
+  padding: $space-xl;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06);
+
+  /* ── Typography inside article ── */
+
+  h2 {
+    font-size: $font-size-xl;
+    font-weight: $font-weight-bold;
+    color: $color-deep-red;
+    margin: 0 0 $space-sm;
+    line-height: 1.3;
+  }
+
+  h3 {
+    font-size: $font-size-base;
+    font-weight: $font-weight-semibold;
+    color: $color-text;
+    margin: $space-lg 0 $space-xs;
+    padding-bottom: 6px;
+    border-bottom: 2px solid $color-light-pink;
+  }
+
+  p {
+    font-size: $font-size-sm;
+    color: $color-text;
+    line-height: 1.75;
+    margin: 0 0 $space-md;
+  }
+
+  ul {
+    margin: 0 0 $space-md $space-md;
+    padding: 0;
+    list-style: none;
+
+    li {
+      position: relative;
+      padding-left: $space-md;
+      font-size: $font-size-sm;
+      color: $color-text;
+      line-height: 1.7;
+      margin-bottom: $space-xs;
+
+      &::before {
+        content: "•";
+        position: absolute;
+        left: 0;
+        color: $color-deep-red;
+        font-weight: $font-weight-bold;
+      }
+    }
+  }
+
+  /* effective date / tagline */
+  .meta {
+    font-size: $font-size-xs;
+    color: $color-text-muted;
+    margin-bottom: $space-xl;
+  }
+
+  /* contact / highlight box */
+  .infoBox {
+    background: #fdf0f3;
+    border: 1px solid rgba(187, 38, 73, 0.15);
+    border-radius: 10px;
+    padding: $space-md $space-lg;
+    margin: $space-md 0;
+
+    p { margin: 0; }
+
+    a {
+      color: $color-deep-red;
+      font-weight: $font-weight-semibold;
+      text-decoration: none;
+
+      &:hover { text-decoration: underline; }
+    }
+  }
+
+  /* pill tag (e.g. hours badge) */
+  .badge {
+    display: inline-block;
+    background: $color-deep-red;
+    color: $color-white;
+    font-size: $font-size-xs;
+    font-weight: $font-weight-semibold;
+    border-radius: 20px;
+    padding: 3px 12px;
+    margin-bottom: $space-sm;
+  }
+
+  .divider {
+    border: none;
+    border-top: 1px solid rgba(0, 0, 0, 0.07);
+    margin: $space-xl 0;
+  }
+}
+
+@include mobile-first($desktop) {
+  .main {
+    padding: $space-xl $space-lg $space-2xl;
+  }
+
+  .article {
+    padding: $space-2xl;
+  }
+}
