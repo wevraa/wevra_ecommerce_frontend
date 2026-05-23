@@ -1,12 +1,15 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import * as Select from "@radix-ui/react-select";
 import Link from "next/link";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { useBoutiquesSelectionStore } from "@/lib/stores/boutiquesSelectionStore";
+import { formatRequiredDate, useChatStore } from "@/lib/stores/chatStore";
 import styles from "./OrderQuotePageClient.module.scss";
+
+const API_BASE = process.env.NEXT_PUBLIC_API_BASE_URL ?? "https://api.wevraa.in/api";
 
 /** Local calendar date as yyyy-mm-dd (no UTC shift). */
 function toIsoDateLocal(d: Date): string {
@@ -63,8 +66,9 @@ function isoBelongsToMonth(iso: string, year: number, monthIndex: number): boole
   return sy === year && sm === monthIndex + 1;
 }
 
-export default function OrderQuotePageClient() {
+export default function OrderQuotePageClient({ boutiqueId }: { boutiqueId?: string }) {
   const router = useRouter();
+  const sendQuoteToBoutique = useChatStore((s) => s.sendQuoteToBoutique);
   const now = useMemo(() => new Date(), []);
   const monthSlots = useMemo(() => buildMonthsThisYearFrom(now), [now]);
   const initialYM = monthSlots[0]?.value ?? `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}`;
@@ -79,6 +83,30 @@ export default function OrderQuotePageClient() {
   );
 
   const { selectedBoutiques, orderContext } = useBoutiquesSelectionStore();
+
+  const activeBoutique = useMemo(
+    () =>
+      boutiqueId
+        ? selectedBoutiques.find((b) => b.id === boutiqueId)
+        : selectedBoutiques[0],
+    [boutiqueId, selectedBoutiques]
+  );
+
+  const [productTitle, setProductTitle] = useState("Machine Embroidery Blouse");
+
+  useEffect(() => {
+    if (!orderContext.productId) return;
+    let cancelled = false;
+    fetch(`${API_BASE}/v1/products/${orderContext.productId}`)
+      .then((r) => (r.ok ? r.json() : null))
+      .then((data: { title?: string } | null) => {
+        if (!cancelled && data?.title) setProductTitle(data.title);
+      })
+      .catch(() => {});
+    return () => {
+      cancelled = true;
+    };
+  }, [orderContext.productId]);
 
   const boutiqueCount = selectedBoutiques.length;
   const boutiqueNames =
@@ -100,6 +128,25 @@ export default function OrderQuotePageClient() {
       if (!prev) return null;
       return isoBelongsToMonth(prev, y, mi) ? prev : null;
     });
+  };
+
+  const handleSend = () => {
+    if (!activeBoutique) {
+      router.push("/boutiques-selection");
+      return;
+    }
+    if (!selectedDate) return;
+
+    sendQuoteToBoutique(activeBoutique.id, activeBoutique.name, {
+      productTitle,
+      productImage: orderContext.productImage,
+      sleeveDesignImage: orderContext.sleeveDesignImage,
+      requiredDateLabel: formatRequiredDate(selectedDate),
+      hasMeasurementSelected,
+      hasAddonsSelected,
+    });
+
+    router.push(`/chat/${encodeURIComponent(activeBoutique.id)}`);
   };
 
   return (
@@ -262,7 +309,7 @@ export default function OrderQuotePageClient() {
         {/* ── Order details card ── */}
         <div className={styles.productCard}>
           <div className={styles.productInfo}>
-            <h3 className={styles.productName}>Machine Embroidery Blouse</h3>
+            <h3 className={styles.productName}>{productTitle}</h3>
             <p
               className={
                 hasAddonsSelected ? styles.selectionPositive : styles.addonsWarning
@@ -355,7 +402,12 @@ export default function OrderQuotePageClient() {
           <Link href="/boutiques-selection" className={styles.cancelBtn}>
             Cancel
           </Link>
-          <button type="button" className={styles.sendBtn}>
+          <button
+            type="button"
+            className={styles.sendBtn}
+            onClick={handleSend}
+            disabled={!selectedDate || !activeBoutique}
+          >
             Send
           </button>
         </div>

@@ -32,7 +32,7 @@ export default function BoutiqueSelectionList({
           <button
             type="button"
             className={styles.item}
-            onClick={() => router.push("/order-quote")}
+            onClick={() => router.push(`/order-quote?boutiqueId=${encodeURIComponent(item.id)}`)}
           >
             <span
               className={`${styles.icon} ${getIconClass(item.iconColor, styles)}`}
