@@ -4,15 +4,23 @@ import { useEffect, useRef, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useChatStore, type ChatMessage } from "@/lib/stores/chatStore";
+import LoginModal from "@/components/LoginModal";
+import { formatMessageTime, formatSenderName } from "@/lib/chat/api";
+import type { QuoteOrderPayload } from "@/lib/chat/types";
+import {
+  getTailorName,
+  useConversationChat,
+  type DisplayMessage,
+} from "@/hooks/useConversationChat";
 import styles from "./ChatPageClient.module.scss";
 
+const MAX_MESSAGE_LENGTH = 4000;
+
 interface ChatPageClientProps {
-  boutiqueId: string;
+  conversationId: string;
 }
 
-function QuoteMessage({ msg }: { msg: ChatMessage }) {
-  const quote = msg.quote!;
+function QuoteCard({ quote, timeLabel }: { quote: QuoteOrderPayload; timeLabel: string }) {
   const images = [
     quote.productImage && { src: quote.productImage, alt: "Fabric" },
     quote.sleeveDesignImage && { src: quote.sleeveDesignImage, alt: "Sleeve design" },
@@ -33,7 +41,14 @@ function QuoteMessage({ msg }: { msg: ChatMessage }) {
           {images.length > 0 ? (
             images.map((img) => (
               <div key={img.src} className={styles.quoteImageWrap}>
-                <Image src={img.src} alt={img.alt} fill className={styles.quoteImage} sizes="72px" unoptimized={img.src.startsWith("blob:")} />
+                <Image
+                  src={img.src}
+                  alt={img.alt}
+                  fill
+                  className={styles.quoteImage}
+                  sizes="72px"
+                  unoptimized={img.src.startsWith("blob:")}
+                />
               </div>
             ))
           ) : (
@@ -56,53 +71,155 @@ function QuoteMessage({ msg }: { msg: ChatMessage }) {
         {quote.hasAddonsSelected && (
           <p className={`${styles.quoteStatus} ${styles.positive}`}>Add ons selected</p>
         )}
-        <p className={styles.quoteTime}>{msg.timeLabel}</p>
+        <p className={styles.quoteTime}>{timeLabel}</p>
       </div>
     </div>
   );
 }
 
-export default function ChatPageClient({ boutiqueId }: ChatPageClientProps) {
-  const router = useRouter();
-  const thread = useChatStore((s) => s.threads[boutiqueId]);
-  const addTextMessage = useChatStore((s) => s.addTextMessage);
-  const [draft, setDraft] = useState("");
-  const bottomRef = useRef<HTMLDivElement>(null);
+function MessageBubble({ msg }: { msg: DisplayMessage }) {
+  const timeLabel = formatMessageTime(msg.createdAt);
+  const senderName = formatSenderName(msg.sender);
 
-  const boutiqueName = thread?.boutiqueName ?? "Boutique";
-  const messages = thread?.messages ?? [];
+  if (msg.quoteMeta && msg.isOwn) {
+    return (
+      <div className={styles.rowOut}>
+        <QuoteCard quote={msg.quoteMeta} timeLabel={timeLabel} />
+      </div>
+    );
+  }
+
+  const rowClass = msg.isOwn ? styles.rowOut : styles.rowIn;
+
+  return (
+    <div className={rowClass}>
+      <div className={styles.bubble}>
+        {!msg.isOwn && senderName ? (
+          <span className={styles.senderName}>{senderName}</span>
+        ) : null}
+        <p className={styles.bubbleText}>{msg.body}</p>
+        <span className={styles.bubbleTime}>{timeLabel}</span>
+      </div>
+    </div>
+  );
+}
+
+export default function ChatPageClient({ conversationId }: ChatPageClientProps) {
+  const router = useRouter();
+  const {
+    conversation,
+    messages,
+    loading,
+    loadingMore,
+    hasMore,
+    error,
+    unauthorized,
+    toast,
+    sendMessage,
+    loadOlder,
+    clearToast,
+  } = useConversationChat(conversationId);
+
+  const [draft, setDraft] = useState("");
+  const [loginOpen, setLoginOpen] = useState(false);
+  const bottomRef = useRef<HTMLDivElement>(null);
+  const messagesRef = useRef<HTMLDivElement>(null);
+
+  const boutiqueName = getTailorName(conversation);
+  const logoUrl = conversation?.tailor?.logoUrl;
+
+  useEffect(() => {
+    if (unauthorized) setLoginOpen(true);
+    else setLoginOpen(false);
+  }, [unauthorized]);
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages.length]);
 
+  useEffect(() => {
+    if (!toast) return;
+    const t = setTimeout(clearToast, 4000);
+    return () => clearTimeout(t);
+  }, [toast, clearToast]);
+
+  const handleScroll = () => {
+    const el = messagesRef.current;
+    if (!el || loadingMore || !hasMore) return;
+    if (el.scrollTop < 80) loadOlder();
+  };
+
   const handleSend = () => {
     const text = draft.trim();
     if (!text) return;
-    addTextMessage(boutiqueId, boutiqueName, text, "out");
+    sendMessage(text);
     setDraft("");
   };
+
+  const canSend = draft.trim().length > 0 && draft.length <= MAX_MESSAGE_LENGTH;
+
+  if (loading) {
+    return (
+      <div className={styles.page}>
+        <header className={styles.header}>
+          <span className={`${styles.skelBack} shimmer`} />
+          <span className={`${styles.skelTitle} shimmer`} />
+          <span className={styles.headerSpacer} />
+        </header>
+        <div className={styles.messages}>
+          {Array.from({ length: 4 }).map((_, i) => (
+            <div key={i} className={styles.rowOut}>
+              <span className={`${styles.skelBubble} shimmer`} />
+            </div>
+          ))}
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className={styles.page}>
+        <header className={styles.header}>
+          <button type="button" className={styles.backBtn} onClick={() => router.back()} aria-label="Go back">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <polyline points="15 18 9 12 15 6" />
+            </svg>
+          </button>
+          <h1 className={styles.headerTitle}>Chat</h1>
+          <div className={styles.headerSpacer} />
+        </header>
+        <div className={styles.errorState}>
+          <p>{error}</p>
+          <button type="button" className={styles.errorBtn} onClick={() => router.back()}>
+            Go back
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className={styles.page}>
       <header className={styles.header}>
-        <button
-          type="button"
-          className={styles.backBtn}
-          onClick={() => router.back()}
-          aria-label="Go back"
-        >
+        <button type="button" className={styles.backBtn} onClick={() => router.back()} aria-label="Go back">
           <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
             <polyline points="15 18 9 12 15 6" />
           </svg>
         </button>
 
         <div className={styles.boutiqueInfo}>
-          <div className={styles.avatarStack} aria-hidden>
-            <span className={`${styles.circle} ${styles.b1}`} />
-            <span className={`${styles.circle} ${styles.b2}`} />
-            <span className={`${styles.circle} ${styles.b3}`} />
-          </div>
+          {logoUrl ? (
+            <div className={styles.logoWrap}>
+              <Image src={logoUrl} alt="" fill className={styles.logoImage} sizes="40px" />
+            </div>
+          ) : (
+            <div className={styles.avatarStack} aria-hidden>
+              <span className={`${styles.circle} ${styles.b1}`} />
+              <span className={`${styles.circle} ${styles.b2}`} />
+              <span className={`${styles.circle} ${styles.b3}`} />
+            </div>
+          )}
           <div className={styles.boutiqueMeta}>
             <p className={styles.boutiqueName}>{boutiqueName}</p>
             <p className={styles.online}>Online</p>
@@ -121,28 +238,14 @@ export default function ChatPageClient({ boutiqueId }: ChatPageClientProps) {
         </Link>
       </header>
 
-      <div className={styles.messages}>
+      {toast ? <div className={styles.toast} role="status">{toast}</div> : null}
+      {loadingMore ? <div className={styles.loadingMore}>Loading older messages…</div> : null}
+
+      <div className={styles.messages} ref={messagesRef} onScroll={handleScroll}>
         {messages.length === 0 ? (
-          <p className={styles.emptyChat}>No messages yet. Send a quote from Order Quote.</p>
+          <p className={styles.emptyChat}>No messages yet. Say hello!</p>
         ) : (
-          messages.map((msg) => {
-            if (msg.type === "quote") {
-              return (
-                <div key={msg.id} className={styles.rowOut}>
-                  <QuoteMessage msg={msg} />
-                </div>
-              );
-            }
-            const rowClass = msg.direction === "out" ? styles.rowOut : styles.rowIn;
-            return (
-              <div key={msg.id} className={rowClass}>
-                <div className={styles.bubble}>
-                  <p className={styles.bubbleText}>{msg.text}</p>
-                  <span className={styles.bubbleTime}>{msg.timeLabel}</span>
-                </div>
-              </div>
-            );
-          })
+          messages.map((msg) => <MessageBubble key={msg.id} msg={msg} />)
         )}
         <div ref={bottomRef} />
       </div>
@@ -159,6 +262,7 @@ export default function ChatPageClient({ boutiqueId }: ChatPageClientProps) {
           className={styles.input}
           placeholder="Type a message..."
           value={draft}
+          maxLength={MAX_MESSAGE_LENGTH}
           onChange={(e) => setDraft(e.target.value)}
           onKeyDown={(e) => {
             if (e.key === "Enter") {
@@ -167,13 +271,27 @@ export default function ChatPageClient({ boutiqueId }: ChatPageClientProps) {
             }
           }}
         />
-        <button type="button" className={styles.composerBtn} aria-label="Camera">
+        <button
+          type="button"
+          className={styles.composerBtn}
+          aria-label="Send"
+          disabled={!canSend}
+          onClick={handleSend}
+        >
           <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-            <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z" />
-            <circle cx="12" cy="13" r="4" />
+            <line x1="22" y1="2" x2="11" y2="13" />
+            <polygon points="22 2 15 22 11 13 2 9 22 2" />
           </svg>
         </button>
       </div>
+
+      <LoginModal
+        open={loginOpen}
+        onClose={() => {
+          setLoginOpen(false);
+          if (unauthorized) router.push("/profile");
+        }}
+      />
     </div>
   );
 }

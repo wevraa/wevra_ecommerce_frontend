@@ -5,8 +5,15 @@ import * as Select from "@radix-ui/react-select";
 import Link from "next/link";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
+import LoginModal from "@/components/LoginModal";
+import { getAccessToken } from "@/lib/auth";
+import {
+  formatRequiredDate,
+  sendQuoteViaChat,
+  startChatWithTailor,
+  ChatUnauthorizedError,
+} from "@/lib/chat/startChat";
 import { useBoutiquesSelectionStore } from "@/lib/stores/boutiquesSelectionStore";
-import { formatRequiredDate, useChatStore } from "@/lib/stores/chatStore";
 import styles from "./OrderQuotePageClient.module.scss";
 
 const API_BASE = process.env.NEXT_PUBLIC_API_BASE_URL ?? "https://api.wevraa.in/api";
@@ -68,7 +75,8 @@ function isoBelongsToMonth(iso: string, year: number, monthIndex: number): boole
 
 export default function OrderQuotePageClient({ boutiqueId }: { boutiqueId?: string }) {
   const router = useRouter();
-  const sendQuoteToBoutique = useChatStore((s) => s.sendQuoteToBoutique);
+  const [sending, setSending] = useState(false);
+  const [loginOpen, setLoginOpen] = useState(false);
   const now = useMemo(() => new Date(), []);
   const monthSlots = useMemo(() => buildMonthsThisYearFrom(now), [now]);
   const initialYM = monthSlots[0]?.value ?? `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}`;
@@ -130,23 +138,35 @@ export default function OrderQuotePageClient({ boutiqueId }: { boutiqueId?: stri
     });
   };
 
-  const handleSend = () => {
+  const handleSend = async () => {
     if (!activeBoutique) {
       router.push("/boutiques-selection");
       return;
     }
-    if (!selectedDate) return;
+    if (!selectedDate || sending) return;
 
-    sendQuoteToBoutique(activeBoutique.id, activeBoutique.name, {
-      productTitle,
-      productImage: orderContext.productImage,
-      sleeveDesignImage: orderContext.sleeveDesignImage,
-      requiredDateLabel: formatRequiredDate(selectedDate),
-      hasMeasurementSelected,
-      hasAddonsSelected,
-    });
+    if (!getAccessToken()) {
+      setLoginOpen(true);
+      return;
+    }
 
-    router.push(`/chat/${encodeURIComponent(activeBoutique.id)}`);
+    setSending(true);
+    try {
+      const conversation = await startChatWithTailor(activeBoutique.id);
+      await sendQuoteViaChat(conversation.id, activeBoutique.name, {
+        productTitle,
+        productImage: orderContext.productImage,
+        sleeveDesignImage: orderContext.sleeveDesignImage,
+        requiredDateLabel: formatRequiredDate(selectedDate),
+        hasMeasurementSelected,
+        hasAddonsSelected,
+      });
+      router.push(`/chat/${encodeURIComponent(conversation.id)}`);
+    } catch (e) {
+      if (e instanceof ChatUnauthorizedError) setLoginOpen(true);
+    } finally {
+      setSending(false);
+    }
   };
 
   return (
@@ -406,12 +426,14 @@ export default function OrderQuotePageClient({ boutiqueId }: { boutiqueId?: stri
             type="button"
             className={styles.sendBtn}
             onClick={handleSend}
-            disabled={!selectedDate || !activeBoutique}
+            disabled={!selectedDate || !activeBoutique || sending}
           >
-            Send
+            {sending ? "Sending…" : "Send"}
           </button>
         </div>
       </div>
+
+      <LoginModal open={loginOpen} onClose={() => setLoginOpen(false)} />
     </main>
   );
 }

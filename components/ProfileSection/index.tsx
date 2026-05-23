@@ -70,7 +70,7 @@ export default function ProfileSection() {
           </div>
         </div>
         <nav className={styles.links} aria-hidden>
-          {[1, 2, 3, 4].map((i) => (
+          {[1, 2, 3, 4, 5].map((i) => (
             <span key={i} className={`${styles.skelLink} shimmer`} />
           ))}
         </nav>
@@ -95,6 +95,7 @@ export default function ProfileSection() {
           </div>
         </div>
         <nav className={styles.links} aria-label="Profile options">
+          <Link href="/chat" className={styles.linkRow}><span>Messages</span></Link>
           <Link href="/orders" className={styles.linkRow}><span>Orders</span></Link>
           <Link href="/measurement" className={styles.linkRow}><span>Measurement</span></Link>
           <Link href="/help" className={styles.linkRow}><span>Help and Support</span></Link>
@@ -135,6 +136,7 @@ export default function ProfileSection() {
       )}
 
       <nav className={styles.links} aria-label="Profile options">
+        <Link href="/chat" className={styles.linkRow}><span>Messages</span></Link>
         <Link href="/orders" className={styles.linkRow}><span>Orders</span></Link>
         <Link href="/measurement" className={styles.linkRow}><span>Measurement</span></Link>
         <Link href="/help" className={styles.linkRow}><span>Help and Support</span></Link>

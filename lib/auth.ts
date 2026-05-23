@@ -105,6 +105,31 @@ export function clearAuthSession(): void {
   window.dispatchEvent(new CustomEvent("auth-changed"));
 }
 
+export interface AuthUser {
+  id: string;
+  email?: string | null;
+  name?: string | null;
+  firstName?: string | null;
+  lastName?: string | null;
+  phone?: string | null;
+}
+
+export function getAuthUser(): AuthUser | null {
+  if (typeof window === "undefined") return null;
+  try {
+    const raw = localStorage.getItem(AUTH_USER_KEY);
+    if (!raw) return null;
+    const user = JSON.parse(raw) as AuthUser;
+    return user?.id ? user : null;
+  } catch {
+    return null;
+  }
+}
+
+export function getAuthUserId(): string | null {
+  return getAuthUser()?.id ?? null;
+}
+
 /** Call when access token may be expired; updates localStorage on success. */
 export async function tryRefreshFromStorage(): Promise<boolean> {
   if (typeof window === "undefined") return false;

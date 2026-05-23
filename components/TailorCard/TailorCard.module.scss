@@ -175,6 +175,26 @@
   }
 }
 
+.chatBtn {
+  padding: $space-sm $space-md;
+  border: none;
+  background: $color-deep-red;
+  color: $color-white;
+  font-size: $font-size-xs;
+  font-weight: $font-weight-semibold;
+  cursor: pointer;
+  border-radius: 8px;
+
+  &:hover:not(:disabled) {
+    background: #6f0f2a;
+  }
+
+  &:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+  }
+}
+
 .contactLink {
   font-size: $font-size-sm;
   color: $color-deep-red;

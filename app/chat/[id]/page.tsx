@@ -1,10 +1,10 @@
 import ChatPageClient from "@/components/ChatPageClient";
 
 interface ChatPageProps {
-  params: Promise<{ boutiqueId: string }>;
+  params: Promise<{ id: string }>;
 }
 
 export default async function ChatPage({ params }: ChatPageProps) {
-  const { boutiqueId } = await params;
-  return <ChatPageClient boutiqueId={boutiqueId} />;
+  const { id } = await params;
+  return <ChatPageClient conversationId={id} />;
 }

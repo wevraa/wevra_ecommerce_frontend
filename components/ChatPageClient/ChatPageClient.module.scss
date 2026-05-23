@@ -304,3 +304,101 @@ $composer-bg: #3d3d3d;
   font-size: $font-size-sm;
   padding: $space-2xl;
 }
+
+.senderName {
+  display: block;
+  font-size: 10px;
+  font-weight: $font-weight-semibold;
+  color: $color-deep-red;
+  margin-bottom: 4px;
+}
+
+.toast {
+  background: rgba(0, 0, 0, 0.75);
+  color: $color-white;
+  text-align: center;
+  font-size: $font-size-xs;
+  padding: $space-xs $space-md;
+}
+
+.loadingMore {
+  text-align: center;
+  font-size: $font-size-xs;
+  color: $color-text-muted;
+  padding: $space-xs;
+  background: rgba(255, 255, 255, 0.6);
+}
+
+.errorState {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: $space-md;
+  padding: $space-xl;
+  text-align: center;
+}
+
+.errorBtn {
+  padding: $space-sm $space-lg;
+  border: none;
+  border-radius: 20px;
+  background: $color-deep-red;
+  color: $color-white;
+  font-family: inherit;
+  cursor: pointer;
+}
+
+.headerTitle {
+  flex: 1;
+  text-align: center;
+  font-size: $font-size-base;
+  font-weight: $font-weight-bold;
+  margin: 0;
+  color: $color-white;
+}
+
+.headerSpacer {
+  width: 40px;
+}
+
+.logoWrap {
+  position: relative;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  overflow: hidden;
+  flex-shrink: 0;
+  background: $color-white;
+}
+
+.logoImage {
+  object-fit: cover;
+}
+
+.skelBack {
+  width: 36px;
+  height: 36px;
+  border-radius: 8px;
+  display: block;
+}
+
+.skelTitle {
+  flex: 1;
+  height: 18px;
+  border-radius: 6px;
+  margin: 0 $space-md;
+}
+
+.skelBubble {
+  display: block;
+  width: 70%;
+  height: 48px;
+  border-radius: 12px;
+}
+
+.composerBtn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
