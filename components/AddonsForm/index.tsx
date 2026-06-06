@@ -1,9 +1,10 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import Link from "next/link";
 import { useRouter } from "next/navigation";
 import type { ApiAccessoryOption } from "@/lib/api";
+import type { AddonsNavParams } from "@/lib/addonsNavigation";
+import { getAddonsReturnHref } from "@/lib/addonsNavigation";
 import { useBoutiquesSelectionStore } from "@/lib/stores/boutiquesSelectionStore";
 import { useBoutiqueOrderStore } from "@/lib/stores/boutiqueOrderStore";
 import styles from "./AddonsForm.module.scss";
@@ -24,8 +25,14 @@ const emptyDrawings: Record<GarmentView, string | null> = {
   side: null,
 };
 
-export default function AddonsForm() {
+export default function AddonsForm({
+  productId: productIdFromUrl,
+  productImage: productImageFromUrl,
+  returnTo,
+  boutiqueId,
+}: AddonsNavParams) {
   const router = useRouter();
+  const orderContext = useBoutiquesSelectionStore((s) => s.orderContext);
   const setOrderContext = useBoutiquesSelectionStore((s) => s.setOrderContext);
   const selectedImageByProductAndSlot = useBoutiqueOrderStore(
     (s) => s.selectedImageByProductAndSlot
@@ -41,9 +48,24 @@ export default function AddonsForm() {
   drawingPreviewsRef.current = drawingPreviews;
 
   useEffect(() => {
+    if (productIdFromUrl || productImageFromUrl) {
+      setOrderContext({
+        productId: productIdFromUrl,
+        productImage: productImageFromUrl,
+      });
+    }
+  }, [productIdFromUrl, productImageFromUrl, setOrderContext]);
+
+  useEffect(() => {
     const hasAny = Object.values(selected).some(Boolean);
-    setOrderContext({ hasAddonsSelected: hasAny });
-  }, [selected, setOrderContext]);
+    const addons = accessoryOptions
+      .filter((opt) => selected[opt.id])
+      .map((opt) => ({
+        optionName: opt.name,
+        subOptionName: opt.name,
+      }));
+    setOrderContext({ hasAddonsSelected: hasAny, addons });
+  }, [selected, accessoryOptions, setOrderContext]);
 
   useEffect(() => {
     if (!API_BASE) {
@@ -63,9 +85,14 @@ export default function AddonsForm() {
         }).filter((o) => o.name);
         setAccessoryOptions(options);
         setSelected((prev) => {
+          const savedNames = new Set(
+            useBoutiquesSelectionStore.getState().orderContext.addons?.map((a) => a.optionName) ?? []
+          );
           const next = { ...prev };
           for (const opt of options) {
-            if (next[opt.id] === undefined) next[opt.id] = true;
+            if (next[opt.id] === undefined) {
+              next[opt.id] = savedNames.has(opt.name);
+            }
           }
           return next;
         });
@@ -103,6 +130,28 @@ export default function AddonsForm() {
   const currentDrawing = drawingPreviews[activeView];
   const hangingSlotId = `hanging-${activeView}`;
   const hangingImage = selectedImageByProductAndSlot.global?.[hangingSlotId] ?? null;
+
+  const handleContinueToOrder = () => {
+    const hasAny = Object.values(selected).some(Boolean);
+    const addons = accessoryOptions
+      .filter((opt) => selected[opt.id])
+      .map((opt) => ({
+        optionName: opt.name,
+        subOptionName: opt.name,
+      }));
+    setOrderContext({ hasAddonsSelected: hasAny, addons });
+
+    const productId = orderContext.productId ?? productIdFromUrl;
+    const productImage = orderContext.productImage ?? productImageFromUrl;
+    router.push(
+      getAddonsReturnHref({
+        returnTo: returnTo ?? "select-boutiques",
+        productId,
+        productImage,
+        boutiqueId,
+      })
+    );
+  };
 
   return (
     <div className={styles.wrap}>
@@ -216,9 +265,9 @@ export default function AddonsForm() {
           </div>
         </div>
 
-        <Link href="/profile" className={styles.cta}>
+        <button type="button" className={styles.cta} onClick={handleContinueToOrder}>
           CONTINUE TO ORDER
-        </Link>
+        </button>
       </div>
     </div>
   );

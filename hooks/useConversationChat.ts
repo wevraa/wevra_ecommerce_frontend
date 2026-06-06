@@ -6,47 +6,19 @@ import {
   getConversationMessages,
   tailorDisplayName,
 } from "@/lib/chat/api";
+import { getPendingOrder, clearPendingOrder } from "@/lib/chat/orderRequest";
 import { chatSocket } from "@/lib/chat/socket";
-import {
-  attachPendingQuoteToMessage,
-  buildPendingQuoteMessages,
-  getPendingQuote,
-  getQuoteMeta,
-  parseQuoteBody,
-} from "@/lib/chat/quote";
-import type { ChatConversation, ChatMessage, QuoteOrderPayload } from "@/lib/chat/types";
+import type { ChatConversation, ChatMessage, ChatReplyTo } from "@/lib/chat/types";
 import { ChatApiError, ChatUnauthorizedError } from "@/lib/chat/types";
 
 export interface DisplayMessage extends ChatMessage {
-  quoteMeta?: QuoteOrderPayload | null;
   isOwn: boolean;
   pending?: boolean;
 }
 
-function enrichMessage(
-  msg: ChatMessage,
-  userId: string | null,
-  conversationId: string
-): DisplayMessage {
-  if (!msg.id.startsWith("pending-")) {
-    attachPendingQuoteToMessage(conversationId, msg.id, msg.body);
-  }
-
-  let quoteMeta = getQuoteMeta(msg.id) ?? parseQuoteBody(msg.body);
-  if (quoteMeta) {
-    const pending = getPendingQuote(conversationId);
-    if (pending) {
-      quoteMeta = {
-        ...quoteMeta,
-        productImage: pending.productImage ?? quoteMeta.productImage,
-        sleeveDesignImage: pending.sleeveDesignImage ?? quoteMeta.sleeveDesignImage,
-      };
-    }
-  }
-
+function enrichMessage(msg: ChatMessage, userId: string | null): DisplayMessage {
   return {
     ...msg,
-    quoteMeta,
     isOwn: Boolean(userId && msg.senderUserId === userId) || msg.id.startsWith("pending-"),
     pending: msg.id.startsWith("pending-"),
   };
@@ -61,7 +33,7 @@ interface UseConversationChatResult {
   error: string | null;
   unauthorized: boolean;
   toast: string | null;
-  sendMessage: (body: string) => void;
+  sendMessage: (body: string, replyToMessageId?: string, replyTo?: ChatReplyTo | null) => void;
   loadOlder: () => void;
   clearToast: () => void;
 }
@@ -85,74 +57,68 @@ export function useConversationChat(conversationId: string): UseConversationChat
     return () => window.removeEventListener("auth-changed", onAuthChanged);
   }, []);
 
-  const replaceMessages = useCallback(
-    (incoming: ChatMessage[], conv: ChatConversation | null) => {
-      const userId = getAuthUserId();
-      messageIdsRef.current = new Set();
-      const next: DisplayMessage[] = [];
+  const replaceMessages = useCallback((incoming: ChatMessage[]) => {
+    const userId = getAuthUserId();
+    messageIdsRef.current = new Set();
+    const next: DisplayMessage[] = [];
+
+    for (const msg of incoming) {
+      messageIdsRef.current.add(msg.id);
+      next.push(enrichMessage(msg, userId));
+    }
+
+    if (next.length === 0) {
+      const pending = getPendingOrder(conversationId);
+      if (pending) {
+        messageIdsRef.current.add(pending.id);
+        next.push(enrichMessage(pending, userId));
+      }
+    }
+
+    next.sort(
+      (a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()
+    );
+    setMessages(next);
+  }, [conversationId]);
+
+  const appendUnique = useCallback((incoming: ChatMessage[]) => {
+    const userId = getAuthUserId();
+    setMessages((prev) => {
+      const next = prev.filter((msg) => !msg.pending);
+      messageIdsRef.current = new Set(next.map((msg) => msg.id));
 
       for (const msg of incoming) {
+        if (messageIdsRef.current.has(msg.id)) continue;
         messageIdsRef.current.add(msg.id);
-        next.push(enrichMessage(msg, userId, conversationId));
-      }
-
-      if (next.length === 0 && getPendingQuote(conversationId)) {
-        const boutiqueName = tailorDisplayName(conv?.tailor);
-        for (const msg of buildPendingQuoteMessages(conversationId, boutiqueName, userId)) {
-          messageIdsRef.current.add(msg.id);
-          next.push(enrichMessage(msg, userId, conversationId));
+        next.push(enrichMessage(msg, userId));
+        if (msg.type === "ORDER_REQUEST" && msg.orderId) {
+          clearPendingOrder(conversationId);
         }
       }
 
       next.sort(
         (a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()
       );
-      setMessages(next);
-    },
-    [conversationId]
-  );
+      return next;
+    });
+  }, [conversationId]);
 
-  const appendUnique = useCallback(
-    (incoming: ChatMessage[]) => {
-      const userId = getAuthUserId();
-      setMessages((prev) => {
-        const next = prev.filter((msg) => !msg.pending);
-        messageIdsRef.current = new Set(next.map((msg) => msg.id));
-
-        for (const msg of incoming) {
-          if (messageIdsRef.current.has(msg.id)) continue;
-          messageIdsRef.current.add(msg.id);
-          next.push(enrichMessage(msg, userId, conversationId));
-        }
-
-        next.sort(
-          (a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()
-        );
-        return next;
-      });
-    },
-    [conversationId]
-  );
-
-  const prependUnique = useCallback(
-    (older: ChatMessage[]) => {
-      const userId = getAuthUserId();
-      setMessages((prev) => {
-        const added: DisplayMessage[] = [];
-        for (const msg of older) {
-          if (messageIdsRef.current.has(msg.id)) continue;
-          messageIdsRef.current.add(msg.id);
-          added.push(enrichMessage(msg, userId, conversationId));
-        }
-        const merged = [...added, ...prev.filter((msg) => !msg.pending)];
-        merged.sort(
-          (a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()
-        );
-        return merged;
-      });
-    },
-    [conversationId]
-  );
+  const prependUnique = useCallback((older: ChatMessage[]) => {
+    const userId = getAuthUserId();
+    setMessages((prev) => {
+      const added: DisplayMessage[] = [];
+      for (const msg of older) {
+        if (messageIdsRef.current.has(msg.id)) continue;
+        messageIdsRef.current.add(msg.id);
+        added.push(enrichMessage(msg, userId));
+      }
+      const merged = [...added, ...prev.filter((msg) => !msg.pending)];
+      merged.sort(
+        (a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()
+      );
+      return merged;
+    });
+  }, []);
 
   useEffect(() => {
     if (!getAccessToken()) {
@@ -179,21 +145,21 @@ export function useConversationChat(conversationId: string): UseConversationChat
         const page = await getConversationMessages(conversationId, { limit: 50 });
         if (cancelled) return;
 
-        replaceMessages(page.messages, conv ?? cached);
+        replaceMessages(page.messages);
         setHasMore(page.hasMore);
         setCursor(page.messages[0]?.id ?? page.nextCursor ?? null);
 
-        if (page.messages.length === 0 && getPendingQuote(conversationId)) {
+        if (page.messages.length === 0 && getPendingOrder(conversationId)) {
           window.setTimeout(async () => {
             if (cancelled) return;
             try {
               const retry = await getConversationMessages(conversationId, { limit: 50 });
               if (cancelled || retry.messages.length === 0) return;
-              replaceMessages(retry.messages, conv ?? cached);
+              replaceMessages(retry.messages);
               setHasMore(retry.hasMore);
               setCursor(retry.messages[0]?.id ?? retry.nextCursor ?? null);
             } catch {
-              /* keep pending placeholders */
+              /* keep pending placeholder */
             }
           }, 800);
         }
@@ -267,7 +233,7 @@ export function useConversationChat(conversationId: string): UseConversationChat
   }, [conversationId, cursor, hasMore, loadingMore, prependUnique]);
 
   const sendMessage = useCallback(
-    (body: string) => {
+    (body: string, replyToMessageId?: string, replyTo?: ChatReplyTo | null) => {
       const trimmed = body.trim();
       if (!trimmed) return;
       if (trimmed.length > 4000) {
@@ -280,22 +246,37 @@ export function useConversationChat(conversationId: string): UseConversationChat
       const optimistic: ChatMessage = {
         id: optimisticId,
         conversationId,
-        body: trimmed,
         senderUserId: userId ?? "local-user",
+        type: "TEXT",
+        body: trimmed,
+        description: null,
+        category: null,
+        orderTypes: [],
+        imageUrls: [],
+        attachments: [],
+        measurements: [],
+        addons: [],
+        requiredBy: null,
+        orderId: null,
         createdAt: new Date().toISOString(),
+        replyToMessageId: replyToMessageId ?? null,
+        replyTo: replyTo ?? null,
       };
 
       setMessages((prev) => [
         ...prev.filter((msg) => msg.id !== optimisticId),
-        enrichMessage(optimistic, userId, conversationId),
+        enrichMessage(optimistic, userId),
       ]);
       messageIdsRef.current.add(optimisticId);
 
-      try {
-        chatSocket.sendMessage(conversationId, trimmed);
-      } catch {
-        setUnauthorized(true);
-      }
+      chatSocket
+        .sendTextMessage(conversationId, trimmed, replyToMessageId)
+        .then((ack) => {
+          if (!ack?.ok) {
+            setToast(ack?.error?.message ?? "Send failed");
+          }
+        })
+        .catch(() => setUnauthorized(true));
     },
     [conversationId]
   );

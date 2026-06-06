@@ -1,4 +1,13 @@
-import type { ChatConversation, ChatMessage, ChatMessagesResponse } from "./types";
+import type {
+  ChatAddon,
+  ChatAttachment,
+  ChatConversation,
+  ChatMeasurement,
+  ChatMessage,
+  ChatMessageType,
+  ChatMessagesResponse,
+  ChatReplyTo,
+} from "./types";
 
 type RawRecord = Record<string, unknown>;
 
@@ -14,6 +23,60 @@ function pickString(record: RawRecord, ...keys: string[]): string {
   return "";
 }
 
+function pickNullableString(record: RawRecord, ...keys: string[]): string | null {
+  for (const key of keys) {
+    const value = record[key];
+    if (typeof value === "string") return value;
+    if (value === null) return null;
+  }
+  return null;
+}
+
+function normalizeAttachments(raw: unknown): ChatAttachment[] {
+  if (!Array.isArray(raw)) return [];
+  const result: ChatAttachment[] = [];
+  for (const item of raw) {
+    const record = asRecord(item);
+    if (!record) continue;
+    const url = pickString(record, "url", "imageUrl", "image_url");
+    if (!url) continue;
+    const label = pickString(record, "label") || undefined;
+    result.push({ url, label });
+  }
+  return result;
+}
+
+function normalizeMeasurements(raw: unknown): ChatMeasurement[] {
+  if (!Array.isArray(raw)) return [];
+  const result: ChatMeasurement[] = [];
+  for (const item of raw) {
+    const record = asRecord(item);
+    if (!record) continue;
+    const name = pickString(record, "name");
+    const value = Number(record.value);
+    if (!name || Number.isNaN(value)) continue;
+    const unit = pickString(record, "unit") || undefined;
+    result.push({ name, value, unit });
+  }
+  return result;
+}
+
+function normalizeAddons(raw: unknown): ChatAddon[] {
+  if (!Array.isArray(raw)) return [];
+  const result: ChatAddon[] = [];
+  for (const item of raw) {
+    const record = asRecord(item);
+    if (!record) continue;
+    const optionName = pickString(record, "optionName", "option_name");
+    const subOptionName =
+      pickString(record, "subOptionName", "sub_option_name") || optionName;
+    if (!optionName) continue;
+    const imageUrl = pickString(record, "imageUrl", "image_url") || undefined;
+    result.push({ optionName, subOptionName, imageUrl });
+  }
+  return result;
+}
+
 function normalizeUser(raw: unknown) {
   const record = asRecord(raw);
   if (!record) return null;
@@ -24,6 +87,7 @@ function normalizeUser(raw: unknown) {
     firstName: (record.firstName ?? record.first_name ?? null) as string | null,
     lastName: (record.lastName ?? record.last_name ?? null) as string | null,
     email: (record.email ?? null) as string | null,
+    role: (record.role ?? null) as "CUSTOMER" | "TAILOR" | undefined,
   };
 }
 
@@ -41,25 +105,101 @@ function normalizeTailor(raw: unknown) {
   };
 }
 
+function normalizeMessageType(record: RawRecord, body: string | null): ChatMessageType {
+  const raw = pickString(record, "type").toUpperCase();
+  if (raw === "ORDER_REQUEST" || raw === "IMAGE" || raw === "TEXT") {
+    return raw as ChatMessageType;
+  }
+  if (
+    record.category ||
+    record.requiredBy ||
+    record.required_by ||
+    (Array.isArray(record.attachments) && record.attachments.length > 0)
+  ) {
+    return "ORDER_REQUEST";
+  }
+  return body ? "TEXT" : "TEXT";
+}
+
+function normalizeReplyTo(raw: unknown): ChatReplyTo | null {
+  const record = asRecord(raw);
+  if (!record) return null;
+
+  const id = pickString(record, "id", "messageId", "message_id");
+  if (!id) return null;
+
+  const body = pickNullableString(record, "body", "text", "content");
+  const rawType = pickString(record, "type").toUpperCase();
+  const type =
+    rawType === "ORDER_REQUEST" || rawType === "IMAGE" || rawType === "TEXT"
+      ? (rawType as ChatMessageType)
+      : body
+        ? "TEXT"
+        : record.category
+          ? "ORDER_REQUEST"
+          : undefined;
+
+  return {
+    id,
+    body,
+    type,
+    category: pickNullableString(record, "category"),
+    sender: normalizeUser(record.sender),
+  };
+}
+
 export function normalizeMessage(raw: unknown): ChatMessage | null {
   const record = asRecord(raw);
   if (!record) return null;
 
   const id = pickString(record, "id");
   const conversationId = pickString(record, "conversationId", "conversation_id");
-  const body = pickString(record, "body", "text", "content");
   const senderUserId = pickString(record, "senderUserId", "sender_user_id", "senderId", "sender_id");
   const createdAt = pickString(record, "createdAt", "created_at");
+  const body = pickNullableString(record, "body", "text", "content");
 
   if (!id || !conversationId || !senderUserId || !createdAt) return null;
+
+  const type = normalizeMessageType(record, body);
+  const attachments = normalizeAttachments(record.attachments);
+  const imageUrlsRaw = record.imageUrls ?? record.image_urls;
+  const imageUrls = Array.isArray(imageUrlsRaw)
+    ? imageUrlsRaw.filter((u): u is string => typeof u === "string")
+    : attachments.map((a) => a.url);
+
+  const replyToRaw = record.replyTo ?? record.reply_to ?? record.quotedMessage ?? record.quoted_message;
+  const replyTo = normalizeReplyTo(replyToRaw);
 
   return {
     id,
     conversationId,
-    body,
     senderUserId,
+    type,
+    body,
+    description: pickNullableString(record, "description"),
+    category: pickNullableString(record, "category"),
+    orderTypes: Array.isArray(record.orderTypes)
+      ? record.orderTypes.filter((t): t is string => typeof t === "string")
+      : Array.isArray(record.order_types)
+        ? record.order_types.filter((t): t is string => typeof t === "string")
+        : [],
+    imageUrls,
+    attachments,
+    measurements: normalizeMeasurements(record.measurements),
+    addons: normalizeAddons(record.addons),
+    requiredBy: pickNullableString(record, "requiredBy", "required_by"),
+    orderId: pickNullableString(record, "orderId", "order_id"),
     createdAt,
     sender: normalizeUser(record.sender),
+    replyToMessageId:
+      pickNullableString(
+        record,
+        "replyToMessageId",
+        "reply_to_message_id",
+        "replyToId",
+        "reply_to_id"
+      ) ?? replyTo?.id ?? null,
+    replyTo,
   };
 }
 
@@ -121,11 +261,7 @@ export function normalizeMessagesResponse(raw: unknown): ChatMessagesResponse {
       | string
       | null;
 
-  return {
-    messages,
-    hasMore,
-    nextCursor,
-  };
+  return { messages, hasMore, nextCursor };
 }
 
 export function normalizeConversationResponse(raw: unknown): ChatConversation | null {

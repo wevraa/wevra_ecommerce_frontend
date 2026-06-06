@@ -1,12 +1,13 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import LoginModal from "@/components/LoginModal";
 import { formatMessageTime, formatSenderName } from "@/lib/chat/api";
-import type { QuoteOrderPayload } from "@/lib/chat/types";
+import { formatRequiredBy } from "@/lib/chat/format";
+import type { ChatAttachment, ChatMessage, ChatReplyTo } from "@/lib/chat/types";
 import {
   getTailorName,
   useConversationChat,
@@ -20,35 +21,117 @@ interface ChatPageClientProps {
   conversationId: string;
 }
 
-function QuoteCard({ quote, timeLabel }: { quote: QuoteOrderPayload; timeLabel: string }) {
-  const images = [
-    quote.productImage && { src: quote.productImage, alt: "Fabric" },
-    quote.sleeveDesignImage && { src: quote.sleeveDesignImage, alt: "Sleeve design" },
-  ].filter(Boolean) as { src: string; alt: string }[];
+function ReplyIcon() {
+  return (
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+      <polyline points="9 14 4 9 9 4" />
+      <path d="M20 20v-7a4 4 0 0 0-4-4H4" />
+    </svg>
+  );
+}
 
-  const primaryImage = images[0]?.src ?? "/images/placeholder-rect.svg";
+function getMessagePreview(msg: {
+  type?: ChatMessage["type"];
+  body?: string | null;
+  category?: string | null;
+}): string {
+  if (msg.type === "ORDER_REQUEST") {
+    return msg.category ?? "Order request";
+  }
+  return msg.body?.trim() || "Message";
+}
+
+function buildReplyTo(msg: DisplayMessage): ChatReplyTo {
+  return {
+    id: msg.id,
+    body: msg.body,
+    type: msg.type,
+    category: msg.category,
+    sender: msg.sender ?? null,
+  };
+}
+
+function resolveReplyPreview(
+  msg: DisplayMessage,
+  messageById: Map<string, DisplayMessage>
+): { label: string; text: string } {
+  const reply = msg.replyTo;
+  const replyId = reply?.id ?? msg.replyToMessageId;
+  const source = replyId ? messageById.get(replyId) : undefined;
+  const sender = reply?.sender ?? source?.sender;
+  const senderLabel = formatSenderName(sender) || (source?.isOwn ? "You" : "Message");
+  const previewSource = reply ?? source;
+  const text = previewSource ? getMessagePreview(previewSource) : "Message";
+  return { label: senderLabel, text };
+}
+
+function QuotedReply({
+  msg,
+  messageById,
+}: {
+  msg: DisplayMessage;
+  messageById: Map<string, DisplayMessage>;
+}) {
+  if (!msg.replyTo && !msg.replyToMessageId) return null;
+  const { label, text } = resolveReplyPreview(msg, messageById);
+
+  return (
+    <div className={styles.quotedReply}>
+      <span className={styles.quotedReplyLabel}>{label}</span>
+      <span className={styles.quotedReplyText}>{text}</span>
+    </div>
+  );
+}
+
+function ReplyButton({ onClick, className }: { onClick: () => void; className?: string }) {
+  return (
+    <button
+      type="button"
+      className={`${styles.replyBtn} ${className ?? ""}`}
+      onClick={onClick}
+      aria-label="Reply to message"
+    >
+      <ReplyIcon />
+    </button>
+  );
+}
+
+function getOrderImages(msg: ChatMessage): ChatAttachment[] {
+  if (msg.attachments.length > 0) return msg.attachments;
+  return msg.imageUrls.map((url) => ({ url }));
+}
+
+function OrderRequestCard({
+  msg,
+  timeLabel,
+  onReply,
+}: {
+  msg: ChatMessage;
+  timeLabel: string;
+  onReply: () => void;
+}) {
+  const images = getOrderImages(msg);
+  const primaryImage = images[0]?.url ?? "/images/placeholder-rect.svg";
+  const hasMeasurements = msg.measurements.length > 0;
+  const hasAddons = msg.addons.length > 0;
 
   return (
     <div className={styles.quoteRowWrap}>
-      <span className={styles.replyIcon} aria-hidden>
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-          <polyline points="9 14 4 9 9 4" />
-          <path d="M20 20v-7a4 4 0 0 0-4-4H4" />
-        </svg>
-      </span>
+      <ReplyButton onClick={onReply} className={styles.replyBtnQuote} />
       <div className={styles.quoteBubble}>
         <div className={styles.quoteImages}>
           {images.length > 0 ? (
             images.map((img) => (
-              <div key={img.src} className={styles.quoteImageWrap}>
+              <div key={img.url} className={styles.quoteImageWrap}>
                 <Image
-                  src={img.src}
-                  alt={img.alt}
+                  src={img.url}
+                  alt={img.label ?? "Attachment"}
                   fill
                   className={styles.quoteImage}
                   sizes="72px"
-                  unoptimized={img.src.startsWith("blob:")}
+                  unoptimized={img.url.startsWith("blob:")}
                 />
+                {img.label ? <span className={styles.imageCaption}>{img.label}</span> : null}
               </div>
             ))
           ) : (
@@ -57,48 +140,68 @@ function QuoteCard({ quote, timeLabel }: { quote: QuoteOrderPayload; timeLabel: 
             </div>
           )}
         </div>
-        <p className={styles.quoteTitle}>{quote.productTitle}</p>
+        <p className={styles.quoteTitle}>{msg.category ?? "Order request"}</p>
         <p className={styles.quoteDate}>
-          Required Date: <strong>{quote.requiredDateLabel}</strong>
+          Required Date: <strong>{formatRequiredBy(msg.requiredBy)}</strong>
         </p>
-        <p
-          className={`${styles.quoteStatus} ${
-            quote.hasMeasurementSelected ? styles.positive : styles.muted
-          }`}
-        >
-          {quote.hasMeasurementSelected ? "Measurement added" : "No measurement selected"}
+        <p className={`${styles.quoteStatus} ${hasMeasurements ? styles.positive : styles.muted}`}>
+          {hasMeasurements ? "Measurement added" : "No measurement selected"}
         </p>
-        {quote.hasAddonsSelected && (
-          <p className={`${styles.quoteStatus} ${styles.positive}`}>Add ons selected</p>
-        )}
+        <p className={`${styles.quoteStatus} ${hasAddons ? styles.positive : styles.muted}`}>
+          {hasAddons ? "Add ons selected" : "No add-ons selected"}
+        </p>
         <p className={styles.quoteTime}>{timeLabel}</p>
       </div>
     </div>
   );
 }
 
-function MessageBubble({ msg }: { msg: DisplayMessage }) {
+function MessageBubble({
+  msg,
+  messageById,
+  onReply,
+}: {
+  msg: DisplayMessage;
+  messageById: Map<string, DisplayMessage>;
+  onReply: (msg: DisplayMessage) => void;
+}) {
   const timeLabel = formatMessageTime(msg.createdAt);
   const senderName = formatSenderName(msg.sender);
 
-  if (msg.quoteMeta && msg.isOwn) {
+  if (msg.type === "ORDER_REQUEST" && msg.isOwn) {
     return (
       <div className={styles.rowOut}>
-        <QuoteCard quote={msg.quoteMeta} timeLabel={timeLabel} />
+        <OrderRequestCard
+          msg={msg}
+          timeLabel={timeLabel}
+          onReply={() => onReply(msg)}
+        />
       </div>
     );
   }
+
+  const text = msg.body?.trim();
+  if (!text) return null;
 
   const rowClass = msg.isOwn ? styles.rowOut : styles.rowIn;
 
   return (
     <div className={rowClass}>
-      <div className={styles.bubble}>
-        {!msg.isOwn && senderName ? (
-          <span className={styles.senderName}>{senderName}</span>
+      <div className={styles.messageRowWrap}>
+        {msg.isOwn ? (
+          <ReplyButton onClick={() => onReply(msg)} className={styles.replyBtnOut} />
         ) : null}
-        <p className={styles.bubbleText}>{msg.body}</p>
-        <span className={styles.bubbleTime}>{timeLabel}</span>
+        <div className={styles.bubble}>
+          {!msg.isOwn && senderName ? (
+            <span className={styles.senderName}>{senderName}</span>
+          ) : null}
+          <QuotedReply msg={msg} messageById={messageById} />
+          <p className={styles.bubbleText}>{text}</p>
+          <span className={styles.bubbleTime}>{timeLabel}</span>
+        </div>
+        {!msg.isOwn ? (
+          <ReplyButton onClick={() => onReply(msg)} className={styles.replyBtnIn} />
+        ) : null}
       </div>
     </div>
   );
@@ -121,9 +224,17 @@ export default function ChatPageClient({ conversationId }: ChatPageClientProps) 
   } = useConversationChat(conversationId);
 
   const [draft, setDraft] = useState("");
+  const [replyingTo, setReplyingTo] = useState<DisplayMessage | null>(null);
   const [loginOpen, setLoginOpen] = useState(false);
   const bottomRef = useRef<HTMLDivElement>(null);
   const messagesRef = useRef<HTMLDivElement>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
+
+  const messageById = useMemo(() => {
+    const map = new Map<string, DisplayMessage>();
+    for (const msg of messages) map.set(msg.id, msg);
+    return map;
+  }, [messages]);
 
   const boutiqueName = getTailorName(conversation);
   const logoUrl = conversation?.tailor?.logoUrl;
@@ -149,11 +260,23 @@ export default function ChatPageClient({ conversationId }: ChatPageClientProps) 
     if (el.scrollTop < 80) loadOlder();
   };
 
+  const handleReply = (msg: DisplayMessage) => {
+    setReplyingTo(msg);
+    inputRef.current?.focus();
+  };
+
+  const handleCancelReply = () => {
+    setReplyingTo(null);
+  };
+
   const handleSend = () => {
     const text = draft.trim();
     if (!text) return;
-    sendMessage(text);
+    const replyToMessageId = replyingTo?.id;
+    const replyTo = replyingTo ? buildReplyTo(replyingTo) : null;
+    sendMessage(text, replyToMessageId, replyTo);
     setDraft("");
+    setReplyingTo(null);
   };
 
   const canSend = draft.trim().length > 0 && draft.length <= MAX_MESSAGE_LENGTH;
@@ -245,44 +368,78 @@ export default function ChatPageClient({ conversationId }: ChatPageClientProps) 
         {messages.length === 0 ? (
           <p className={styles.emptyChat}>No messages yet. Say hello!</p>
         ) : (
-          messages.map((msg) => <MessageBubble key={msg.id} msg={msg} />)
+          messages.map((msg) => (
+            <MessageBubble
+              key={msg.id}
+              msg={msg}
+              messageById={messageById}
+              onReply={handleReply}
+            />
+          ))
         )}
         <div ref={bottomRef} />
       </div>
 
-      <div className={styles.composer}>
-        <button type="button" className={styles.composerBtn} aria-label="Attach">
-          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-            <line x1="12" y1="5" x2="12" y2="19" />
-            <line x1="5" y1="12" x2="19" y2="12" />
-          </svg>
-        </button>
-        <input
-          type="text"
-          className={styles.input}
-          placeholder="Type a message..."
-          value={draft}
-          maxLength={MAX_MESSAGE_LENGTH}
-          onChange={(e) => setDraft(e.target.value)}
-          onKeyDown={(e) => {
-            if (e.key === "Enter") {
-              e.preventDefault();
-              handleSend();
-            }
-          }}
-        />
-        <button
-          type="button"
-          className={styles.composerBtn}
-          aria-label="Send"
-          disabled={!canSend}
-          onClick={handleSend}
-        >
-          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-            <line x1="22" y1="2" x2="11" y2="13" />
-            <polygon points="22 2 15 22 11 13 2 9 22 2" />
-          </svg>
-        </button>
+      <div className={styles.composerWrap}>
+        {replyingTo ? (
+          <div className={styles.replyComposerPreview}>
+            <div className={styles.replyComposerMeta}>
+              <span className={styles.replyComposerLabel}>
+                Replying to{" "}
+                {formatSenderName(replyingTo.sender) || (replyingTo.isOwn ? "yourself" : "message")}
+              </span>
+              <p className={styles.replyComposerText}>{getMessagePreview(replyingTo)}</p>
+            </div>
+            <button
+              type="button"
+              className={styles.replyComposerClose}
+              onClick={handleCancelReply}
+              aria-label="Cancel reply"
+            >
+              ×
+            </button>
+          </div>
+        ) : null}
+
+        <div className={styles.composer}>
+          <button type="button" className={styles.composerBtn} aria-label="Attach">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <line x1="12" y1="5" x2="12" y2="19" />
+              <line x1="5" y1="12" x2="19" y2="12" />
+            </svg>
+          </button>
+          <input
+            ref={inputRef}
+            type="text"
+            className={styles.input}
+            placeholder={replyingTo ? "Write a reply..." : "Type a message..."}
+            value={draft}
+            maxLength={MAX_MESSAGE_LENGTH}
+            onChange={(e) => setDraft(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === "Enter") {
+                e.preventDefault();
+                handleSend();
+              }
+              if (e.key === "Escape" && replyingTo) {
+                e.preventDefault();
+                handleCancelReply();
+              }
+            }}
+          />
+          <button
+            type="button"
+            className={styles.composerBtn}
+            aria-label="Send"
+            disabled={!canSend}
+            onClick={handleSend}
+          >
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <line x1="22" y1="2" x2="11" y2="13" />
+              <polygon points="22 2 15 22 11 13 2 9 22 2" />
+            </svg>
+          </button>
+        </div>
       </div>
 
       <LoginModal

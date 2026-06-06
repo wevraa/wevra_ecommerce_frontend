@@ -196,6 +196,20 @@ $composer-bg: #3d3d3d;
   overflow: hidden;
   background: #eee;
   flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.imageCaption {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  font-size: 8px;
+  text-align: center;
+  background: rgba(0, 0, 0, 0.55);
+  color: $color-white;
+  padding: 2px 4px;
 }
 
 .quoteImage {
@@ -251,6 +265,125 @@ $composer-bg: #3d3d3d;
   opacity: 0.5;
 }
 
+.messageRowWrap {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  max-width: 100%;
+}
+
+.replyBtn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border: none;
+  background: transparent;
+  color: $color-text;
+  opacity: 0.45;
+  cursor: pointer;
+  flex-shrink: 0;
+  border-radius: 50%;
+  padding: 0;
+
+  &:hover,
+  &:focus-visible {
+    opacity: 0.85;
+    background: rgba(255, 255, 255, 0.55);
+  }
+}
+
+.replyBtnOut {
+  order: -1;
+}
+
+.replyBtnIn {
+  order: 1;
+}
+
+.replyBtnQuote {
+  position: absolute;
+  left: -28px;
+  top: 50%;
+  transform: translateY(-50%);
+}
+
+.quotedReply {
+  border-left: 3px solid $color-deep-red;
+  padding: 4px 8px;
+  margin-bottom: 6px;
+  background: rgba(139, 21, 56, 0.06);
+  border-radius: 0 6px 6px 0;
+}
+
+.quotedReplyLabel {
+  display: block;
+  font-size: 10px;
+  font-weight: $font-weight-semibold;
+  color: $color-deep-red;
+  margin-bottom: 2px;
+}
+
+.quotedReplyText {
+  display: block;
+  font-size: 11px;
+  color: $color-text-muted;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 220px;
+}
+
+.composerWrap {
+  flex-shrink: 0;
+  background: $composer-bg;
+}
+
+.replyComposerPreview {
+  display: flex;
+  align-items: center;
+  gap: $space-sm;
+  padding: $space-xs $space-md 0;
+  color: $color-white;
+}
+
+.replyComposerMeta {
+  flex: 1;
+  min-width: 0;
+  border-left: 3px solid rgba(255, 255, 255, 0.5);
+  padding-left: $space-sm;
+}
+
+.replyComposerLabel {
+  display: block;
+  font-size: 11px;
+  font-weight: $font-weight-semibold;
+  opacity: 0.9;
+}
+
+.replyComposerText {
+  margin: 2px 0 0;
+  font-size: 12px;
+  opacity: 0.75;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.replyComposerClose {
+  width: 28px;
+  height: 28px;
+  border: none;
+  background: rgba(255, 255, 255, 0.12);
+  color: $color-white;
+  border-radius: 50%;
+  font-size: 18px;
+  line-height: 1;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
 .quoteRowWrap {
   position: relative;
   display: flex;
@@ -265,7 +398,7 @@ $composer-bg: #3d3d3d;
   gap: $space-sm;
   padding: $space-sm $space-md;
   padding-bottom: max($space-sm, env(safe-area-inset-bottom));
-  background: $composer-bg;
+  background: transparent;
 }
 
 .composerBtn {

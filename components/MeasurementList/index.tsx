@@ -171,7 +171,12 @@ export default function MeasurementList({ items }: MeasurementListProps) {
       const v = values[item.id] ?? item.value;
       return Math.abs(v - item.value) > EPS;
     });
-    setOrderContext({ hasMeasurementSelected: customized });
+    const measurements = items.map((item) => ({
+      name: item.name,
+      value: values[item.id] ?? item.value,
+      unit: "inches" as const,
+    }));
+    setOrderContext({ hasMeasurementSelected: customized, measurements });
   }, [values, items, setOrderContext]);
 
   useEffect(() => {

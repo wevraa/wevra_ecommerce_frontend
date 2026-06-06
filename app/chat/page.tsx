@@ -60,7 +60,11 @@ export default function ChatInboxPage() {
                   <div>
                     <p className={styles.name}>{tailorDisplayName(c.tailor)}</p>
                     {c.lastMessage ? (
-                      <p className={styles.preview}>{c.lastMessage.body}</p>
+                      <p className={styles.preview}>
+                        {c.lastMessage.type === "ORDER_REQUEST"
+                          ? c.lastMessage.category ?? "Order request"
+                          : c.lastMessage.body ?? ""}
+                      </p>
                     ) : null}
                   </div>
                   {c.lastMessage?.createdAt ? (

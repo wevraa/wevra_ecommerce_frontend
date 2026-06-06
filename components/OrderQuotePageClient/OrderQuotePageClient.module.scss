@@ -351,6 +351,14 @@
   margin: 0 0 2px;
 }
 
+.selectedAddonsList {
+  font-size: $font-size-sm;
+  color: $color-text-muted;
+  margin: 0 0 $space-sm;
+  padding-left: 1.1rem;
+  list-style: disc;
+}
+
 .measurementPending {
   font-size: $font-size-sm;
   color: $color-deep-red;

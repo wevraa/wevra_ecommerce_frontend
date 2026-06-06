@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect } from "react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import type { Boutique } from "@/data/dummy";
@@ -37,6 +38,12 @@ export default function AllBoutiques({
 
   const useTailors = tailors.length > 0;
   const selectedCount = selectedBoutiques.length;
+
+  useEffect(() => {
+    if (!productId && !productImage) return;
+    const sleeveDesignImage = productId ? sleeveDesigns[productId] : undefined;
+    setOrderContext({ productId, productImage, sleeveDesignImage });
+  }, [productId, productImage, sleeveDesigns, setOrderContext]);
 
   const handleNext = () => {
     const sleeveDesignImage = productId ? sleeveDesigns[productId] : undefined;

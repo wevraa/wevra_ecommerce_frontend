@@ -11,7 +11,7 @@ const ICON_COLORS = ["orange", "yellow", "purple", "darkpurple", "lightgray"];
 
 export default function BoutiquesSelectionPageClient() {
   const router = useRouter();
-  const { selectedBoutiques, clearSelection, orderContext } =
+  const { selectedBoutiques, clearBoutiqueSelection, orderContext } =
     useBoutiquesSelectionStore();
 
   const names =
@@ -26,7 +26,7 @@ export default function BoutiquesSelectionPageClient() {
   }));
 
   const handleBack = () => {
-    clearSelection();
+    clearBoutiqueSelection();
     const params = new URLSearchParams();
     if (orderContext.productId) params.set("productId", orderContext.productId);
     if (orderContext.productImage) params.set("image", orderContext.productImage);

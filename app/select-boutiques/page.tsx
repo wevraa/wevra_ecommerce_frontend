@@ -54,7 +54,7 @@ export default async function SelectBoutiquesPage({
           productId={productId}
           productImage={selectedImageFromProduct}
         />
-        <MeasurementAddonsRows />
+        <MeasurementAddonsRows productId={productId} productImage={selectedImageFromProduct} />
         <AllBoutiques
           tailors={tailors}
           compact

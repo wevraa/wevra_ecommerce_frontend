@@ -6,14 +6,17 @@ import Link from "next/link";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import LoginModal from "@/components/LoginModal";
-import { getAccessToken } from "@/lib/auth";
+import { getAccessToken, getAuthUserId } from "@/lib/auth";
+import { localDateToRequiredByIso } from "@/lib/chat/format";
+import type { CustomerOrderRequestInput } from "@/lib/chat/types";
 import {
-  formatRequiredDate,
-  sendQuoteViaChat,
+  prepareAndCachePendingOrder,
+  sendOrderRequestViaChat,
   startChatWithTailor,
   ChatUnauthorizedError,
 } from "@/lib/chat/startChat";
 import { useBoutiquesSelectionStore } from "@/lib/stores/boutiquesSelectionStore";
+import { buildAddonsHref } from "@/lib/addonsNavigation";
 import styles from "./OrderQuotePageClient.module.scss";
 
 const API_BASE = process.env.NEXT_PUBLIC_API_BASE_URL ?? "https://api.wevraa.in/api";
@@ -90,7 +93,7 @@ export default function OrderQuotePageClient({ boutiqueId }: { boutiqueId?: stri
     [year, monthIndex]
   );
 
-  const { selectedBoutiques, orderContext } = useBoutiquesSelectionStore();
+  const { selectedBoutiques, orderContext, setOrderContext } = useBoutiquesSelectionStore();
 
   const activeBoutique = useMemo(
     () =>
@@ -107,14 +110,19 @@ export default function OrderQuotePageClient({ boutiqueId }: { boutiqueId?: stri
     let cancelled = false;
     fetch(`${API_BASE}/v1/products/${orderContext.productId}`)
       .then((r) => (r.ok ? r.json() : null))
-      .then((data: { title?: string } | null) => {
-        if (!cancelled && data?.title) setProductTitle(data.title);
+      .then((data: { title?: string; category?: { name?: string } } | null) => {
+        if (cancelled || !data) return;
+        if (data.title) setProductTitle(data.title);
+        setOrderContext({
+          category: data.category?.name ?? data.title,
+          orderTypes: data.title ? [data.title] : undefined,
+        });
       })
       .catch(() => {});
     return () => {
       cancelled = true;
     };
-  }, [orderContext.productId]);
+  }, [orderContext.productId, setOrderContext]);
 
   const boutiqueCount = selectedBoutiques.length;
   const boutiqueNames =
@@ -128,6 +136,13 @@ export default function OrderQuotePageClient({ boutiqueId }: { boutiqueId?: stri
 
   const hasAddonsSelected = orderContext.hasAddonsSelected === true;
   const hasMeasurementSelected = orderContext.hasMeasurementSelected === true;
+
+  const addonsHref = buildAddonsHref({
+    returnTo: "order-quote",
+    productId: orderContext.productId,
+    productImage: orderContext.productImage,
+    boutiqueId,
+  });
 
   const applyViewYM = (value: string) => {
     setViewYM(value);
@@ -153,14 +168,22 @@ export default function OrderQuotePageClient({ boutiqueId }: { boutiqueId?: stri
     setSending(true);
     try {
       const conversation = await startChatWithTailor(activeBoutique.id);
-      await sendQuoteViaChat(conversation.id, activeBoutique.name, {
-        productTitle,
+
+      const orderInput: CustomerOrderRequestInput = {
+        category: orderContext.category ?? productTitle,
+        orderTypes: orderContext.orderTypes?.length
+          ? orderContext.orderTypes
+          : [productTitle],
         productImage: orderContext.productImage,
         sleeveDesignImage: orderContext.sleeveDesignImage,
-        requiredDateLabel: formatRequiredDate(selectedDate),
-        hasMeasurementSelected,
-        hasAddonsSelected,
-      });
+        measurements: hasMeasurementSelected ? orderContext.measurements : [],
+        addons: hasAddonsSelected ? orderContext.addons : [],
+        requiredBy: localDateToRequiredByIso(selectedDate),
+        description: `Order quote for ${activeBoutique.name}`,
+      };
+
+      prepareAndCachePendingOrder(conversation.id, orderInput, getAuthUserId());
+      await sendOrderRequestViaChat(conversation.id, orderInput);
       router.push(`/chat/${encodeURIComponent(conversation.id)}`);
     } catch (e) {
       if (e instanceof ChatUnauthorizedError) setLoginOpen(true);
@@ -337,7 +360,14 @@ export default function OrderQuotePageClient({ boutiqueId }: { boutiqueId?: stri
             >
               {hasAddonsSelected ? "Add ons selected" : "No Add-ons Selected"}
             </p>
-            <Link href="/addons" className={styles.addonsLink}>
+            {hasAddonsSelected && orderContext.addons?.length ? (
+              <ul className={styles.selectedAddonsList}>
+                {orderContext.addons.map((addon) => (
+                  <li key={addon.optionName}>{addon.optionName}</li>
+                ))}
+              </ul>
+            ) : null}
+            <Link href={addonsHref} className={styles.addonsLink}>
               Add-ons to quote better
               <span aria-hidden>›</span>
             </Link>
@@ -409,7 +439,7 @@ export default function OrderQuotePageClient({ boutiqueId }: { boutiqueId?: stri
           <button
             type="button"
             className={styles.addItemsBtn}
-            onClick={() => router.push("/")}
+            onClick={() => router.push(addonsHref)}
           >
             <span className={styles.addItemsPlus} aria-hidden>
               +
