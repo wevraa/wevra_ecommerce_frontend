@@ -28,6 +28,14 @@
   }
 }
 
+.itemReadOnly {
+  cursor: default;
+
+  &:hover {
+    background: transparent;
+  }
+}
+
 .icon {
   flex-shrink: 0;
   width: 40px;

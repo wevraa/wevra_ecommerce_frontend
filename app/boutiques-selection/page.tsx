@@ -1,5 +1,5 @@
-import BoutiquesSelectionPageClient from "@/components/BoutiquesSelectionPageClient";
+import { redirect } from "next/navigation";
 
 export default function BoutiquesSelectionPage() {
-  return <BoutiquesSelectionPageClient />;
+  redirect("/order-quote");
 }

@@ -92,7 +92,7 @@ export default function BoutiqueCard({
             <button
               type="button"
               className={styles.viewBtn}
-              onClick={() => router.push("/boutiques-selection")}
+              onClick={() => router.push("/order-quote")}
             >
               View
             </button>

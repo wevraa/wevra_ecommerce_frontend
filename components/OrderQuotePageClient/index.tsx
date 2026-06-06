@@ -6,6 +6,8 @@ import Link from "next/link";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import LoginModal from "@/components/LoginModal";
+import BoutiqueSelectionHeader from "@/components/BoutiqueSelectionHeader";
+import BoutiqueSelectionList from "@/components/BoutiqueSelectionList";
 import { getAccessToken, getAuthUserId } from "@/lib/auth";
 import { localDateToRequiredByIso } from "@/lib/chat/format";
 import type { CustomerOrderRequestInput } from "@/lib/chat/types";
@@ -20,6 +22,7 @@ import { buildAddonsHref } from "@/lib/addonsNavigation";
 import styles from "./OrderQuotePageClient.module.scss";
 
 const API_BASE = process.env.NEXT_PUBLIC_API_BASE_URL ?? "https://api.wevraa.in/api";
+const ICON_COLORS = ["orange", "yellow", "purple", "darkpurple", "lightgray"];
 
 /** Local calendar date as yyyy-mm-dd (no UTC shift). */
 function toIsoDateLocal(d: Date): string {
@@ -76,7 +79,7 @@ function isoBelongsToMonth(iso: string, year: number, monthIndex: number): boole
   return sy === year && sm === monthIndex + 1;
 }
 
-export default function OrderQuotePageClient({ boutiqueId }: { boutiqueId?: string }) {
+export default function OrderQuotePageClient() {
   const router = useRouter();
   const [sending, setSending] = useState(false);
   const [loginOpen, setLoginOpen] = useState(false);
@@ -93,15 +96,8 @@ export default function OrderQuotePageClient({ boutiqueId }: { boutiqueId?: stri
     [year, monthIndex]
   );
 
-  const { selectedBoutiques, orderContext, setOrderContext } = useBoutiquesSelectionStore();
-
-  const activeBoutique = useMemo(
-    () =>
-      boutiqueId
-        ? selectedBoutiques.find((b) => b.id === boutiqueId)
-        : selectedBoutiques[0],
-    [boutiqueId, selectedBoutiques]
-  );
+  const { selectedBoutiques, orderContext, setOrderContext, clearBoutiqueSelection } =
+    useBoutiquesSelectionStore();
 
   const [productTitle, setProductTitle] = useState("Machine Embroidery Blouse");
 
@@ -124,11 +120,16 @@ export default function OrderQuotePageClient({ boutiqueId }: { boutiqueId?: stri
     };
   }, [orderContext.productId, setOrderContext]);
 
-  const boutiqueCount = selectedBoutiques.length;
   const boutiqueNames =
     selectedBoutiques.length > 0
       ? selectedBoutiques.map((b) => b.name).join(", ")
       : "No boutiques selected";
+
+  const boutiqueItems = selectedBoutiques.map((b, i) => ({
+    id: b.id,
+    name: b.name,
+    iconColor: ICON_COLORS[i % ICON_COLORS.length],
+  }));
 
   const hasProduct =
     Boolean(orderContext.productImage) ||
@@ -141,7 +142,6 @@ export default function OrderQuotePageClient({ boutiqueId }: { boutiqueId?: stri
     returnTo: "order-quote",
     productId: orderContext.productId,
     productImage: orderContext.productImage,
-    boutiqueId,
   });
 
   const applyViewYM = (value: string) => {
@@ -153,9 +153,19 @@ export default function OrderQuotePageClient({ boutiqueId }: { boutiqueId?: stri
     });
   };
 
+  const goToSelectBoutiques = () => {
+    clearBoutiqueSelection();
+    const params = new URLSearchParams();
+    if (orderContext.productId) params.set("productId", orderContext.productId);
+    if (orderContext.productImage) params.set("image", orderContext.productImage);
+    router.push(
+      params.size > 0 ? `/select-boutiques?${params.toString()}` : "/select-boutiques"
+    );
+  };
+
   const handleSend = async () => {
-    if (!activeBoutique) {
-      router.push("/boutiques-selection");
+    if (selectedBoutiques.length === 0) {
+      goToSelectBoutiques();
       return;
     }
     if (!selectedDate || sending) return;
@@ -167,24 +177,33 @@ export default function OrderQuotePageClient({ boutiqueId }: { boutiqueId?: stri
 
     setSending(true);
     try {
-      const conversation = await startChatWithTailor(activeBoutique.id);
+      let firstConversationId: string | null = null;
 
-      const orderInput: CustomerOrderRequestInput = {
-        category: orderContext.category ?? productTitle,
-        orderTypes: orderContext.orderTypes?.length
-          ? orderContext.orderTypes
-          : [productTitle],
-        productImage: orderContext.productImage,
-        sleeveDesignImage: orderContext.sleeveDesignImage,
-        measurements: hasMeasurementSelected ? orderContext.measurements : [],
-        addons: hasAddonsSelected ? orderContext.addons : [],
-        requiredBy: localDateToRequiredByIso(selectedDate),
-        description: `Order quote for ${activeBoutique.name}`,
-      };
+      for (const boutique of selectedBoutiques) {
+        const conversation = await startChatWithTailor(boutique.id);
 
-      prepareAndCachePendingOrder(conversation.id, orderInput, getAuthUserId());
-      await sendOrderRequestViaChat(conversation.id, orderInput);
-      router.push(`/chat/${encodeURIComponent(conversation.id)}`);
+        const orderInput: CustomerOrderRequestInput = {
+          category: orderContext.category ?? productTitle,
+          orderTypes: orderContext.orderTypes?.length
+            ? orderContext.orderTypes
+            : [productTitle],
+          productImage: orderContext.productImage,
+          sleeveDesignImage: orderContext.sleeveDesignImage,
+          measurements: hasMeasurementSelected ? orderContext.measurements : [],
+          addons: hasAddonsSelected ? orderContext.addons : [],
+          requiredBy: localDateToRequiredByIso(selectedDate),
+          description: `Order quote for ${boutique.name}`,
+        };
+
+        prepareAndCachePendingOrder(conversation.id, orderInput, getAuthUserId());
+        await sendOrderRequestViaChat(conversation.id, orderInput);
+
+        if (!firstConversationId) firstConversationId = conversation.id;
+      }
+
+      if (firstConversationId) {
+        router.push(`/chat/${encodeURIComponent(firstConversationId)}`);
+      }
     } catch (e) {
       if (e instanceof ChatUnauthorizedError) setLoginOpen(true);
     } finally {
@@ -194,10 +213,10 @@ export default function OrderQuotePageClient({ boutiqueId }: { boutiqueId?: stri
 
   return (
     <main className={styles.main}>
-      {/* ── Header bar with dynamic boutique summary ── */}
-      <div className={styles.headerBar}>
-        <Link
-          href="/boutiques-selection"
+      <div className={styles.topBar}>
+        <button
+          type="button"
+          onClick={goToSelectBoutiques}
           className={styles.backBtn}
           aria-label="Back"
         >
@@ -211,47 +230,28 @@ export default function OrderQuotePageClient({ boutiqueId }: { boutiqueId?: stri
           >
             <polyline points="15 18 9 12 15 6" />
           </svg>
-        </Link>
-        <div className={styles.boutiqueSummary}>
-          <div className={styles.iconWrap}>
-            <span className={`${styles.circle} ${styles.b1}`} />
-            <span className={`${styles.circle} ${styles.b2}`} />
-            <span className={`${styles.circle} ${styles.b3}`} />
-          </div>
-          <div className={styles.summaryText}>
-            <p className={styles.summaryTitle}>
-              {boutiqueCount > 0
-                ? `${boutiqueCount} Boutique${boutiqueCount > 1 ? "s" : ""}`
-                : "Boutiques"}
-            </p>
-            <p className={styles.summarySub}>Selected For Order Quote</p>
-            <p className={styles.summarySub} title={boutiqueNames}>
-              {boutiqueNames.length > 40
-                ? `${boutiqueNames.slice(0, 40)}...`
-                : boutiqueNames}
-            </p>
-          </div>
-        </div>
-        <Link
-          href="/boutiques-selection"
-          className={styles.arrowBtn}
-          aria-label="View boutiques"
-        >
-          <svg
-            width="24"
-            height="24"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2"
-          >
-            <polyline points="9 6 15 12 9 18" />
-          </svg>
-        </Link>
+        </button>
       </div>
 
+      {selectedBoutiques.length === 0 ? (
+        <div className={styles.emptyState}>
+          <p>No boutiques selected.</p>
+          <button type="button" className={styles.emptyLink} onClick={goToSelectBoutiques}>
+            Go back and select boutiques
+          </button>
+        </div>
+      ) : (
+        <>
+          <BoutiqueSelectionHeader count={selectedBoutiques.length} names={boutiqueNames}>
+            <BoutiqueSelectionList items={boutiqueItems} readOnly />
+          </BoutiqueSelectionHeader>
+          <p className={styles.boutiqueNote}>
+            Approximate time for order finish based upon selected boutiques
+          </p>
+        </>
+      )}
+
       <div className={styles.content}>
-        {/* ── Date picker ── */}
         <section className={styles.dateSection}>
           <div className={styles.dateLabel}>
             <span className={styles.dateLabelText}>When you Required :</span>
@@ -349,7 +349,6 @@ export default function OrderQuotePageClient({ boutiqueId }: { boutiqueId?: stri
           </div>
         </section>
 
-        {/* ── Order details card ── */}
         <div className={styles.productCard}>
           <div className={styles.productInfo}>
             <h3 className={styles.productName}>{productTitle}</h3>
@@ -388,7 +387,6 @@ export default function OrderQuotePageClient({ boutiqueId }: { boutiqueId?: stri
             </Link>
           </div>
 
-          {/* Dynamic product images from order context */}
           <div className={styles.productImages}>
             {hasProduct ? (
               <>
@@ -449,14 +447,14 @@ export default function OrderQuotePageClient({ boutiqueId }: { boutiqueId?: stri
         </div>
 
         <div className={styles.footerBtns}>
-          <Link href="/boutiques-selection" className={styles.cancelBtn}>
+          <button type="button" className={styles.cancelBtn} onClick={goToSelectBoutiques}>
             Cancel
-          </Link>
+          </button>
           <button
             type="button"
             className={styles.sendBtn}
             onClick={handleSend}
-            disabled={!selectedDate || !activeBoutique || sending}
+            disabled={!selectedDate || selectedBoutiques.length === 0 || sending}
           >
             {sending ? "Sending…" : "Send"}
           </button>

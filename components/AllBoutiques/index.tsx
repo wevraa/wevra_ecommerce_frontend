@@ -48,7 +48,7 @@ export default function AllBoutiques({
   const handleNext = () => {
     const sleeveDesignImage = productId ? sleeveDesigns[productId] : undefined;
     setOrderContext({ productId, productImage, sleeveDesignImage });
-    router.push("/boutiques-selection");
+    router.push("/order-quote");
   };
 
   return (

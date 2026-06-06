@@ -20,6 +20,41 @@
   border-bottom: 1px solid rgba(0, 0, 0, 0.06);
 }
 
+.topBar {
+  padding: $space-md $space-md 0;
+  background: $color-white;
+}
+
+.boutiqueNote {
+  margin: 0;
+  padding: $space-sm $space-lg $space-md;
+  font-size: $font-size-xs;
+  color: $color-text-muted;
+  background: $color-white;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+}
+
+.emptyState {
+  padding: $space-xl $space-lg;
+  text-align: center;
+  background: $color-white;
+  color: $color-text-muted;
+  font-size: $font-size-sm;
+}
+
+.emptyLink {
+  display: inline-block;
+  margin-top: $space-md;
+  color: $color-deep-red;
+  font-weight: $font-weight-medium;
+  text-decoration: underline;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  font-size: $font-size-sm;
+  padding: 0;
+}
+
 .backBtn {
   display: flex;
   align-items: center;
@@ -467,7 +502,7 @@
   font-weight: $font-weight-semibold;
   cursor: pointer;
   border-radius: 26px;
-  text-decoration: none;
+  font-family: inherit;
   box-sizing: border-box;
 }
 

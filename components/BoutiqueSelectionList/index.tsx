@@ -20,20 +20,18 @@ const getIconClass = (color: string, s: Record<string, string>) => {
 
 export default function BoutiqueSelectionList({
   items,
+  readOnly = false,
 }: {
   items: BoutiqueItem[];
+  readOnly?: boolean;
 }) {
   const router = useRouter();
 
   return (
     <ul className={styles.list}>
-      {items.map((item) => (
-        <li key={item.id}>
-          <button
-            type="button"
-            className={styles.item}
-            onClick={() => router.push(`/order-quote?boutiqueId=${encodeURIComponent(item.id)}`)}
-          >
+      {items.map((item) => {
+        const content = (
+          <>
             <span
               className={`${styles.icon} ${getIconClass(item.iconColor, styles)}`}
               aria-hidden
@@ -51,21 +49,43 @@ export default function BoutiqueSelectionList({
               </svg>
             </span>
             <span className={styles.name}>{item.name}</span>
-            <span className={styles.arrow} aria-hidden>
-              <svg
-                width="18"
-                height="18"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-              >
-                <polyline points="9 6 15 12 9 18" />
-              </svg>
-            </span>
-          </button>
-        </li>
-      ))}
+            {!readOnly ? (
+              <span className={styles.arrow} aria-hidden>
+                <svg
+                  width="18"
+                  height="18"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                >
+                  <polyline points="9 6 15 12 9 18" />
+                </svg>
+              </span>
+            ) : null}
+          </>
+        );
+
+        if (readOnly) {
+          return (
+            <li key={item.id}>
+              <div className={`${styles.item} ${styles.itemReadOnly}`}>{content}</div>
+            </li>
+          );
+        }
+
+        return (
+          <li key={item.id}>
+            <button
+              type="button"
+              className={styles.item}
+              onClick={() => router.push("/order-quote")}
+            >
+              {content}
+            </button>
+          </li>
+        );
+      })}
     </ul>
   );
 }
