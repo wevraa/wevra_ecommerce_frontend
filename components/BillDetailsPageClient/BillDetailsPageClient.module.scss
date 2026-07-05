@@ -1,0 +1,389 @@
+@use "../../styles/variables" as *;
+
+$navy: #0f2d5c;
+$accent-blue: #1847b5;
+
+.page {
+  min-height: 100vh;
+  background: #f3f4f6;
+  padding: $space-xl $space-md $space-2xl;
+  position: relative;
+}
+
+.closeBtn {
+  position: absolute;
+  top: $space-md;
+  right: $space-md;
+  width: 36px;
+  height: 36px;
+  border: none;
+  border-radius: 50%;
+  background: $color-white;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  font-size: 22px;
+  line-height: 1;
+  cursor: pointer;
+  color: $color-text-muted;
+  z-index: 10;
+}
+
+.loading,
+.errorState {
+  padding: $space-2xl 0;
+  text-align: center;
+  color: $color-text-muted;
+}
+
+.retryBtn {
+  margin-top: $space-md;
+  padding: $space-sm $space-lg;
+  border: none;
+  border-radius: 20px;
+  background: $color-deep-red;
+  color: $color-white;
+  cursor: pointer;
+  font-family: inherit;
+}
+
+.boutiqueCard {
+  background: $color-white;
+  border-radius: 16px;
+  padding: $space-xl $space-lg $space-lg;
+  text-align: center;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06);
+  margin-bottom: $space-md;
+}
+
+.logoWrap {
+  position: relative;
+  width: 64px;
+  height: 64px;
+  margin: 0 auto $space-sm;
+  border-radius: 50%;
+  overflow: hidden;
+  border: 2px solid #e5e7eb;
+}
+
+.logo {
+  object-fit: cover;
+}
+
+.logoPlaceholder {
+  width: 64px;
+  height: 64px;
+  margin: 0 auto $space-sm;
+  border-radius: 50%;
+  background: #e8eef8;
+  color: $accent-blue;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.boutiqueName {
+  margin: 0 0 $space-sm;
+  font-size: $font-size-xl;
+  font-weight: $font-weight-bold;
+}
+
+.locationBadge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 10px;
+  border-radius: 20px;
+  background: rgba(24, 71, 181, 0.1);
+  color: $accent-blue;
+  font-size: 10px;
+  font-weight: $font-weight-bold;
+  margin-bottom: $space-xs;
+}
+
+.address {
+  margin: 0;
+  font-size: $font-size-xs;
+  color: $color-text-muted;
+}
+
+.infoGrid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: $space-sm;
+  margin-bottom: $space-md;
+}
+
+.infoCard {
+  background: $color-white;
+  border-radius: 12px;
+  padding: $space-md $space-sm;
+  text-align: center;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.05);
+}
+
+.infoLabel {
+  display: block;
+  font-size: 9px;
+  color: $color-text-muted;
+  letter-spacing: 0.04em;
+  margin-bottom: 4px;
+}
+
+.infoValue {
+  display: block;
+  font-size: $font-size-sm;
+  font-weight: $font-weight-bold;
+  color: $color-text;
+}
+
+.infoValueBlue {
+  display: block;
+  font-size: $font-size-sm;
+  font-weight: $font-weight-bold;
+  color: $accent-blue;
+}
+
+.customerCard {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: $space-md;
+  background: $color-white;
+  border-radius: 12px;
+  padding: $space-md;
+  margin-bottom: $space-lg;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.05);
+}
+
+.customerLeft {
+  display: flex;
+  align-items: center;
+  gap: $space-sm;
+  min-width: 0;
+}
+
+.avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: #e5e7eb;
+  color: $color-text-muted;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.customerLabel {
+  display: block;
+  font-size: 9px;
+  color: $color-text-muted;
+  letter-spacing: 0.04em;
+}
+
+.customerName {
+  display: block;
+  font-size: $font-size-base;
+  font-weight: $font-weight-bold;
+}
+
+.phoneBadge {
+  flex-shrink: 0;
+  padding: 6px 10px;
+  border: 1px solid rgba(24, 71, 181, 0.35);
+  border-radius: 8px;
+  color: $accent-blue;
+  font-size: 11px;
+  font-weight: $font-weight-semibold;
+}
+
+.itemsSection {
+  margin-bottom: $space-lg;
+}
+
+.itemsHead {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: $space-sm;
+}
+
+.itemsTitle {
+  margin: 0;
+  font-size: 11px;
+  font-weight: $font-weight-bold;
+  letter-spacing: 0.06em;
+  color: $color-text-muted;
+}
+
+.itemsCount {
+  font-size: 10px;
+  font-weight: $font-weight-bold;
+  color: $color-text-muted;
+  background: #e5e7eb;
+  padding: 4px 8px;
+  border-radius: 6px;
+}
+
+.itemCard {
+  display: flex;
+  gap: $space-md;
+  background: $color-white;
+  border-radius: 12px;
+  padding: $space-md;
+  margin-bottom: $space-sm;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.05);
+}
+
+.itemThumb {
+  position: relative;
+  width: 72px;
+  height: 72px;
+  border-radius: 10px;
+  overflow: hidden;
+  background: #f3f4f6;
+  flex-shrink: 0;
+}
+
+.itemImage {
+  object-fit: cover;
+}
+
+.itemThumbPlaceholder {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+  font-size: 28px;
+}
+
+.itemBody {
+  flex: 1;
+  min-width: 0;
+}
+
+.itemTop {
+  display: flex;
+  justify-content: space-between;
+  gap: $space-sm;
+  align-items: flex-start;
+}
+
+.itemTitle {
+  margin: 0;
+  font-size: $font-size-sm;
+  font-weight: $font-weight-bold;
+}
+
+.itemTotal {
+  font-size: $font-size-sm;
+  font-weight: $font-weight-bold;
+  color: $accent-blue;
+  white-space: nowrap;
+}
+
+.itemMeta {
+  margin: 4px 0 $space-sm;
+  font-size: 11px;
+  color: $color-text-muted;
+}
+
+.itemFooter {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: $space-sm;
+}
+
+.unitPrice {
+  font-size: 11px;
+  color: $color-text-muted;
+}
+
+.detailsLink {
+  font-size: 11px;
+  font-weight: $font-weight-bold;
+  color: $accent-blue;
+  text-decoration: none;
+}
+
+.summary {
+  background: $color-white;
+  border-radius: 12px;
+  padding: $space-md;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.05);
+}
+
+.summaryRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: $space-md;
+  padding: $space-sm 0;
+  font-size: $font-size-sm;
+  color: $color-text;
+}
+
+.summaryBold {
+  font-weight: $font-weight-bold;
+}
+
+.summaryBlue {
+  font-weight: $font-weight-bold;
+  color: $accent-blue;
+}
+
+.paidOn {
+  display: block;
+  font-size: 10px;
+  font-style: italic;
+  color: $color-text-muted;
+  margin-top: 2px;
+}
+
+.balanceCard {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: $space-md;
+  margin-top: $space-md;
+  padding: $space-md;
+  border-radius: 12px;
+  background: $navy;
+  color: $color-white;
+}
+
+.balanceLabel {
+  display: block;
+  font-size: 10px;
+  opacity: 0.85;
+  letter-spacing: 0.04em;
+  margin-bottom: 4px;
+}
+
+.balanceAmount {
+  display: block;
+  font-size: 24px;
+  font-weight: $font-weight-bold;
+}
+
+.dueBox {
+  text-align: center;
+  padding: $space-sm $space-md;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.12);
+  min-width: 72px;
+}
+
+.dueLabel {
+  display: block;
+  font-size: 9px;
+  opacity: 0.85;
+  margin-bottom: 2px;
+}
+
+.dueValue {
+  display: block;
+  font-size: $font-size-sm;
+  font-weight: $font-weight-bold;
+}

@@ -1,0 +1,339 @@
+@use "../../styles/variables" as *;
+
+$navy: #0f2d5c;
+$navy-light: #1a4480;
+$accent-blue: #1847b5;
+
+.page {
+  min-height: 100vh;
+  background: #f3f4f6;
+  padding-bottom: $space-xl;
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  gap: $space-sm;
+  padding: $space-md;
+  background: $color-white;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+  position: sticky;
+  top: 0;
+  z-index: 50;
+}
+
+.headerTitle {
+  flex: 1;
+  text-align: center;
+  margin: 0;
+  font-size: $font-size-lg;
+  font-weight: $font-weight-bold;
+}
+
+.headerActions {
+  display: flex;
+  gap: 4px;
+  width: 72px;
+  justify-content: flex-end;
+}
+
+.iconBtn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border: none;
+  background: transparent;
+  color: $color-text;
+  cursor: pointer;
+  border-radius: 8px;
+}
+
+.loading,
+.errorState {
+  padding: $space-2xl $space-lg;
+  text-align: center;
+  color: $color-text-muted;
+}
+
+.retryBtn {
+  margin-top: $space-md;
+  padding: $space-sm $space-lg;
+  border: none;
+  border-radius: 20px;
+  background: $color-deep-red;
+  color: $color-white;
+  cursor: pointer;
+  font-family: inherit;
+}
+
+.orderTabs {
+  display: flex;
+  gap: $space-sm;
+  padding: $space-md;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+.orderTab {
+  flex-shrink: 0;
+  padding: 10px 18px;
+  border-radius: 10px;
+  border: 1px solid #d1d5db;
+  background: $color-white;
+  color: $color-text-muted;
+  font-size: $font-size-xs;
+  font-weight: $font-weight-bold;
+  text-decoration: none;
+}
+
+.orderTabActive {
+  background: $navy;
+  border-color: $navy;
+  color: $color-white;
+}
+
+.heroCard {
+  position: relative;
+  margin: 0 $space-md $space-md;
+  padding: $space-lg;
+  border-radius: 16px;
+  background: linear-gradient(135deg, $navy 0%, $navy-light 100%);
+  color: $color-white;
+}
+
+.premiumBadge {
+  position: absolute;
+  top: $space-md;
+  right: $space-md;
+  padding: 4px 10px;
+  border-radius: 6px;
+  background: rgba(255, 255, 255, 0.2);
+  font-size: 10px;
+  font-weight: $font-weight-bold;
+  letter-spacing: 0.05em;
+}
+
+.heroLabel {
+  margin: 0 0 4px;
+  font-size: 10px;
+  opacity: 0.75;
+  letter-spacing: 0.08em;
+}
+
+.heroName {
+  margin: 0 0 $space-xs;
+  font-size: 28px;
+  font-weight: $font-weight-bold;
+}
+
+.heroType {
+  margin: 0 0 $space-lg;
+  font-size: $font-size-sm;
+  opacity: 0.9;
+}
+
+.heroFooter {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: $space-md;
+  padding-top: $space-md;
+  border-top: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.metaLabel {
+  margin: 0 0 4px;
+  font-size: 9px;
+  opacity: 0.7;
+  letter-spacing: 0.06em;
+}
+
+.metaValue {
+  margin: 0;
+  font-size: $font-size-sm;
+  font-weight: $font-weight-semibold;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.statusDot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #22c55e;
+  display: inline-block;
+}
+
+.statusProgress {
+  color: #86efac;
+}
+
+.statusDefault {
+  color: $color-white;
+}
+
+.section {
+  margin: 0 $space-md $space-lg;
+}
+
+.sectionHead {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: $space-sm;
+}
+
+.sectionTitle {
+  margin: 0;
+  font-size: 11px;
+  font-weight: $font-weight-bold;
+  letter-spacing: 0.06em;
+  color: $color-text-muted;
+}
+
+.sectionTitlePlain {
+  margin: 0 0 $space-sm;
+  font-size: $font-size-base;
+  font-weight: $font-weight-bold;
+  color: $color-text;
+}
+
+.percentBadge,
+.unitBadge {
+  font-size: 10px;
+  font-weight: $font-weight-bold;
+  color: $accent-blue;
+  background: rgba(24, 71, 181, 0.1);
+  padding: 4px 8px;
+  border-radius: 6px;
+}
+
+.viewAll {
+  border: none;
+  background: transparent;
+  color: $accent-blue;
+  font-size: $font-size-sm;
+  font-weight: $font-weight-semibold;
+  cursor: pointer;
+  font-family: inherit;
+}
+
+.progressBar {
+  display: flex;
+  gap: 4px;
+  margin-bottom: $space-xs;
+}
+
+.progressSegment {
+  flex: 1;
+  height: 6px;
+  border-radius: 3px;
+  background: #e5e7eb;
+}
+
+.progressFilled {
+  background: $navy;
+}
+
+.stageLabels {
+  display: flex;
+  justify-content: space-between;
+  gap: 4px;
+}
+
+.stageActive {
+  font-size: 9px;
+  font-weight: $font-weight-bold;
+  color: $navy;
+  text-align: center;
+  flex: 1;
+}
+
+.stageMuted {
+  font-size: 9px;
+  color: $color-text-muted;
+  text-align: center;
+  flex: 1;
+}
+
+.refGrid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: $space-sm;
+}
+
+.refCard {
+  position: relative;
+  aspect-ratio: 1;
+  border-radius: 12px;
+  overflow: hidden;
+  background: #e5e7eb;
+}
+
+.refImage {
+  object-fit: cover;
+}
+
+.refLabel {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  padding: 6px 8px;
+  background: linear-gradient(transparent, rgba(0, 0, 0, 0.75));
+  color: $color-white;
+  font-size: 10px;
+  font-weight: $font-weight-semibold;
+  text-transform: uppercase;
+}
+
+.dataGrid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: $space-sm;
+}
+
+.dataCard {
+  background: $color-white;
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  padding: $space-md;
+}
+
+.dataLabel {
+  display: block;
+  font-size: 10px;
+  color: $color-text-muted;
+  letter-spacing: 0.04em;
+  margin-bottom: 4px;
+}
+
+.dataValue {
+  display: block;
+  font-size: $font-size-lg;
+  font-weight: $font-weight-bold;
+  color: $color-text;
+}
+
+.shareWrap {
+  padding: 0 $space-md $space-xl;
+}
+
+.shareBtn {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: $space-sm;
+  padding: $space-md;
+  border: none;
+  border-radius: 14px;
+  background: $navy;
+  color: $color-white;
+  font-size: $font-size-base;
+  font-weight: $font-weight-bold;
+  cursor: pointer;
+  font-family: inherit;
+}

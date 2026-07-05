@@ -1,3 +1,4 @@
+import Link from "next/link";
 import type { BillOrderItem } from "@/data/dummy";
 import styles from "./BillOrderCard.module.scss";
 
@@ -11,7 +12,7 @@ function formatPrice(price: number) {
 
 export default function BillOrderCard({ order }: { order: BillOrderItem }) {
   return (
-    <article className={styles.card}>
+    <Link href={`/bills/${encodeURIComponent(order.id)}`} className={styles.card}>
       <div className={styles.iconWrap}>
         <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
           <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
@@ -33,6 +34,6 @@ export default function BillOrderCard({ order }: { order: BillOrderItem }) {
         <p className={styles.orderValue}>Order Value</p>
         <p className={styles.orderValueNum}>{formatPrice(order.orderValue)}</p>
       </div>
-    </article>
+    </Link>
   );
 }

@@ -1,4 +1,5 @@
 import Image from "next/image";
+import Link from "next/link";
 import { formatBillAmount, formatRequiredBy } from "@/lib/chat/format";
 import type { ChatBill, ChatMessage } from "@/lib/chat/types";
 import styles from "./ChatBillCard.module.scss";
@@ -12,6 +13,8 @@ interface ChatBillCardProps {
 export default function ChatBillCard({ msg, bill, timeLabel }: ChatBillCardProps) {
   const tailor = bill.tailorDetails;
   const boutiqueName = tailor?.boutiqueName ?? "Boutique";
+
+  const billHref = `/bills/${encodeURIComponent(bill.id)}`;
 
   return (
     <article className={styles.card}>
@@ -30,7 +33,9 @@ export default function ChatBillCard({ msg, bill, timeLabel }: ChatBillCardProps
         )}
         <div className={styles.headerText}>
           <p className={styles.boutiqueName}>{boutiqueName}</p>
-          <p className={styles.billNo}>Bill #{bill.billNo}</p>
+          <Link href={billHref} className={styles.billNo}>
+            Bill #{bill.billNo}
+          </Link>
         </div>
       </header>
 
@@ -90,8 +95,16 @@ export default function ChatBillCard({ msg, bill, timeLabel }: ChatBillCardProps
       {tailor?.address ? <p className={styles.address}>{tailor.address}</p> : null}
 
       {msg.orderId ? (
-        <p className={styles.orderRef}>Order ref: {msg.orderId.slice(0, 8)}…</p>
+        <p className={styles.orderRef}>
+          <Link href={`/orders/${encodeURIComponent(msg.orderId)}`} className={styles.orderRefLink}>
+            View order details ›
+          </Link>
+        </p>
       ) : null}
+
+      <Link href={billHref} className={styles.viewBillLink}>
+        View bill details ›
+      </Link>
 
       <p className={styles.time}>{timeLabel}</p>
     </article>

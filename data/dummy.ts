@@ -558,7 +558,7 @@ export const onlineOrders: OnlineOrderItem[] = [
 
 export const customOrders: CustomOrderItem[] = [
   {
-    id: "c1",
+    id: "order-21",
     dateLabel: "Today",
     status: "Fabric Cutting",
     description: "Your Tailor Making Pattern Cutting",
@@ -568,7 +568,7 @@ export const customOrders: CustomOrderItem[] = [
     finishedBy: "4 Nov",
   },
   {
-    id: "c2",
+    id: "order-19",
     dateLabel: "Today",
     status: "Delivered",
     description: "Your order has been delivered",

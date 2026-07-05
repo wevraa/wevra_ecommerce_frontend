@@ -1,4 +1,5 @@
 import Image from "next/image";
+import Link from "next/link";
 import type { CustomOrderItem } from "@/data/dummy";
 import styles from "./CustomOrderCard.module.scss";
 
@@ -23,7 +24,7 @@ export default function CustomOrderCard({ order }: { order: CustomOrderItem }) {
       </div>
       <p className={styles.finishedBy}>Finished By {order.finishedBy}</p>
       <div className={styles.footer}>
-        <button type="button" className={styles.viewInvoice}>
+        <Link href={`/orders/${encodeURIComponent(order.id)}`} className={styles.viewInvoice}>
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
             <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
             <polyline points="14 2 14 8 20 8" />
@@ -31,8 +32,8 @@ export default function CustomOrderCard({ order }: { order: CustomOrderItem }) {
             <line x1="16" y1="17" x2="8" y2="17" />
             <polyline points="10 9 9 9 8 9" />
           </svg>
-          View Invoice
-        </button>
+          View Details
+        </Link>
       </div>
       <div className={styles.ratingRow}>
         <span className={styles.ratingLabel}>Rate this Order</span>

@@ -59,6 +59,11 @@
   font-size: $font-size-xs;
   color: #1847b5;
   font-weight: $font-weight-semibold;
+  text-decoration: none;
+
+  &:hover {
+    text-decoration: underline;
+  }
 }
 
 .intro {
@@ -171,7 +176,23 @@
 .orderRef {
   margin: 0 0 4px;
   font-size: 10px;
-  color: $color-text-muted;
+}
+
+.orderRefLink,
+.viewBillLink {
+  color: #1847b5;
+  font-size: 11px;
+  font-weight: $font-weight-semibold;
+  text-decoration: none;
+
+  &:hover {
+    text-decoration: underline;
+  }
+}
+
+.viewBillLink {
+  display: inline-block;
+  margin-bottom: 4px;
 }
 
 .time {

@@ -8,6 +8,13 @@
   background: #faf5f5;
   border-radius: 12px;
   margin: $space-md;
+  text-decoration: none;
+  color: inherit;
+  transition: background 0.15s ease;
+
+  &:hover {
+    background: #f3ecec;
+  }
 }
 
 .iconWrap {
