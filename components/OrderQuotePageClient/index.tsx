@@ -17,6 +17,7 @@ import {
   startChatWithTailor,
   ChatUnauthorizedError,
 } from "@/lib/chat/startChat";
+import { ChatApiError } from "@/lib/chat/types";
 import { useBoutiquesSelectionStore } from "@/lib/stores/boutiquesSelectionStore";
 import { buildAddonsHref } from "@/lib/addonsNavigation";
 import styles from "./OrderQuotePageClient.module.scss";
@@ -83,6 +84,7 @@ export default function OrderQuotePageClient() {
   const router = useRouter();
   const [sending, setSending] = useState(false);
   const [loginOpen, setLoginOpen] = useState(false);
+  const [sendError, setSendError] = useState<string | null>(null);
   const now = useMemo(() => new Date(), []);
   const monthSlots = useMemo(() => buildMonthsThisYearFrom(now), [now]);
   const initialYM = monthSlots[0]?.value ?? `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}`;
@@ -176,6 +178,7 @@ export default function OrderQuotePageClient() {
     }
 
     setSending(true);
+    setSendError(null);
     try {
       let firstConversationId: string | null = null;
 
@@ -205,7 +208,15 @@ export default function OrderQuotePageClient() {
         router.push(`/chat/${encodeURIComponent(firstConversationId)}`);
       }
     } catch (e) {
-      if (e instanceof ChatUnauthorizedError) setLoginOpen(true);
+      if (e instanceof ChatUnauthorizedError) {
+        setLoginOpen(true);
+      } else {
+        setSendError(
+          e instanceof ChatApiError || e instanceof Error
+            ? e.message
+            : "Failed to send order request"
+        );
+      }
     } finally {
       setSending(false);
     }
@@ -252,6 +263,11 @@ export default function OrderQuotePageClient() {
       )}
 
       <div className={styles.content}>
+        {sendError ? (
+          <p className={styles.sendError} role="alert">
+            {sendError}
+          </p>
+        ) : null}
         <section className={styles.dateSection}>
           <div className={styles.dateLabel}>
             <span className={styles.dateLabelText}>When you Required :</span>

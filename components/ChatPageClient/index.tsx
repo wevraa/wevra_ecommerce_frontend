@@ -5,6 +5,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import LoginModal from "@/components/LoginModal";
+import ChatBillCard from "@/components/ChatBillCard";
 import { formatMessageTime, formatSenderName } from "@/lib/chat/api";
 import { formatRequiredBy } from "@/lib/chat/format";
 import type { ChatAttachment, ChatMessage, ChatReplyTo } from "@/lib/chat/types";
@@ -37,6 +38,9 @@ function getMessagePreview(msg: {
 }): string {
   if (msg.type === "ORDER_REQUEST") {
     return msg.category ?? "Order request";
+  }
+  if (msg.type === "BILL") {
+    return msg.body?.trim() || "Bill received";
   }
   return msg.body?.trim() || "Message";
 }
@@ -105,10 +109,12 @@ function OrderRequestCard({
   msg,
   timeLabel,
   onReply,
+  isOwn,
 }: {
   msg: ChatMessage;
   timeLabel: string;
   onReply: () => void;
+  isOwn: boolean;
 }) {
   const images = getOrderImages(msg);
   const primaryImage = images[0]?.url ?? "/images/placeholder-rect.svg";
@@ -116,8 +122,8 @@ function OrderRequestCard({
   const hasAddons = msg.addons.length > 0;
 
   return (
-    <div className={styles.quoteRowWrap}>
-      <ReplyButton onClick={onReply} className={styles.replyBtnQuote} />
+    <div className={`${styles.quoteRowWrap} ${isOwn ? "" : styles.quoteRowWrapIn}`}>
+      {isOwn ? <ReplyButton onClick={onReply} className={styles.replyBtnQuote} /> : null}
       <div className={styles.quoteBubble}>
         <div className={styles.quoteImages}>
           {images.length > 0 ? (
@@ -141,8 +147,12 @@ function OrderRequestCard({
           )}
         </div>
         <p className={styles.quoteTitle}>{msg.category ?? "Order request"}</p>
+        {msg.orderTypes.length > 0 ? (
+          <p className={styles.quoteTypes}>{msg.orderTypes.join(", ")}</p>
+        ) : null}
+        {msg.description ? <p className={styles.quoteDescription}>{msg.description}</p> : null}
         <p className={styles.quoteDate}>
-          Required Date: <strong>{formatRequiredBy(msg.requiredBy)}</strong>
+          Required by: <strong>{formatRequiredBy(msg.requiredBy)}</strong>
         </p>
         <p className={`${styles.quoteStatus} ${hasMeasurements ? styles.positive : styles.muted}`}>
           {hasMeasurements ? "Measurement added" : "No measurement selected"}
@@ -150,8 +160,12 @@ function OrderRequestCard({
         <p className={`${styles.quoteStatus} ${hasAddons ? styles.positive : styles.muted}`}>
           {hasAddons ? "Add ons selected" : "No add-ons selected"}
         </p>
+        {isOwn && !msg.orderId ? (
+          <p className={styles.quotePending}>Waiting for tailor to confirm and send bill</p>
+        ) : null}
         <p className={styles.quoteTime}>{timeLabel}</p>
       </div>
+      {!isOwn ? <ReplyButton onClick={onReply} className={styles.replyBtnIn} /> : null}
     </div>
   );
 }
@@ -168,14 +182,79 @@ function MessageBubble({
   const timeLabel = formatMessageTime(msg.createdAt);
   const senderName = formatSenderName(msg.sender);
 
-  if (msg.type === "ORDER_REQUEST" && msg.isOwn) {
+  if (msg.type === "ORDER_REQUEST") {
+    const rowClass = msg.isOwn ? styles.rowOut : styles.rowIn;
     return (
-      <div className={styles.rowOut}>
+      <div className={rowClass}>
         <OrderRequestCard
           msg={msg}
           timeLabel={timeLabel}
           onReply={() => onReply(msg)}
+          isOwn={msg.isOwn}
         />
+      </div>
+    );
+  }
+
+  if (msg.type === "BILL") {
+    if (msg.bill) {
+      return (
+        <div className={styles.rowIn}>
+          <div className={styles.messageRowWrap}>
+            <ChatBillCard msg={msg} bill={msg.bill} timeLabel={timeLabel} />
+            <ReplyButton onClick={() => onReply(msg)} className={styles.replyBtnIn} />
+          </div>
+        </div>
+      );
+    }
+    const billText = msg.body?.trim() || "Bill received";
+    return (
+      <div className={styles.rowIn}>
+        <div className={styles.messageRowWrap}>
+          <div className={styles.bubble}>
+            {senderName ? <span className={styles.senderName}>{senderName}</span> : null}
+            <p className={styles.bubbleText}>{billText}</p>
+            <span className={styles.bubbleTime}>{timeLabel}</span>
+          </div>
+          <ReplyButton onClick={() => onReply(msg)} className={styles.replyBtnIn} />
+        </div>
+      </div>
+    );
+  }
+
+  if (msg.type === "IMAGE") {
+    const images = getOrderImages(msg);
+    const rowClass = msg.isOwn ? styles.rowOut : styles.rowIn;
+    return (
+      <div className={rowClass}>
+        <div className={styles.messageRowWrap}>
+          {msg.isOwn ? (
+            <ReplyButton onClick={() => onReply(msg)} className={styles.replyBtnOut} />
+          ) : null}
+          <div className={styles.bubble}>
+            {!msg.isOwn && senderName ? (
+              <span className={styles.senderName}>{senderName}</span>
+            ) : null}
+            <div className={styles.imageGallery}>
+              {images.map((img) => (
+                <div key={img.url} className={styles.galleryImageWrap}>
+                  <Image
+                    src={img.url}
+                    alt={img.label ?? "Image"}
+                    fill
+                    className={styles.galleryImage}
+                    sizes="120px"
+                    unoptimized={img.url.startsWith("blob:")}
+                  />
+                </div>
+              ))}
+            </div>
+            <span className={styles.bubbleTime}>{timeLabel}</span>
+          </div>
+          {!msg.isOwn ? (
+            <ReplyButton onClick={() => onReply(msg)} className={styles.replyBtnIn} />
+          ) : null}
+        </div>
       </div>
     );
   }

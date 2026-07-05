@@ -91,7 +91,7 @@ export function useConversationChat(conversationId: string): UseConversationChat
         if (messageIdsRef.current.has(msg.id)) continue;
         messageIdsRef.current.add(msg.id);
         next.push(enrichMessage(msg, userId));
-        if (msg.type === "ORDER_REQUEST" && msg.orderId) {
+        if (msg.type === "ORDER_REQUEST") {
           clearPendingOrder(conversationId);
         }
       }

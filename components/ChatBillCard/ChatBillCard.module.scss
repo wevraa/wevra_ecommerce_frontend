@@ -1,0 +1,182 @@
+@use "../../styles/variables" as *;
+
+.card {
+  max-width: 100%;
+  width: min(100%, 320px);
+  background: $color-white;
+  border-radius: 12px;
+  padding: $space-md;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.1);
+  border: 1px solid rgba(24, 71, 181, 0.15);
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  gap: $space-sm;
+  margin-bottom: $space-sm;
+}
+
+.logoWrap {
+  position: relative;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  overflow: hidden;
+  flex-shrink: 0;
+  background: $color-light-pink;
+}
+
+.logo {
+  object-fit: cover;
+}
+
+.logoPlaceholder {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: #1847b5;
+  color: $color-white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.headerText {
+  min-width: 0;
+}
+
+.boutiqueName {
+  margin: 0;
+  font-size: $font-size-sm;
+  font-weight: $font-weight-bold;
+  color: $color-text;
+}
+
+.billNo {
+  margin: 2px 0 0;
+  font-size: $font-size-xs;
+  color: #1847b5;
+  font-weight: $font-weight-semibold;
+}
+
+.intro {
+  margin: 0 0 $space-sm;
+  font-size: $font-size-sm;
+  color: $color-text;
+  line-height: 1.4;
+}
+
+.delivery {
+  margin: 0 0 $space-sm;
+  font-size: $font-size-xs;
+  color: $color-text;
+
+  strong {
+    color: $color-deep-red;
+  }
+}
+
+.tableWrap {
+  overflow-x: auto;
+  margin-bottom: $space-sm;
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 11px;
+
+  th {
+    text-align: left;
+    padding: 6px 4px;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+    color: $color-text-muted;
+    font-weight: $font-weight-semibold;
+  }
+
+  td {
+    padding: 8px 4px;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+    vertical-align: top;
+  }
+
+  th:last-child,
+  td:last-child {
+    text-align: right;
+  }
+}
+
+.itemTitle {
+  display: block;
+  font-weight: $font-weight-medium;
+  color: $color-text;
+}
+
+.itemType {
+  display: block;
+  font-size: 10px;
+  color: $color-text-muted;
+  margin-top: 2px;
+}
+
+.totals {
+  margin: 0 0 $space-sm;
+}
+
+.totalRow {
+  display: flex;
+  justify-content: space-between;
+  gap: $space-md;
+  font-size: $font-size-xs;
+  padding: 3px 0;
+
+  dt {
+    margin: 0;
+    color: $color-text-muted;
+  }
+
+  dd {
+    margin: 0;
+    font-weight: $font-weight-medium;
+    color: $color-text;
+  }
+}
+
+.balanceRow {
+  padding-top: $space-xs;
+  border-top: 1px dashed rgba(0, 0, 0, 0.1);
+
+  dd {
+    color: $color-deep-red;
+    font-weight: $font-weight-bold;
+  }
+}
+
+.grandTotalRow {
+  dd {
+    color: #1847b5;
+    font-weight: $font-weight-bold;
+  }
+}
+
+.address {
+  margin: 0 0 $space-xs;
+  font-size: 10px;
+  color: $color-text-muted;
+  line-height: 1.4;
+}
+
+.orderRef {
+  margin: 0 0 4px;
+  font-size: 10px;
+  color: $color-text-muted;
+}
+
+.time {
+  margin: 0;
+  font-size: 10px;
+  color: $color-text-muted;
+  text-align: right;
+}

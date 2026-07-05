@@ -84,12 +84,13 @@ async function buildOrderPayload(
   if (neckUrl) attachments.push({ url: neckUrl, label: "Front Neck Design" });
 
   const imageUrls = attachments.map((a) => a.url);
+  const category = input.category.trim();
 
   return {
     conversationId,
     type: "ORDER_REQUEST",
-    category: input.category,
-    orderTypes: input.orderTypes?.length ? input.orderTypes : undefined,
+    category,
+    orderTypes: input.orderTypes?.length ? input.orderTypes : [category],
     attachments: attachments.length ? attachments : undefined,
     imageUrls: imageUrls.length ? imageUrls : undefined,
     measurements: input.measurements?.length ? input.measurements : undefined,
@@ -97,6 +98,30 @@ async function buildOrderPayload(
     requiredBy: input.requiredBy,
     description: input.description,
   };
+}
+
+/** Validates order card payload before socket send (must use ORDER_REQUEST, not TEXT). */
+export function validateCustomerOrderInput(input: CustomerOrderRequestInput): void {
+  const category = input.category?.trim();
+  if (!category) {
+    throw new ChatApiError("Category is required for order request", 400);
+  }
+  if (!input.requiredBy) {
+    throw new ChatApiError("Required date is missing", 400);
+  }
+
+  const hasOrderField =
+    Boolean(category) ||
+    (input.orderTypes?.length ?? 0) > 0 ||
+    Boolean(input.productImage) ||
+    Boolean(input.sleeveDesignImage) ||
+    (input.measurements?.length ?? 0) > 0 ||
+    (input.addons?.length ?? 0) > 0 ||
+    Boolean(input.description?.trim());
+
+  if (!hasOrderField) {
+    throw new ChatApiError("Order request is missing required details", 400);
+  }
 }
 
 export async function startChatWithTailor(tailorId: string) {
@@ -109,6 +134,8 @@ export async function sendOrderRequestViaChat(
   conversationId: string,
   input: CustomerOrderRequestInput
 ): Promise<ChatMessage> {
+  validateCustomerOrderInput(input);
+
   chatSocket.connect();
   chatSocket.joinConversation(conversationId);
 
@@ -132,10 +159,7 @@ export async function sendOrderRequestViaChat(
     throw new ChatApiError("Unexpected message type from server", 500);
   }
 
-  if (!message.orderId) {
-    throw new ChatApiError("Order was not created (missing orderId)", 500);
-  }
-
+  // TailorOrder / bill is created when the tailor taps Generate Bill — orderId may be null here.
   clearPendingOrder(conversationId);
   return message;
 }

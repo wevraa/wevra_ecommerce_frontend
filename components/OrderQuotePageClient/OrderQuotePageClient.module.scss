@@ -137,6 +137,15 @@
   margin: 0 auto;
 }
 
+.sendError {
+  margin: 0 0 $space-md;
+  padding: $space-sm $space-md;
+  border-radius: 8px;
+  background: rgba($color-deep-red, 0.08);
+  color: $color-deep-red;
+  font-size: $font-size-sm;
+}
+
 .dateSection {
   margin-bottom: $space-lg;
 }

@@ -12,6 +12,18 @@ export function formatRequiredBy(iso: string | null | undefined): string {
   }
 }
 
+/** Format bill money strings as INR currency. */
+export function formatBillAmount(value: string | number | null | undefined): string {
+  if (value === null || value === undefined || value === "") return "₹0";
+  const num = typeof value === "number" ? value : Number.parseFloat(value);
+  if (Number.isNaN(num)) return String(value);
+  return new Intl.NumberFormat("en-IN", {
+    style: "currency",
+    currency: "INR",
+    maximumFractionDigits: 2,
+  }).format(num);
+}
+
 /** Local yyyy-mm-dd → requiredBy ISO (UTC midnight). */
 export function localDateToRequiredByIso(dateIso: string): string {
   const [y, m, d] = dateIso.split("-").map(Number);

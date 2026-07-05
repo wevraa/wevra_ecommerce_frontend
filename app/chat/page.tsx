@@ -63,7 +63,9 @@ export default function ChatInboxPage() {
                       <p className={styles.preview}>
                         {c.lastMessage.type === "ORDER_REQUEST"
                           ? c.lastMessage.category ?? "Order request"
-                          : c.lastMessage.body ?? ""}
+                          : c.lastMessage.type === "BILL"
+                            ? c.lastMessage.body ?? `Bill #${c.lastMessage.bill?.billNo ?? ""}`
+                            : c.lastMessage.body ?? ""}
                       </p>
                     ) : null}
                   </div>

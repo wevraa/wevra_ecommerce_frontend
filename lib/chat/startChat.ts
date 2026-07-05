@@ -2,6 +2,7 @@ export {
   startChatWithTailor,
   sendOrderRequestViaChat,
   prepareAndCachePendingOrder,
+  validateCustomerOrderInput,
   ChatUnauthorizedError,
 } from "./orderRequest";
 

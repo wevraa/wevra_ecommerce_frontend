@@ -1,4 +1,4 @@
-export type ChatMessageType = "TEXT" | "IMAGE" | "ORDER_REQUEST";
+export type ChatMessageType = "TEXT" | "IMAGE" | "ORDER_REQUEST" | "BILL";
 
 export type ChatUserRole = "CUSTOMER" | "TAILOR";
 
@@ -44,6 +44,38 @@ export interface ChatAddon {
   imageUrl?: string;
 }
 
+export interface ChatBillTailorDetails {
+  boutiqueName?: string;
+  phone?: string;
+  email?: string;
+  logoUrl?: string | null;
+  address?: string;
+}
+
+export interface ChatBillItem {
+  id: string;
+  orderNo?: number;
+  description: string;
+  orderType?: string;
+  unitPrice: string;
+  qty: number;
+  lineTotal: string;
+}
+
+export interface ChatBill {
+  id: string;
+  billNo: number;
+  deliveryDate: string | null;
+  subtotal: string;
+  total: string;
+  advancePaid: string;
+  balance: string;
+  customerName?: string;
+  customerPhone?: string;
+  tailorDetails?: ChatBillTailorDetails;
+  items: ChatBillItem[];
+}
+
 /** Snapshot of the message being replied to (from API or optimistic send). */
 export interface ChatReplyTo {
   id: string;
@@ -68,6 +100,8 @@ export interface ChatMessage {
   addons: ChatAddon[];
   requiredBy: string | null;
   orderId: string | null;
+  billId?: string | null;
+  bill?: ChatBill | null;
   createdAt: string;
   sender?: ChatUser | null;
   replyToMessageId?: string | null;

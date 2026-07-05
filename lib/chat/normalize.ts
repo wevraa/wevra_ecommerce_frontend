@@ -1,6 +1,9 @@
 import type {
   ChatAddon,
   ChatAttachment,
+  ChatBill,
+  ChatBillItem,
+  ChatBillTailorDetails,
   ChatConversation,
   ChatMeasurement,
   ChatMessage,
@@ -91,6 +94,74 @@ function normalizeUser(raw: unknown) {
   };
 }
 
+function pickNumber(record: RawRecord, ...keys: string[]): number | undefined {
+  for (const key of keys) {
+    const value = record[key];
+    if (typeof value === "number" && !Number.isNaN(value)) return value;
+    if (typeof value === "string" && value.trim() !== "") {
+      const n = Number(value);
+      if (!Number.isNaN(n)) return n;
+    }
+  }
+  return undefined;
+}
+
+function normalizeBillTailorDetails(raw: unknown): ChatBillTailorDetails | undefined {
+  const record = asRecord(raw);
+  if (!record) return undefined;
+  return {
+    boutiqueName: pickString(record, "boutiqueName", "boutique_name", "name") || undefined,
+    phone: pickString(record, "phone") || undefined,
+    email: pickString(record, "email") || undefined,
+    logoUrl: (record.logoUrl ?? record.logo_url ?? null) as string | null,
+    address: pickString(record, "address", "addressLine1", "address_line1") || undefined,
+  };
+}
+
+function normalizeBillItems(raw: unknown): ChatBillItem[] {
+  if (!Array.isArray(raw)) return [];
+  const result: ChatBillItem[] = [];
+  for (const item of raw) {
+    const record = asRecord(item);
+    if (!record) continue;
+    const id = pickString(record, "id");
+    const description = pickString(record, "description");
+    if (!id || !description) continue;
+    const qty = pickNumber(record, "qty", "quantity") ?? 1;
+    result.push({
+      id,
+      orderNo: pickNumber(record, "orderNo", "order_no"),
+      description,
+      orderType: pickString(record, "orderType", "order_type") || undefined,
+      unitPrice: pickString(record, "unitPrice", "unit_price") || "0",
+      qty,
+      lineTotal: pickString(record, "lineTotal", "line_total") || "0",
+    });
+  }
+  return result;
+}
+
+function normalizeBill(raw: unknown): ChatBill | null {
+  const record = asRecord(raw);
+  if (!record) return null;
+  const id = pickString(record, "id");
+  const billNo = pickNumber(record, "billNo", "bill_no");
+  if (!id || billNo === undefined) return null;
+  return {
+    id,
+    billNo,
+    deliveryDate: pickNullableString(record, "deliveryDate", "delivery_date"),
+    subtotal: pickString(record, "subtotal") || "0",
+    total: pickString(record, "total") || "0",
+    advancePaid: pickString(record, "advancePaid", "advance_paid") || "0",
+    balance: pickString(record, "balance") || "0",
+    customerName: pickString(record, "customerName", "customer_name") || undefined,
+    customerPhone: pickString(record, "customerPhone", "customer_phone") || undefined,
+    tailorDetails: normalizeBillTailorDetails(record.tailorDetails ?? record.tailor_details),
+    items: normalizeBillItems(record.items),
+  };
+}
+
 function normalizeTailor(raw: unknown) {
   const record = asRecord(raw);
   if (!record) return undefined;
@@ -107,8 +178,11 @@ function normalizeTailor(raw: unknown) {
 
 function normalizeMessageType(record: RawRecord, body: string | null): ChatMessageType {
   const raw = pickString(record, "type").toUpperCase();
-  if (raw === "ORDER_REQUEST" || raw === "IMAGE" || raw === "TEXT") {
+  if (raw === "ORDER_REQUEST" || raw === "IMAGE" || raw === "TEXT" || raw === "BILL") {
     return raw as ChatMessageType;
+  }
+  if (record.bill || record.billId || record.bill_id) {
+    return "BILL";
   }
   if (
     record.category ||
@@ -131,13 +205,18 @@ function normalizeReplyTo(raw: unknown): ChatReplyTo | null {
   const body = pickNullableString(record, "body", "text", "content");
   const rawType = pickString(record, "type").toUpperCase();
   const type =
-    rawType === "ORDER_REQUEST" || rawType === "IMAGE" || rawType === "TEXT"
+    rawType === "ORDER_REQUEST" ||
+    rawType === "IMAGE" ||
+    rawType === "TEXT" ||
+    rawType === "BILL"
       ? (rawType as ChatMessageType)
       : body
         ? "TEXT"
         : record.category
           ? "ORDER_REQUEST"
-          : undefined;
+          : record.bill
+            ? "BILL"
+            : undefined;
 
   return {
     id,
@@ -169,6 +248,8 @@ export function normalizeMessage(raw: unknown): ChatMessage | null {
 
   const replyToRaw = record.replyTo ?? record.reply_to ?? record.quotedMessage ?? record.quoted_message;
   const replyTo = normalizeReplyTo(replyToRaw);
+  const billRaw = record.bill;
+  const bill = billRaw ? normalizeBill(billRaw) : null;
 
   return {
     id,
@@ -189,6 +270,8 @@ export function normalizeMessage(raw: unknown): ChatMessage | null {
     addons: normalizeAddons(record.addons),
     requiredBy: pickNullableString(record, "requiredBy", "required_by"),
     orderId: pickNullableString(record, "orderId", "order_id"),
+    billId: pickNullableString(record, "billId", "bill_id") ?? bill?.id ?? null,
+    bill,
     createdAt,
     sender: normalizeUser(record.sender),
     replyToMessageId:
