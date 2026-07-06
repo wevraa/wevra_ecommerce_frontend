@@ -212,14 +212,31 @@ function normalizeRelatedOrders(raw: unknown, currentId: string, currentNo: numb
   for (const item of raw) {
     const record = asRecord(item);
     if (!record) continue;
-    const id = pickString(record, "id");
-    const orderNo = pickNumber(record, "orderNo", "order_no", "no");
+    const id =
+      pickString(record, "id", "orderId", "order_id") ||
+      pickString(asRecord(record.order) ?? {}, "id");
+    const orderNo =
+      pickNumber(record, "orderNo", "order_no", "no", "billItemOrderNo", "bill_item_order_no") ??
+      pickNumber(asRecord(record.order) ?? {}, "orderNo", "order_no", "billItemOrderNo");
     if (id && orderNo !== undefined) tabs.push({ id, orderNo });
   }
   if (!tabs.some((t) => t.id === currentId)) {
     tabs.unshift({ id: currentId, orderNo: currentNo });
   }
   return tabs.sort((a, b) => b.orderNo - a.orderNo);
+}
+
+function pickFirstImageUrl(record: RawRecord): string {
+  const imageUrls = record.imageUrls ?? record.image_urls;
+  if (Array.isArray(imageUrls)) {
+    for (const url of imageUrls) {
+      if (typeof url === "string" && url) return url;
+    }
+  }
+  return (
+    pickString(record, "imageUrl", "image_url", "thumbnailUrl", "thumbnail_url", "productImage", "product_image") ||
+    ""
+  );
 }
 
 export function normalizeOrderDetail(raw: unknown): EcomOrderDetail | null {
@@ -232,10 +249,15 @@ export function normalizeOrderDetail(raw: unknown): EcomOrderDetail | null {
   const tailorRaw = source.tailorDetails ?? source.tailor_details ?? source.tailor ?? record.tailor;
 
   const id = pickString(source, "id") || pickString(record, "id");
-  const orderNo = pickNumber(source, "orderNo", "order_no", "no") ?? pickNumber(record, "orderNo", "order_no", "no") ?? 0;
+  const orderNo =
+    pickNumber(source, "orderNo", "order_no", "no", "billItemOrderNo", "bill_item_order_no") ??
+    pickNumber(record, "orderNo", "order_no", "no", "billItemOrderNo", "bill_item_order_no") ??
+    0;
   if (!id) return null;
 
-  const status = pickString(source, "status", "orderStatus", "order_status") || "In Progress";
+  const status =
+    pickString(source, "status", "orderStatus", "order_status", "statusLabel", "status_label") ||
+    "In Progress";
   const progressPercent =
     pickNumber(source, "progressPercent", "progress_percent", "productionProgressPercent") ??
     pickNumber(record, "progressPercent", "progress_percent", "productionProgressPercent") ??
@@ -300,9 +322,11 @@ export function normalizeOrderDetail(raw: unknown): EcomOrderDetail | null {
       source.relatedOrders ??
         source.related_orders ??
         source.siblingOrders ??
+        source.orders ??
         record.relatedOrders ??
         record.related_orders ??
-        record.siblingOrders,
+        record.siblingOrders ??
+        record.orders,
       id,
       orderNo
     ),
@@ -355,20 +379,26 @@ function normalizeBillItems(raw: unknown): BillLineItem[] {
       pickString(nestedOrder ?? {}, "id") ||
       undefined;
 
+    const imageUrl =
+      pickFirstImageUrl(record) ||
+      pickFirstImageUrl(nestedOrder ?? {}) ||
+      undefined;
+
     result.push({
       id,
       orderId,
       orderNo:
-        pickNumber(record, "orderNo", "order_no") ??
-        pickNumber(nestedOrder ?? {}, "orderNo", "order_no"),
+        pickNumber(record, "orderNo", "order_no", "billItemOrderNo", "bill_item_order_no") ??
+        pickNumber(nestedOrder ?? {}, "orderNo", "order_no", "billItemOrderNo"),
       description,
       orderType:
         pickString(record, "orderType", "order_type") ||
         pickString(nestedOrder ?? {}, "orderType", "order_type", "category") ||
         undefined,
-      imageUrl:
-        pickString(record, "imageUrl", "image_url", "thumbnailUrl", "thumbnail_url", "productImage", "product_image") ||
-        pickString(nestedOrder ?? {}, "imageUrl", "image_url", "productImage", "product_image") ||
+      imageUrl: imageUrl || undefined,
+      statusLabel:
+        pickString(record, "statusLabel", "status_label", "status") ||
+        pickString(nestedOrder ?? {}, "statusLabel", "status_label", "status") ||
         undefined,
       unitPrice: pickAmount(record, "unitPrice", "unit_price", "rate", "price"),
       qty: pickNumber(record, "qty", "quantity") ?? 1,

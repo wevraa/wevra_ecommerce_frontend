@@ -1,6 +1,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { formatBillAmount, formatRequiredBy } from "@/lib/chat/format";
+import { buildBillSharePath, buildOrderSharePath } from "@/lib/orders/shareLinks";
 import type { ChatBill, ChatMessage } from "@/lib/chat/types";
 import styles from "./ChatBillCard.module.scss";
 
@@ -14,7 +15,13 @@ export default function ChatBillCard({ msg, bill, timeLabel }: ChatBillCardProps
   const tailor = bill.tailorDetails;
   const boutiqueName = tailor?.boutiqueName ?? "Boutique";
 
-  const billHref = `/bills/${encodeURIComponent(bill.id)}`;
+  const billHref = bill.shareToken ? buildBillSharePath(bill.id, bill.shareToken) : null;
+  const firstOrderLink =
+    bill.shareToken && bill.items.find((item) => item.orderId)
+      ? buildOrderSharePath(bill.items.find((item) => item.orderId)!.orderId!, bill.shareToken)
+      : msg.orderId && bill.shareToken
+        ? buildOrderSharePath(msg.orderId, bill.shareToken)
+        : null;
 
   return (
     <article className={styles.card}>
@@ -33,9 +40,13 @@ export default function ChatBillCard({ msg, bill, timeLabel }: ChatBillCardProps
         )}
         <div className={styles.headerText}>
           <p className={styles.boutiqueName}>{boutiqueName}</p>
-          <Link href={billHref} className={styles.billNo}>
-            Bill #{bill.billNo}
-          </Link>
+          {billHref ? (
+            <Link href={billHref} className={styles.billNo}>
+              Bill #{bill.billNo}
+            </Link>
+          ) : (
+            <p className={styles.billNo}>Bill #{bill.billNo}</p>
+          )}
         </div>
       </header>
 
@@ -94,17 +105,19 @@ export default function ChatBillCard({ msg, bill, timeLabel }: ChatBillCardProps
 
       {tailor?.address ? <p className={styles.address}>{tailor.address}</p> : null}
 
-      {msg.orderId ? (
+      {firstOrderLink ? (
         <p className={styles.orderRef}>
-          <Link href={`/orders/${encodeURIComponent(msg.orderId)}`} className={styles.orderRefLink}>
+          <Link href={firstOrderLink} className={styles.orderRefLink}>
             View order details ›
           </Link>
         </p>
       ) : null}
 
-      <Link href={billHref} className={styles.viewBillLink}>
-        View bill details ›
-      </Link>
+      {billHref ? (
+        <Link href={billHref} className={styles.viewBillLink}>
+          View bill details ›
+        </Link>
+      ) : null}
 
       <p className={styles.time}>{timeLabel}</p>
     </article>

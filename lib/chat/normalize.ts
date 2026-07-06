@@ -130,7 +130,9 @@ function normalizeBillItems(raw: unknown): ChatBillItem[] {
     const qty = pickNumber(record, "qty", "quantity") ?? 1;
     result.push({
       id,
-      orderNo: pickNumber(record, "orderNo", "order_no"),
+      orderId: pickString(record, "orderId", "order_id") || undefined,
+      orderNo:
+        pickNumber(record, "orderNo", "order_no", "billItemOrderNo", "bill_item_order_no"),
       description,
       orderType: pickString(record, "orderType", "order_type") || undefined,
       unitPrice: pickString(record, "unitPrice", "unit_price") || "0",
@@ -150,6 +152,7 @@ function normalizeBill(raw: unknown): ChatBill | null {
   return {
     id,
     billNo,
+    shareToken: pickString(record, "shareToken", "share_token") || undefined,
     deliveryDate: pickNullableString(record, "deliveryDate", "delivery_date"),
     subtotal: pickString(record, "subtotal") || "0",
     total: pickString(record, "total") || "0",

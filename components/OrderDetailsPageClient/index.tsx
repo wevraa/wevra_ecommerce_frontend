@@ -4,16 +4,18 @@ import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { closeDetailPage, useCloseDetailPageOnBack } from "@/lib/orders/closePage";
-import { getTailorOrderDetail } from "@/lib/orders/api";
+import { getPublicOrderDetail } from "@/lib/orders/api";
+import { buildOrderSharePath } from "@/lib/orders/shareLinks";
 import { formatOrderDisplayDate } from "@/lib/orders/format";
 import type { EcomOrderDetail } from "@/lib/orders/types";
 import styles from "./OrderDetailsPageClient.module.scss";
 
 interface OrderDetailsPageClientProps {
   orderId: string;
+  shareToken: string;
 }
 
-export default function OrderDetailsPageClient({ orderId }: OrderDetailsPageClientProps) {
+export default function OrderDetailsPageClient({ orderId, shareToken }: OrderDetailsPageClientProps) {
   const [order, setOrder] = useState<EcomOrderDetail | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -21,10 +23,18 @@ export default function OrderDetailsPageClient({ orderId }: OrderDetailsPageClie
 
   useEffect(() => {
     let cancelled = false;
+
+    if (!shareToken.trim()) {
+      setOrder(null);
+      setError("Invalid link — missing share token");
+      setLoading(false);
+      return;
+    }
+
     setLoading(true);
     setError(null);
 
-    getTailorOrderDetail(orderId)
+    getPublicOrderDetail(orderId, shareToken)
       .then((data) => {
         if (!cancelled) setOrder(data);
       })
@@ -39,7 +49,7 @@ export default function OrderDetailsPageClient({ orderId }: OrderDetailsPageClie
     return () => {
       cancelled = true;
     };
-  }, [orderId]);
+  }, [orderId, shareToken]);
 
   const handleShare = async () => {
     if (!order || typeof navigator === "undefined") return;
@@ -120,12 +130,12 @@ export default function OrderDetailsPageClient({ orderId }: OrderDetailsPageClie
         </div>
       </header>
 
-      {order.relatedOrders.length > 1 ? (
+      {order.relatedOrders.length > 1 && shareToken ? (
         <div className={styles.orderTabs}>
           {order.relatedOrders.map((tab) => (
             <Link
               key={tab.id}
-              href={`/orders/${encodeURIComponent(tab.id)}`}
+              href={buildOrderSharePath(tab.id, shareToken)}
               className={`${styles.orderTab} ${tab.id === order.id ? styles.orderTabActive : ""}`}
             >
               ORDER #{tab.orderNo}

@@ -54,6 +54,7 @@ export interface ChatBillTailorDetails {
 
 export interface ChatBillItem {
   id: string;
+  orderId?: string;
   orderNo?: number;
   description: string;
   orderType?: string;
@@ -65,6 +66,7 @@ export interface ChatBillItem {
 export interface ChatBill {
   id: string;
   billNo: number;
+  shareToken?: string;
   deliveryDate: string | null;
   subtotal: string;
   total: string;

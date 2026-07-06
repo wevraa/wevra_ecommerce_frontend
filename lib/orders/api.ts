@@ -51,7 +51,9 @@ async function apiFetch<T>(
         ? data.message
         : typeof data?.error === "string"
           ? data.error
-          : `Request failed (${res.status})`;
+          : res.status === 404
+            ? "Link not found or expired"
+            : `Request failed (${res.status})`;
     throw new OrdersApiError(msg, res.status);
   }
 
@@ -62,12 +64,8 @@ async function ecomFetch<T>(path: string, retry = true): Promise<T> {
   return apiFetch<T>("/v1/ecom", path, { auth: true }, retry);
 }
 
-async function tailorFetch<T>(path: string, options: { auth?: boolean } = {}, retry = true): Promise<T> {
-  return apiFetch<T>("/v1/tailor", path, options, retry);
-}
-
-async function publicTailorFetch<T>(path: string): Promise<T> {
-  return tailorFetch<T>(path, { auth: false });
+async function publicFetch<T>(path: string): Promise<T> {
+  return apiFetch<T>("/v1/public", path, { auth: false });
 }
 
 /** GET /api/v1/ecom/orders/:orderId */
@@ -90,9 +88,18 @@ export async function getEcomBillDetail(billId: string): Promise<EcomBillDetail>
   return bill;
 }
 
-/** GET /api/v1/tailor/bills/:billId — public, no auth required */
-export async function getTailorBillDetail(billId: string): Promise<EcomBillDetail> {
-  const data = await publicTailorFetch<unknown>(`/bills/${encodeURIComponent(billId)}`);
+/** GET /api/v1/public/bills/:billId?token= — no login */
+export async function getPublicBillDetail(
+  billId: string,
+  shareToken: string
+): Promise<EcomBillDetail> {
+  if (!shareToken.trim()) {
+    throw new OrdersApiError("Invalid link — missing share token", 400);
+  }
+  const query = new URLSearchParams({ token: shareToken });
+  const data = await publicFetch<unknown>(
+    `/bills/${encodeURIComponent(billId)}?${query.toString()}`
+  );
   const bill = normalizeBillDetail(data);
   if (!bill) {
     throw new OrdersApiError("Invalid bill response", 500);
@@ -100,9 +107,18 @@ export async function getTailorBillDetail(billId: string): Promise<EcomBillDetai
   return bill;
 }
 
-/** GET /api/v1/tailor/orders/:orderId — public, no auth required */
-export async function getTailorOrderDetail(orderId: string): Promise<EcomOrderDetail> {
-  const data = await publicTailorFetch<unknown>(`/orders/${encodeURIComponent(orderId)}`);
+/** GET /api/v1/public/orders/:orderId?token= — no login */
+export async function getPublicOrderDetail(
+  orderId: string,
+  shareToken: string
+): Promise<EcomOrderDetail> {
+  if (!shareToken.trim()) {
+    throw new OrdersApiError("Invalid link — missing share token", 400);
+  }
+  const query = new URLSearchParams({ token: shareToken });
+  const data = await publicFetch<unknown>(
+    `/orders/${encodeURIComponent(orderId)}?${query.toString()}`
+  );
   const order = normalizeOrderDetail(data);
   if (!order) {
     throw new OrdersApiError("Invalid order response", 500);

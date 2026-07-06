@@ -4,7 +4,8 @@ import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { closeDetailPage, useCloseDetailPageOnBack } from "@/lib/orders/closePage";
-import { getTailorBillDetail } from "@/lib/orders/api";
+import { getPublicBillDetail } from "@/lib/orders/api";
+import { buildOrderSharePath } from "@/lib/orders/shareLinks";
 import {
   formatBillAmount,
   formatBillShortDate,
@@ -17,9 +18,10 @@ import styles from "./BillDetailsPageClient.module.scss";
 
 interface BillDetailsPageClientProps {
   billId: string;
+  shareToken: string;
 }
 
-export default function BillDetailsPageClient({ billId }: BillDetailsPageClientProps) {
+export default function BillDetailsPageClient({ billId, shareToken }: BillDetailsPageClientProps) {
   const [bill, setBill] = useState<EcomBillDetail | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -27,10 +29,18 @@ export default function BillDetailsPageClient({ billId }: BillDetailsPageClientP
 
   useEffect(() => {
     let cancelled = false;
+
+    if (!shareToken.trim()) {
+      setBill(null);
+      setError("Invalid link — missing share token");
+      setLoading(false);
+      return;
+    }
+
     setLoading(true);
     setError(null);
 
-    getTailorBillDetail(billId)
+    getPublicBillDetail(billId, shareToken)
       .then((data) => {
         if (!cancelled) setBill(data);
       })
@@ -45,7 +55,7 @@ export default function BillDetailsPageClient({ billId }: BillDetailsPageClientP
     return () => {
       cancelled = true;
     };
-  }, [billId]);
+  }, [billId, shareToken]);
 
   if (loading) {
     return (
@@ -174,11 +184,12 @@ export default function BillDetailsPageClient({ billId }: BillDetailsPageClientP
               <p className={styles.itemMeta}>
                 {item.orderNo ? `Order #${item.orderNo}` : "Order"}
                 {" • "}Qty: {item.qty}
+                {item.statusLabel ? ` • ${item.statusLabel}` : ""}
               </p>
               <div className={styles.itemFooter}>
                 <span className={styles.unitPrice}>Unit Price: {formatBillAmount(item.unitPrice)}</span>
-                {item.orderId ? (
-                  <Link href={`/orders/${encodeURIComponent(item.orderId)}`} className={styles.detailsLink}>
+                {item.orderId && shareToken ? (
+                  <Link href={buildOrderSharePath(item.orderId, shareToken)} className={styles.detailsLink}>
                     DETAILS ›
                   </Link>
                 ) : null}

@@ -67,6 +67,7 @@ export interface BillLineItem {
   description: string;
   orderType?: string;
   imageUrl?: string;
+  statusLabel?: string;
   unitPrice: string;
   qty: number;
   lineTotal: string;

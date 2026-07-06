@@ -1,10 +1,14 @@
-import OrderDetailsPageClient from "@/components/OrderDetailsPageClient";
+import { redirect } from "next/navigation";
 
-interface OrderDetailPageProps {
+interface OrderLegacyRedirectProps {
   params: Promise<{ id: string }>;
+  searchParams: Promise<{ token?: string }>;
 }
 
-export default async function OrderDetailPage({ params }: OrderDetailPageProps) {
+/** Legacy path — share links use `/order/:id?token=` */
+export default async function OrderLegacyRedirect({ params, searchParams }: OrderLegacyRedirectProps) {
   const { id } = await params;
-  return <OrderDetailsPageClient orderId={id} />;
+  const { token } = await searchParams;
+  const query = token ? `?token=${encodeURIComponent(token)}` : "";
+  redirect(`/order/${encodeURIComponent(id)}${query}`);
 }
