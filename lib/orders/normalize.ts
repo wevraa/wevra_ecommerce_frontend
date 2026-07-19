@@ -228,11 +228,32 @@ function normalizeRelatedOrders(raw: unknown, currentId: string, currentNo: numb
 
 function pickFirstImageUrl(record: RawRecord): string {
   const imageUrls = record.imageUrls ?? record.image_urls;
+
+  // Shape: { customerFabric: ["https://..."], ... }
+  const imageUrlsObj = asRecord(imageUrls);
+  if (imageUrlsObj) {
+    const customerFabric = imageUrlsObj.customerFabric ?? imageUrlsObj.customer_fabric;
+    if (Array.isArray(customerFabric)) {
+      for (const url of customerFabric) {
+        if (typeof url === "string" && url) return url;
+      }
+    }
+    for (const value of Object.values(imageUrlsObj)) {
+      if (typeof value === "string" && value) return value;
+      if (Array.isArray(value)) {
+        for (const url of value) {
+          if (typeof url === "string" && url) return url;
+        }
+      }
+    }
+  }
+
   if (Array.isArray(imageUrls)) {
     for (const url of imageUrls) {
       if (typeof url === "string" && url) return url;
     }
   }
+
   return (
     pickString(record, "imageUrl", "image_url", "thumbnailUrl", "thumbnail_url", "productImage", "product_image") ||
     ""
