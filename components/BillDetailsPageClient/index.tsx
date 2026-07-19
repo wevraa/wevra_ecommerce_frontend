@@ -60,9 +60,6 @@ export default function BillDetailsPageClient({ billId, shareToken }: BillDetail
   if (loading) {
     return (
       <div className={styles.page}>
-        <button type="button" className={styles.closeBtn} onClick={closeDetailPage} aria-label="Close">
-          ×
-        </button>
         <div className={styles.loading}>Loading bill…</div>
       </div>
     );
@@ -71,9 +68,6 @@ export default function BillDetailsPageClient({ billId, shareToken }: BillDetail
   if (error || !bill) {
     return (
       <div className={styles.page}>
-        <button type="button" className={styles.closeBtn} onClick={closeDetailPage} aria-label="Close">
-          ×
-        </button>
         <div className={styles.errorState}>
           <p>{error ?? "Bill not found"}</p>
           <button type="button" onClick={closeDetailPage} className={styles.retryBtn}>
@@ -89,10 +83,6 @@ export default function BillDetailsPageClient({ billId, shareToken }: BillDetail
 
   return (
     <div className={styles.page}>
-      <button type="button" className={styles.closeBtn} onClick={closeDetailPage} aria-label="Close">
-        ×
-      </button>
-
       <div className={styles.boutiqueCard}>
         {tailor.logoUrl ? (
           <div className={styles.logoWrap}>
@@ -199,7 +189,7 @@ export default function BillDetailsPageClient({ billId, shareToken }: BillDetail
             </div>
             <div className={styles.itemBody}>
               <div className={styles.itemTop}>
-                <h3 className={styles.itemTitle}>{item.description}</h3>
+                <h3 className={styles.itemTitle}>{item.orderType}</h3>
                 <span className={styles.itemTotal}>{formatBillAmount(item.lineTotal)}</span>
               </div>
               <p className={styles.itemMeta}>
