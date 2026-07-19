@@ -56,8 +56,8 @@ $accent-blue: #1847b5;
 
 .logoWrap {
   position: relative;
-  width: 64px;
-  height: 64px;
+  width: 90px;
+  height: 90px;
   margin: 0 auto $space-sm;
   border-radius: 50%;
   overflow: hidden;
@@ -103,6 +103,28 @@ $accent-blue: #1847b5;
   margin: 0;
   font-size: $font-size-xs;
   color: $color-text-muted;
+}
+
+.contactRow {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: $space-sm $space-md;
+  margin-top: $space-sm;
+}
+
+.contactLink {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: $font-size-xs;
+  font-weight: $font-weight-semibold;
+  color: $accent-blue;
+  text-decoration: none;
+
+  &:hover {
+    text-decoration: underline;
+  }
 }
 
 .infoGrid {

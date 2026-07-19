@@ -23,11 +23,12 @@ export function closeDetailPage() {
 
 /**
  * Treat browser/device back as close for pages that are opened as standalone
- * detail views.
+ * detail views. Skip when the page was opened from another in-app page
+ * (e.g. bill → order), so normal history back works.
  */
-export function useCloseDetailPageOnBack() {
+export function useCloseDetailPageOnBack(enabled = true) {
   useEffect(() => {
-    if (typeof window === "undefined") return;
+    if (!enabled || typeof window === "undefined") return;
 
     window.history.pushState({ closeDetailPageGuard: true }, "", window.location.href);
 
@@ -40,5 +41,6 @@ export function useCloseDetailPageOnBack() {
     return () => {
       window.removeEventListener("popstate", handlePopState);
     };
-  }, []);
+  }, [enabled]);
 }
+

@@ -2,10 +2,11 @@
 
 import Image from "next/image";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { closeDetailPage, useCloseDetailPageOnBack } from "@/lib/orders/closePage";
 import { getPublicOrderDetail } from "@/lib/orders/api";
-import { buildOrderSharePath } from "@/lib/orders/shareLinks";
+import { buildBillSharePath, buildOrderSharePath } from "@/lib/orders/shareLinks";
 import { formatOrderDisplayDate } from "@/lib/orders/format";
 import type { EcomOrderDetail } from "@/lib/orders/types";
 import styles from "./OrderDetailsPageClient.module.scss";
@@ -13,13 +14,35 @@ import styles from "./OrderDetailsPageClient.module.scss";
 interface OrderDetailsPageClientProps {
   orderId: string;
   shareToken: string;
+  fromBillId?: string | null;
 }
 
-export default function OrderDetailsPageClient({ orderId, shareToken }: OrderDetailsPageClientProps) {
+export default function OrderDetailsPageClient({
+  orderId,
+  shareToken,
+  fromBillId = null,
+}: OrderDetailsPageClientProps) {
+  const router = useRouter();
   const [order, setOrder] = useState<EcomOrderDetail | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  useCloseDetailPageOnBack();
+  const cameFromBill = Boolean(fromBillId?.trim());
+
+  // Only exit the page when opened as a standalone share link.
+  // When opened from bill DETAILS, allow normal back to the bill.
+  useCloseDetailPageOnBack(!cameFromBill);
+
+  const handleBack = () => {
+    if (cameFromBill && fromBillId && shareToken.trim()) {
+      router.push(buildBillSharePath(fromBillId, shareToken));
+      return;
+    }
+    if (cameFromBill) {
+      router.back();
+      return;
+    }
+    closeDetailPage();
+  };
 
   useEffect(() => {
     let cancelled = false;
@@ -69,7 +92,7 @@ export default function OrderDetailsPageClient({ orderId, shareToken }: OrderDet
     return (
       <div className={styles.page}>
         <header className={styles.header}>
-          <button type="button" className={styles.iconBtn} onClick={closeDetailPage} aria-label="Close">
+          <button type="button" className={styles.iconBtn} onClick={handleBack} aria-label="Back">
             ←
           </button>
           <h1 className={styles.headerTitle}>Order Details</h1>
@@ -84,7 +107,7 @@ export default function OrderDetailsPageClient({ orderId, shareToken }: OrderDet
     return (
       <div className={styles.page}>
         <header className={styles.header}>
-          <button type="button" className={styles.iconBtn} onClick={closeDetailPage} aria-label="Close">
+          <button type="button" className={styles.iconBtn} onClick={handleBack} aria-label="Back">
             ←
           </button>
           <h1 className={styles.headerTitle}>Order Details</h1>
@@ -92,8 +115,8 @@ export default function OrderDetailsPageClient({ orderId, shareToken }: OrderDet
         </header>
         <div className={styles.errorState}>
           <p>{error ?? "Order not found"}</p>
-          <button type="button" onClick={closeDetailPage} className={styles.retryBtn}>
-            Close
+          <button type="button" onClick={handleBack} className={styles.retryBtn}>
+            {cameFromBill ? "Back to bill" : "Close"}
           </button>
         </div>
       </div>
@@ -107,7 +130,7 @@ export default function OrderDetailsPageClient({ orderId, shareToken }: OrderDet
   return (
     <div className={styles.page}>
       <header className={styles.header}>
-        <button type="button" className={styles.iconBtn} onClick={closeDetailPage} aria-label="Close">
+        <button type="button" className={styles.iconBtn} onClick={handleBack} aria-label="Back">
           <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
             <polyline points="15 18 9 12 15 6" />
           </svg>
@@ -135,7 +158,9 @@ export default function OrderDetailsPageClient({ orderId, shareToken }: OrderDet
           {order.relatedOrders.map((tab) => (
             <Link
               key={tab.id}
-              href={buildOrderSharePath(tab.id, shareToken)}
+              href={buildOrderSharePath(tab.id, shareToken, {
+                fromBillId: fromBillId ?? undefined,
+              })}
               className={`${styles.orderTab} ${tab.id === order.id ? styles.orderTabActive : ""}`}
             >
               ORDER #{tab.orderNo}
@@ -261,7 +286,6 @@ export default function OrderDetailsPageClient({ orderId, shareToken }: OrderDet
           Share Order Summary
         </button>
       </div>
-
     </div>
   );
 }
