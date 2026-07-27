@@ -6,7 +6,7 @@
   grid-template-columns: 1fr 1fr;
   gap: $space-md;
   padding: $space-md $space-md $space-xl;
-  background: #fcf9f9;
+  background: #fcf9f8;
 }
 
 .cancelBtn {
@@ -15,9 +15,9 @@
   justify-content: center;
   width: 100%;
   padding: $space-md $space-lg;
-  border: 1px solid #d8d8d8;
-  background: #f0f0f0;
-  color: $color-text-muted;
+  border: 1px solid #dfbfc1;
+  background: #f0eded;
+  color: #584143;
   font-size: $font-size-base;
   font-weight: $font-weight-semibold;
   cursor: pointer;
@@ -32,7 +32,7 @@
   width: 100%;
   padding: $space-md $space-lg;
   border: none;
-  background: $color-deep-red;
+  background: #85072e;
   color: $color-white;
   font-size: $font-size-base;
   font-weight: $font-weight-semibold;
@@ -41,7 +41,7 @@
   font-family: inherit;
 
   &:hover {
-    background: #9a1f3c;
+    background: #6f0626;
   }
 }
 

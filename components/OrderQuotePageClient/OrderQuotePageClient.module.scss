@@ -159,6 +159,13 @@
   color: $color-deep-red;
 }
 
+.sendingEmpty {
+  margin: 2px 0 0;
+  font-size: $font-size-base;
+  font-weight: $font-weight-semibold;
+  color: $color-text-muted;
+}
+
 .viewAllBtn {
   display: inline-flex;
   align-items: center;
@@ -635,6 +642,11 @@
   font-weight: $font-weight-semibold;
   cursor: pointer;
   font-family: inherit;
+
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
 }
 
 .viewDetailsBtnSolid {

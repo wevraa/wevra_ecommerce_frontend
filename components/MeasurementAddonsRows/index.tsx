@@ -20,6 +20,54 @@ function buildHref(path: string, productId?: string, productImage?: string): str
   return qs ? `${path}?${qs}` : path;
 }
 
+function StraightenIcon({ size = 22 }: { size?: number }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="currentColor" aria-hidden>
+      <path d="M21 6H3c-1.1 0-2 .9-2 2v8c0 1.1.9 2 2 2h18c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2zm0 10H3V8h1.5v4h1.5V8H7v4h1.5V8H10v4h1.5V8H13v4h1.5V8H16v4h1.5V8H19v4h1.5V8H21v8z" />
+    </svg>
+  );
+}
+
+function ExpandMoreIcon() {
+  return (
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor" aria-hidden>
+      <path d="M16.59 8.59 12 13.17 7.41 8.59 6 10l6 6 6-6z" />
+    </svg>
+  );
+}
+
+function InfoIcon() {
+  return (
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden>
+      <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z" />
+    </svg>
+  );
+}
+
+function EditIcon() {
+  return (
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden>
+      <path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34a.9959.9959 0 0 0-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z" />
+    </svg>
+  );
+}
+
+function AddCircleIcon() {
+  return (
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor" aria-hidden>
+      <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm5 11h-4v4h-2v-4H7v-2h4V7h2v4h4v2z" />
+    </svg>
+  );
+}
+
+function ChevronRightIcon() {
+  return (
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor" aria-hidden>
+      <path d="M10 6 8.59 7.41 13.17 12l-4.58 4.59L10 18l6-6z" />
+    </svg>
+  );
+}
+
 export default function MeasurementAddonsRows({
   productId,
   productImage,
@@ -54,14 +102,8 @@ export default function MeasurementAddonsRows({
           onClick={() => setOpen((v) => !v)}
         >
           <span className={styles.measurementsTitle}>
-            <span className={styles.measureIcon} aria-hidden>
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                <path d="M2 12h20" />
-                <path d="M6 8v8" />
-                <path d="M10 10v4" />
-                <path d="M14 8v8" />
-                <path d="M18 10v4" />
-              </svg>
+            <span className={styles.measureIcon}>
+              <StraightenIcon />
             </span>
             Measurements
           </span>
@@ -69,9 +111,7 @@ export default function MeasurementAddonsRows({
             className={`${styles.chevronDown} ${open ? styles.chevronOpen : ""}`}
             aria-hidden
           >
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-              <polyline points="6 9 12 15 18 9" />
-            </svg>
+            <ExpandMoreIcon />
           </span>
         </button>
 
@@ -88,25 +128,12 @@ export default function MeasurementAddonsRows({
                     aria-pressed={active}
                     onClick={() => setOrderContext({ selectedSize: size.label })}
                   >
+                    <span>{size.label}</span>
                     {active ? (
-                      <svg
-                        className={styles.sizeIcon}
-                        width="14"
-                        height="14"
-                        viewBox="0 0 24 24"
-                        fill="none"
-                        stroke="currentColor"
-                        strokeWidth="2"
-                        aria-hidden
-                      >
-                        <path d="M2 12h20" />
-                        <path d="M6 8v8" />
-                        <path d="M10 10v4" />
-                        <path d="M14 8v8" />
-                        <path d="M18 10v4" />
-                      </svg>
+                      <span className={styles.sizeIcon}>
+                        <StraightenIcon size={14} />
+                      </span>
                     ) : null}
-                    {size.label}
                   </button>
                 );
               })}
@@ -114,18 +141,11 @@ export default function MeasurementAddonsRows({
 
             <div className={styles.actions}>
               <Link href={measurementHref} className={styles.actionLink}>
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden>
-                  <circle cx="12" cy="12" r="10" />
-                  <line x1="12" y1="16" x2="12" y2="12" />
-                  <line x1="12" y1="8" x2="12.01" y2="8" />
-                </svg>
+                <InfoIcon />
                 More Details
               </Link>
               <Link href={measurementHref} className={styles.actionLink}>
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden>
-                  <path d="M12 20h9" />
-                  <path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z" />
-                </svg>
+                <EditIcon />
                 Edit
               </Link>
             </div>
@@ -135,22 +155,18 @@ export default function MeasurementAddonsRows({
 
       <Link href={addonsHref} className={styles.addonsRow}>
         <span className={styles.addonsLeft}>
-          <span className={styles.plusIcon} aria-hidden>
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-              <circle cx="12" cy="12" r="10" />
-              <line x1="12" y1="8" x2="12" y2="16" />
-              <line x1="8" y1="12" x2="16" y2="12" />
-            </svg>
+          <span className={styles.plusIcon}>
+            <AddCircleIcon />
           </span>
           <span className={styles.addonsLabel}>Add-ons</span>
+        </span>
+        <span className={styles.addonsRight}>
           {addonsCount > 0 ? (
             <span className={styles.newBadge}>{addonsCount}</span>
           ) : null}
-        </span>
-        <span className={styles.chevronRight} aria-hidden>
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-            <polyline points="9 18 15 12 9 6" />
-          </svg>
+          <span className={styles.chevronRight}>
+            <ChevronRightIcon />
+          </span>
         </span>
       </Link>
     </section>

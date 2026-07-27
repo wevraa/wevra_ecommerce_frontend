@@ -16,7 +16,10 @@ import {
   ChatUnauthorizedError,
 } from "@/lib/chat/startChat";
 import { ChatApiError } from "@/lib/chat/types";
-import { useBoutiquesSelectionStore } from "@/lib/stores/boutiquesSelectionStore";
+import {
+  useBoutiquesSelectionStore,
+  MAX_BOUTIQUE_SELECTION,
+} from "@/lib/stores/boutiquesSelectionStore";
 import { buildAddonsHref } from "@/lib/addonsNavigation";
 import type { ApiTailor } from "@/lib/api";
 import styles from "./OrderQuotePageClient.module.scss";
@@ -119,8 +122,12 @@ export default function OrderQuotePageClient({
     [year, monthIndex]
   );
 
-  const { selectedBoutiques, orderContext, setOrderContext, clearBoutiqueSelection } =
-    useBoutiquesSelectionStore();
+  const {
+    selectedBoutiques,
+    orderContext,
+    setOrderContext,
+    toggleBoutique,
+  } = useBoutiquesSelectionStore();
 
   const [productTitle, setProductTitle] = useState("Machine Embroidery Blouse");
 
@@ -143,17 +150,10 @@ export default function OrderQuotePageClient({
     };
   }, [orderContext.productId, setOrderContext]);
 
-  useEffect(() => {
-    if (selectedBoutiques.length === 0) {
-      setActiveBoutiqueId(null);
-      return;
-    }
-    setActiveBoutiqueId((prev) =>
-      prev && selectedBoutiques.some((b) => b.id === prev)
-        ? prev
-        : selectedBoutiques[0].id
-    );
-  }, [selectedBoutiques]);
+  const selectedIds = useMemo(
+    () => new Set(selectedBoutiques.map((b) => b.id)),
+    [selectedBoutiques]
+  );
 
   const hasAddonsSelected = orderContext.hasAddonsSelected === true;
   const hasMeasurementSelected = orderContext.hasMeasurementSelected === true;
@@ -190,28 +190,31 @@ export default function OrderQuotePageClient({
     return items;
   }, [orderContext.productImage, orderContext.sleeveDesignImage, productTitle]);
 
-  const enrichedBoutiques = useMemo(() => {
-    return selectedBoutiques.map((b, index) => {
-      const tailor = tailors.find((t) => t.id === b.id);
-      const reviewSeed = 800 + ((b.id.charCodeAt(0) || 0) % 7) * 400;
+  /** All boutiques from backend, selected first. */
+  const boutiqueCards = useMemo(() => {
+    const mapped = tailors.map((t, index) => {
+      const reviewSeed = 800 + ((t.id.charCodeAt(0) || 0) % 7) * 400;
+      const exp = Number(t.experience);
       return {
-        id: b.id,
-        name: b.name,
+        id: t.id,
+        name: t.name,
+        phone: t.phone,
+        address: t.addressLine1,
         image: PLACEHOLDER_IMAGE,
-        ordersCompleted: tailor ? Math.max(50, Number(tailor.experience) * 40) : 200,
-        holdingOrders: 3 + (index % 5),
+        ordersCompleted: Number.isFinite(exp) ? Math.max(50, exp * 40) : 200,
+        holdingOrders: 2 + (index % 5),
         reviewCount: reviewSeed,
-        experience: tailor?.experience,
-        address: b.address ?? tailor?.addressLine1,
+        selected: selectedIds.has(t.id),
       };
     });
-  }, [selectedBoutiques, tailors]);
+    return mapped.sort((a, b) => Number(b.selected) - Number(a.selected));
+  }, [tailors, selectedIds]);
 
-  const filteredBoutiques = useMemo(() => {
+  const filteredBoutiqueCards = useMemo(() => {
     const q = searchQuery.trim().toLowerCase();
-    if (!q) return enrichedBoutiques;
-    return enrichedBoutiques.filter((b) => b.name.toLowerCase().includes(q));
-  }, [enrichedBoutiques, searchQuery]);
+    if (!q) return boutiqueCards;
+    return boutiqueCards.filter((b) => b.name.toLowerCase().includes(q));
+  }, [boutiqueCards, searchQuery]);
 
   const applyViewYM = (value: string) => {
     setViewYM(value);
@@ -223,7 +226,6 @@ export default function OrderQuotePageClient({
   };
 
   const goToSelectBoutiques = () => {
-    clearBoutiqueSelection();
     const params = new URLSearchParams();
     if (orderContext.productId) params.set("productId", orderContext.productId);
     if (orderContext.productImage) params.set("image", orderContext.productImage);
@@ -232,13 +234,32 @@ export default function OrderQuotePageClient({
     );
   };
 
+  const handleCancel = () => {
+    router.back();
+  };
+
   const scrollToBoutiques = () => {
     boutiqueSectionRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
   };
 
+  const handleToggleBoutique = (b: {
+    id: string;
+    name: string;
+    phone?: string;
+    address?: string;
+  }) => {
+    toggleBoutique({
+      id: b.id,
+      name: b.name,
+      phone: b.phone,
+      address: b.address,
+    });
+    setActiveBoutiqueId(b.id);
+  };
+
   const handleSend = async () => {
     if (selectedBoutiques.length === 0) {
-      goToSelectBoutiques();
+      scrollToBoutiques();
       return;
     }
     if (!selectedDate || sending) return;
@@ -295,6 +316,8 @@ export default function OrderQuotePageClient({
 
   const selectedMonthLabel =
     monthSlots.find((s) => s.value === viewYM)?.label ?? "Month";
+  const selectedCount = selectedBoutiques.length;
+  const selectionAtMax = selectedCount >= MAX_BOUTIQUE_SELECTION;
 
   return (
     <main className={styles.main}>
@@ -350,23 +373,19 @@ export default function OrderQuotePageClient({
           </p>
         ) : null}
 
-        {selectedBoutiques.length === 0 ? (
-          <div className={styles.emptyState}>
-            <p>No boutiques selected.</p>
-            <button type="button" className={styles.emptyLink} onClick={goToSelectBoutiques}>
-              Go back and select boutiques
-            </button>
-          </div>
-        ) : (
-          <section className={styles.sendingSection}>
-            <div className={styles.sendingHeader}>
-              <div>
-                <p className={styles.sendingLabel}>Sending Request To</p>
+        <section className={styles.sendingSection}>
+          <div className={styles.sendingHeader}>
+            <div>
+              <p className={styles.sendingLabel}>Sending Request To</p>
+              {selectedCount > 0 ? (
                 <p className={styles.sendingCount}>
-                  {selectedBoutiques.length} Boutique
-                  {selectedBoutiques.length === 1 ? "" : "s"}
+                  {selectedCount} Boutique{selectedCount === 1 ? "" : "s"}
                 </p>
-              </div>
+              ) : (
+                <p className={styles.sendingEmpty}>No boutique selected</p>
+              )}
+            </div>
+            {selectedCount > 0 ? (
               <button
                 type="button"
                 className={styles.viewAllBtn}
@@ -377,25 +396,31 @@ export default function OrderQuotePageClient({
                   <polyline points="9 18 15 12 9 6" />
                 </svg>
               </button>
-            </div>
+            ) : null}
+          </div>
+          {selectedCount > 0 ? (
             <div className={styles.chipRow} role="list">
-              {filteredBoutiques.map((b) => (
+              {selectedBoutiques.map((b) => (
                 <button
                   key={b.id}
                   type="button"
                   role="listitem"
-                  className={`${styles.chip} ${activeBoutiqueId === b.id ? styles.chipActive : ""}`}
-                  onClick={() => setActiveBoutiqueId(b.id)}
+                  className={`${styles.chip} ${
+                    (activeBoutiqueId ?? selectedBoutiques[0]?.id) === b.id
+                      ? styles.chipActive
+                      : ""
+                  }`}
+                  onClick={() => {
+                    setActiveBoutiqueId(b.id);
+                    scrollToBoutiques();
+                  }}
                 >
                   {b.name}
                 </button>
               ))}
-              {filteredBoutiques.length === 0 ? (
-                <p className={styles.noSearchResults}>No boutiques match your search.</p>
-              ) : null}
             </div>
-          </section>
-        )}
+          ) : null}
+        </section>
 
         <section className={styles.dateSection}>
           <div className={styles.dateLabel}>
@@ -585,23 +610,36 @@ export default function OrderQuotePageClient({
           </button>
         </section>
 
-        {selectedBoutiques.length > 0 ? (
-          <section className={styles.boutiqueSection} ref={boutiqueSectionRef}>
-            <h2 className={styles.sectionTitle}>Select Boutique</h2>
+        <section className={styles.boutiqueSection} ref={boutiqueSectionRef}>
+          <h2 className={styles.sectionTitle}>Select Boutique</h2>
+          {filteredBoutiqueCards.length === 0 ? (
+            <p className={styles.noSearchResults}>
+              {tailors.length === 0
+                ? "No boutiques available right now."
+                : "No boutiques match your search."}
+            </p>
+          ) : (
             <div className={styles.boutiqueList}>
-              {filteredBoutiques.map((b) => {
-                const isActive = activeBoutiqueId === b.id;
+              {filteredBoutiqueCards.map((b) => {
+                const isSelected = b.selected;
+                const disableSelect = selectionAtMax && !isSelected;
                 return (
                   <article
                     key={b.id}
-                    className={`${styles.boutiqueCard} ${isActive ? styles.boutiqueCardActive : ""}`}
+                    className={`${styles.boutiqueCard} ${
+                      isSelected ? styles.boutiqueCardActive : ""
+                    }`}
                   >
                     <button
                       type="button"
                       className={styles.boutiqueImageWrap}
-                      onClick={() => setActiveBoutiqueId(b.id)}
-                      aria-pressed={isActive}
-                      aria-label={`${isActive ? "Selected" : "Select"} ${b.name}`}
+                      onClick={() => {
+                        if (disableSelect) return;
+                        handleToggleBoutique(b);
+                      }}
+                      disabled={disableSelect}
+                      aria-pressed={isSelected}
+                      aria-label={`${isSelected ? "Deselect" : "Select"} ${b.name}`}
                     >
                       <Image
                         src={b.image}
@@ -611,11 +649,20 @@ export default function OrderQuotePageClient({
                         sizes="(max-width: 768px) 100vw, 480px"
                       />
                       <span
-                        className={`${styles.checkCircle} ${isActive ? styles.checkCircleOn : ""}`}
+                        className={`${styles.checkCircle} ${
+                          isSelected ? styles.checkCircleOn : ""
+                        }`}
                         aria-hidden
                       >
-                        {isActive ? (
-                          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3">
+                        {isSelected ? (
+                          <svg
+                            width="14"
+                            height="14"
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="currentColor"
+                            strokeWidth="3"
+                          >
                             <polyline points="20 6 9 17 4 12" />
                           </svg>
                         ) : null}
@@ -629,14 +676,19 @@ export default function OrderQuotePageClient({
                         </span>
                       </div>
                       <p className={styles.boutiqueMeta}>
-                        {b.ordersCompleted} orders Completed • Holding {b.holdingOrders} Orders
+                        {b.ordersCompleted} orders Completed • Holding{" "}
+                        {b.holdingOrders} Orders
                       </p>
                       <button
                         type="button"
                         className={`${styles.viewDetailsBtn} ${
-                          isActive ? styles.viewDetailsBtnSolid : ""
+                          isSelected ? styles.viewDetailsBtnSolid : ""
                         }`}
-                        onClick={() => setActiveBoutiqueId(b.id)}
+                        onClick={() => {
+                          if (disableSelect) return;
+                          handleToggleBoutique(b);
+                        }}
+                        disabled={disableSelect}
                       >
                         View Details
                       </button>
@@ -645,18 +697,18 @@ export default function OrderQuotePageClient({
                 );
               })}
             </div>
-          </section>
-        ) : null}
+          )}
+        </section>
 
         <div className={styles.footerBtns}>
-          <button type="button" className={styles.cancelBtn} onClick={goToSelectBoutiques}>
+          <button type="button" className={styles.cancelBtn} onClick={handleCancel}>
             Cancel
           </button>
           <button
             type="button"
             className={styles.sendBtn}
             onClick={handleSend}
-            disabled={!selectedDate || selectedBoutiques.length === 0 || sending}
+            disabled={!selectedDate || selectedCount === 0 || sending}
           >
             {sending ? "Sending…" : "Send"}
           </button>

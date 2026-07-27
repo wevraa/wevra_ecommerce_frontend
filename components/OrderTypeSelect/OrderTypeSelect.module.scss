@@ -3,14 +3,14 @@
 
 .section {
   padding: $space-lg $space-md 0;
-  background: #fcf9f9;
+  background: #fcf9f8;
 }
 
 .title {
-  font-size: $font-size-xs;
+  font-size: 12px;
   font-weight: $font-weight-semibold;
-  color: #9a9a9a;
-  letter-spacing: 0.06em;
+  color: #584143;
+  letter-spacing: 0.1em;
   text-transform: uppercase;
   margin: 0 0 $space-sm;
 }
@@ -18,8 +18,9 @@
 .chips {
   display: flex;
   flex-wrap: nowrap;
-  gap: $space-sm;
+  gap: 8px;
   overflow-x: auto;
+  padding-bottom: 4px;
   -webkit-overflow-scrolling: touch;
   scrollbar-width: none;
   -ms-overflow-style: none;
@@ -31,25 +32,28 @@
 
 .chip {
   flex-shrink: 0;
-  padding: 10px 16px;
-  border: 1px solid #d8d8d8;
-  border-radius: 10px;
+  padding: 8px 24px;
+  border: 1px solid #8b7073;
+  border-radius: 12px;
   background: $color-white;
-  color: $color-text;
-  font-size: $font-size-sm;
-  font-weight: $font-weight-medium;
+  color: #584143;
+  font-size: 12px;
+  font-weight: $font-weight-semibold;
+  letter-spacing: 0.05em;
   cursor: pointer;
   white-space: nowrap;
+  font-family: inherit;
   transition: background 0.15s ease, color 0.15s ease, border-color 0.15s ease;
 
   &:hover {
-    background: $color-light-pink;
+    background: #f3dde1;
   }
 
   &.selected {
-    background: $color-deep-red;
+    background: #85072e;
     color: $color-white;
-    border-color: $color-deep-red;
+    border-color: #85072e;
+    box-shadow: 0 1px 3px rgba(133, 7, 46, 0.25);
   }
 }
 

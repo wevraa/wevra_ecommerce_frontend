@@ -449,8 +449,8 @@ export interface SelectedImage {
 export const selectedImages: SelectedImage[] = [
   { id: "1", image: "/images/product-1.svg", label: "Fabric" },
   { id: "2", image: "/images/product-2.svg", label: "Front Neck Design" },
-  { id: "3", image: "/images/product-3.svg", label: "Sleeve Design" },
-  { id: "4", image: "/images/product-4.svg", label: "Back Detail" },
+  { id: "3", image: "/images/product-3.svg", label: "Back Design" },
+  { id: "4", image: "/images/product-4.svg", label: "Sleeves Design" },
 ];
 
 export interface Boutique {

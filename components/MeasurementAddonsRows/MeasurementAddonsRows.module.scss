@@ -3,17 +3,20 @@
 
 .section {
   padding: $space-lg $space-md;
-  background: #fcf9f9;
+  background: #fcf9f8;
   display: flex;
   flex-direction: column;
-  gap: $space-md;
+  gap: $space-sm;
 }
 
 .measurementsCard {
-  border: 1px solid #e0e0e0;
-  border-radius: 14px;
+  border: 1px solid #dfbfc1;
+  border-radius: 12px;
   background: $color-white;
-  overflow: hidden;
+  padding: $space-md;
+  display: flex;
+  flex-direction: column;
+  gap: $space-md;
 }
 
 .measurementsHeader {
@@ -22,7 +25,7 @@
   align-items: center;
   justify-content: space-between;
   gap: $space-md;
-  padding: $space-md;
+  padding: 0;
   border: none;
   background: transparent;
   cursor: pointer;
@@ -33,20 +36,20 @@
   display: inline-flex;
   align-items: center;
   gap: $space-sm;
-  font-size: $font-size-base;
-  font-weight: $font-weight-bold;
-  color: $color-text;
+  font-size: 20px;
+  font-weight: $font-weight-semibold;
+  color: #1c1b1b;
 }
 
 .measureIcon {
   display: inline-flex;
-  color: $color-deep-red;
+  color: #85072e;
 }
 
 .chevronDown {
   display: inline-flex;
-  color: $color-text-muted;
-  transition: transform 0.2s ease;
+  color: #584143;
+  transition: transform 0.25s ease;
 }
 
 .chevronOpen {
@@ -55,66 +58,75 @@
 
 .sizeRow {
   display: flex;
-  gap: $space-sm;
-  padding: 0 $space-md $space-md;
+  gap: 8px;
   overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+
+  &::-webkit-scrollbar {
+    display: none;
+  }
 }
 
 .sizeBtn {
   flex-shrink: 0;
-  min-width: 56px;
-  height: 48px;
+  min-width: 52px;
+  height: 40px;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 4px;
-  padding: 0 12px;
-  border: 1px solid #d8d8d8;
-  border-radius: 10px;
+  gap: 6px;
+  padding: 0 16px;
+  border: 1px solid #dfbfc1;
+  border-radius: 12px;
   background: $color-white;
-  color: $color-text;
-  font-size: $font-size-sm;
+  color: #1c1b1b;
+  font-size: 12px;
   font-weight: $font-weight-semibold;
+  letter-spacing: 0.04em;
   cursor: pointer;
+  font-family: inherit;
 
   &:hover {
-    background: $color-light-pink;
+    background: #f3dde1;
   }
 }
 
 .sizeActive {
-  background: $color-deep-red;
-  border-color: $color-deep-red;
+  background: #85072e;
+  border-color: #85072e;
   color: $color-white;
+  box-shadow: 0 1px 3px rgba(133, 7, 46, 0.3);
 
   &:hover {
-    background: $color-deep-red;
+    background: #85072e;
   }
 }
 
 .sizeIcon {
-  flex-shrink: 0;
+  display: inline-flex;
 }
 
 .actions {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: $space-md;
-  border-top: 1px solid #ececec;
+  padding-top: $space-sm;
+  border-top: 1px solid rgba(223, 191, 193, 0.3);
 }
 
 .actionLink {
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  color: $color-deep-red;
-  font-size: $font-size-sm;
-  font-weight: $font-weight-medium;
+  color: #85072e;
+  font-size: 12px;
+  font-weight: $font-weight-semibold;
+  letter-spacing: 0.04em;
   text-decoration: none;
 
   &:hover {
-    text-decoration: underline;
+    opacity: 0.8;
   }
 }
 
@@ -124,14 +136,15 @@
   justify-content: space-between;
   width: 100%;
   padding: $space-md;
-  border: 1px solid #e0e0e0;
-  border-radius: 14px;
+  border: 1px solid #dfbfc1;
+  border-radius: 12px;
   background: $color-white;
   text-decoration: none;
   color: inherit;
+  transition: box-shadow 0.15s ease;
 
   &:hover {
-    background: #faf7f8;
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.06);
   }
 }
 
@@ -144,32 +157,35 @@
 
 .plusIcon {
   display: inline-flex;
-  color: $color-deep-red;
+  color: #85072e;
 }
 
 .addonsLabel {
-  font-size: $font-size-base;
-  font-weight: $font-weight-bold;
-  color: $color-text;
+  font-size: 20px;
+  font-weight: $font-weight-semibold;
+  color: #1c1b1b;
+}
+
+.addonsRight {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
 }
 
 .newBadge {
   display: inline-flex;
   align-items: center;
   padding: 2px 8px;
-  border-radius: 999px;
-  background: $color-light-pink;
-  color: $color-deep-red;
+  border-radius: 12px;
+  background: #f3dde1;
+  color: #85072e;
   font-size: 10px;
   font-weight: $font-weight-bold;
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
 }
 
 .chevronRight {
   display: inline-flex;
-  color: $color-text-muted;
-  flex-shrink: 0;
+  color: #584143;
 }
 
 @include mobile-first($desktop) {

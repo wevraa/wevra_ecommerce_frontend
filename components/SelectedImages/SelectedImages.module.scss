@@ -3,29 +3,30 @@
 
 .section {
   padding: $space-lg $space-md 0;
-  background: #fcf9f9;
+  background: #fcf9f8;
 }
 
 .headerRow {
   display: flex;
-  align-items: center;
+  align-items: flex-end;
   justify-content: space-between;
   margin-bottom: $space-sm;
 }
 
 .title {
-  font-size: $font-size-xs;
+  font-size: 12px;
   font-weight: $font-weight-semibold;
-  color: #9a9a9a;
-  letter-spacing: 0.06em;
+  color: #584143;
+  letter-spacing: 0.1em;
   text-transform: uppercase;
   margin: 0;
 }
 
 .slots {
-  font-size: $font-size-sm;
+  font-size: 12px;
   font-weight: $font-weight-semibold;
-  color: $color-deep-red;
+  color: #85072e;
+  letter-spacing: 0.05em;
 }
 
 .layout {
@@ -39,18 +40,19 @@
   width: 100%;
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 10px;
+  gap: $space-sm;
 }
 
 .card {
   position: relative;
   aspect-ratio: 3 / 4;
   overflow: hidden;
-  background: $color-light-pink;
+  background: #f0eded;
   border: none;
   padding: 0;
   border-radius: 12px;
   cursor: default;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
 }
 
 .cardInteractive {
@@ -61,6 +63,11 @@
   width: 100%;
   height: 100%;
   object-fit: cover;
+  transition: transform 0.4s ease;
+}
+
+.cardInteractive:hover .image {
+  transform: scale(1.05);
 }
 
 .label {
@@ -68,11 +75,47 @@
   bottom: 0;
   left: 0;
   right: 0;
-  padding: 10px $space-sm;
-  background: $color-deep-red;
+  padding: 8px $space-sm;
+  background: rgba(133, 7, 46, 0.9);
+  backdrop-filter: blur(4px);
   color: $color-white;
-  font-size: $font-size-xs;
+  font-size: 12px;
   font-weight: $font-weight-semibold;
+  letter-spacing: 0.04em;
+  text-align: center;
+}
+
+.emptyCard {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  aspect-ratio: 3 / 4;
+  padding: $space-md;
+  border: 2px dashed #dfbfc1;
+  border-radius: 12px;
+  background: #f6f3f2;
+  color: #85072e;
+  cursor: pointer;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+  transition: transform 0.15s ease;
+
+  &:active {
+    transform: scale(0.98);
+  }
+}
+
+.emptyIcon {
+  display: flex;
+  color: #85072e;
+}
+
+.emptyLabel {
+  font-size: 12px;
+  font-weight: $font-weight-semibold;
+  letter-spacing: 0.04em;
+  color: #584143;
   text-align: center;
 }
 
@@ -80,23 +123,28 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 36px;
-  height: 36px;
+  width: 48px;
+  height: 40px;
   margin: 0;
   padding: 0;
-  border: 1px solid #d8d8d8;
+  border: 1px solid #dfbfc1;
   background: $color-white;
-  color: $color-deep-red;
-  border-radius: 8px;
+  color: #85072e;
+  border-radius: 12px;
   cursor: pointer;
-  transition: background 0.15s ease;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+  transition: background 0.15s ease, transform 0.15s ease;
 
   &:hover {
-    background: $color-light-pink;
+    background: #f3dde1;
+  }
+
+  &:active {
+    transform: scale(0.95);
   }
 
   svg {
-    transition: transform 0.2s ease;
+    transition: transform 0.3s ease;
   }
 }
 

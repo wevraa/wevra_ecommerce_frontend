@@ -8,9 +8,9 @@
   display: grid;
   grid-template-columns: 40px 1fr 40px;
   align-items: center;
-  padding: $space-md;
-  background: #fcf9f9;
-  border-bottom: 1px solid rgba(0, 0, 0, 0.04);
+  padding: 4px 16px;
+  background: #fcf9f8;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
 }
 
 .backBtn {
@@ -22,21 +22,21 @@
   padding: 0;
   border: none;
   background: transparent;
-  color: $color-text;
+  color: #85072e;
   cursor: pointer;
-  border-radius: 8px;
+  border-radius: 50%;
 
   &:hover {
-    background: $color-light-pink;
+    background: #e5e2e1;
   }
 }
 
 .title {
   margin: 0;
   text-align: center;
-  font-size: $font-size-lg;
-  font-weight: $font-weight-bold;
-  color: $color-deep-red;
+  font-size: 20px;
+  font-weight: $font-weight-semibold;
+  color: #85072e;
 }
 
 .spacer {
@@ -48,6 +48,5 @@
   .header {
     max-width: $max-content-width;
     margin: 0 auto;
-    padding: $space-lg;
   }
 }

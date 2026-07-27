@@ -3,6 +3,14 @@
 import { useRouter } from "next/navigation";
 import styles from "./SelectBoutiquesHeader.module.scss";
 
+function ChevronLeftIcon() {
+  return (
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor" aria-hidden>
+      <path d="M15.41 7.41 14 6l-6 6 6 6 1.41-1.41L10.83 12z" />
+    </svg>
+  );
+}
+
 export default function SelectBoutiquesHeader() {
   const router = useRouter();
 
@@ -14,9 +22,7 @@ export default function SelectBoutiquesHeader() {
         aria-label="Back"
         onClick={() => router.back()}
       >
-        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-          <polyline points="15 18 9 12 15 6" />
-        </svg>
+        <ChevronLeftIcon />
       </button>
       <h1 className={styles.title}>Custom Order</h1>
       <span className={styles.spacer} aria-hidden />
