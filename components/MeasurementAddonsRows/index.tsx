@@ -1,8 +1,12 @@
 "use client";
 
 import Link from "next/link";
-import { useState } from "react";
-import { blouseSizes } from "@/data/dummy";
+import { useEffect, useMemo, useState } from "react";
+import {
+  getMeasurementPresets,
+  presetToMeasurementItems,
+  type ApiMeasurementPreset,
+} from "@/lib/api";
 import { buildAddonsHref } from "@/lib/addonsNavigation";
 import { useBoutiquesSelectionStore } from "@/lib/stores/boutiquesSelectionStore";
 import styles from "./MeasurementAddonsRows.module.scss";
@@ -12,10 +16,14 @@ interface MeasurementAddonsRowsProps {
   productImage?: string;
 }
 
-function buildHref(path: string, productId?: string, productImage?: string): string {
+function buildHref(
+  path: string,
+  opts: { productId?: string; productImage?: string; subcategoryId?: string }
+): string {
   const params = new URLSearchParams();
-  if (productId) params.set("productId", productId);
-  if (productImage) params.set("image", productImage);
+  if (opts.productId) params.set("productId", opts.productId);
+  if (opts.productImage) params.set("image", opts.productImage);
+  if (opts.subcategoryId) params.set("subcategoryId", opts.subcategoryId);
   const qs = params.toString();
   return qs ? `${path}?${qs}` : path;
 }
@@ -75,22 +83,86 @@ export default function MeasurementAddonsRows({
   const orderContext = useBoutiquesSelectionStore((s) => s.orderContext);
   const setOrderContext = useBoutiquesSelectionStore((s) => s.setOrderContext);
   const [open, setOpen] = useState(true);
+  const [presets, setPresets] = useState<ApiMeasurementPreset[]>([]);
+  const [loading, setLoading] = useState(false);
 
   const resolvedProductId = productId ?? orderContext.productId;
   const resolvedProductImage = productImage ?? orderContext.productImage;
-  const selectedSize = orderContext.selectedSize ?? "38";
+  const subcategoryId = orderContext.orderTypeId;
   const addonsCount = orderContext.addons?.length ?? 0;
+
+  useEffect(() => {
+    if (!subcategoryId) {
+      setPresets([]);
+      return;
+    }
+    let cancelled = false;
+    setLoading(true);
+    getMeasurementPresets(subcategoryId, true)
+      .then((data) => {
+        if (cancelled) return;
+        setPresets(data);
+        // Auto-select first / stored preset when category changes
+        const preferred =
+          data.find((p) => p.id === orderContext.selectedPresetId) ??
+          data.find((p) => p.label === orderContext.selectedSize) ??
+          data[0];
+        if (preferred) {
+          const items = presetToMeasurementItems(preferred);
+          setOrderContext({
+            selectedSize: preferred.label,
+            selectedPresetId: preferred.id,
+            measurements: items.map((m) => ({
+              name: m.name,
+              value: m.value,
+              unit: m.unit,
+            })),
+            hasMeasurementSelected: true,
+          });
+        }
+      })
+      .catch(() => {
+        if (!cancelled) setPresets([]);
+      })
+      .finally(() => {
+        if (!cancelled) setLoading(false);
+      });
+    return () => {
+      cancelled = true;
+    };
+    // Only refetch when subcategory changes
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [subcategoryId]);
+
+  const selectedPresetId = orderContext.selectedPresetId;
+  const selectedSize = orderContext.selectedSize;
+
+  const selectPreset = (preset: ApiMeasurementPreset) => {
+    const items = presetToMeasurementItems(preset);
+    setOrderContext({
+      selectedSize: preset.label,
+      selectedPresetId: preset.id,
+      measurements: items.map((m) => ({
+        name: m.name,
+        value: m.value,
+        unit: m.unit,
+      })),
+      hasMeasurementSelected: true,
+    });
+  };
 
   const addonsHref = buildAddonsHref({
     returnTo: "select-boutiques",
     productId: resolvedProductId,
     productImage: resolvedProductImage,
   });
-  const measurementHref = buildHref(
-    "/measurement",
-    resolvedProductId,
-    resolvedProductImage
-  );
+  const measurementHref = buildHref("/measurement", {
+    productId: resolvedProductId,
+    productImage: resolvedProductImage,
+    subcategoryId,
+  });
+
+  const sizeChips = useMemo(() => presets, [presets]);
 
   return (
     <section className={styles.section}>
@@ -118,25 +190,34 @@ export default function MeasurementAddonsRows({
         {open ? (
           <>
             <div className={styles.sizeRow} role="radiogroup" aria-label="Select size">
-              {blouseSizes.map((size) => {
-                const active = selectedSize === size.label;
-                return (
-                  <button
-                    key={size.id}
-                    type="button"
-                    className={`${styles.sizeBtn} ${active ? styles.sizeActive : ""}`}
-                    aria-pressed={active}
-                    onClick={() => setOrderContext({ selectedSize: size.label })}
-                  >
-                    <span>{size.label}</span>
-                    {active ? (
-                      <span className={styles.sizeIcon}>
-                        <StraightenIcon size={14} />
-                      </span>
-                    ) : null}
-                  </button>
-                );
-              })}
+              {!subcategoryId ? (
+                <p className={styles.hint}>Select an order type to load sizes.</p>
+              ) : loading ? (
+                <p className={styles.hint}>Loading sizes…</p>
+              ) : sizeChips.length === 0 ? (
+                <p className={styles.hint}>No size presets for this order type.</p>
+              ) : (
+                sizeChips.map((preset) => {
+                  const active =
+                    selectedPresetId === preset.id || selectedSize === preset.label;
+                  return (
+                    <button
+                      key={preset.id}
+                      type="button"
+                      className={`${styles.sizeBtn} ${active ? styles.sizeActive : ""}`}
+                      aria-pressed={active}
+                      onClick={() => selectPreset(preset)}
+                    >
+                      <span>{preset.label}</span>
+                      {active ? (
+                        <span className={styles.sizeIcon}>
+                          <StraightenIcon size={14} />
+                        </span>
+                      ) : null}
+                    </button>
+                  );
+                })
+              )}
             </div>
 
             <div className={styles.actions}>

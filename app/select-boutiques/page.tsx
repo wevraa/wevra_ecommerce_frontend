@@ -7,8 +7,11 @@ import SelectBoutiquesActions from "@/components/SelectBoutiquesActions";
 import OrderParamsSync from "@/components/OrderParamsSync";
 import BottomNav from "@/components/BottomNav";
 import {
+  getTailorCategories,
+  getTailorCategoriesTree,
+} from "@/lib/api";
+import {
   userProfile,
-  orderTypes,
   selectedImages as defaultSelectedImages,
 } from "@/data/dummy";
 import styles from "./select-boutiques.module.scss";
@@ -20,6 +23,11 @@ interface SelectBoutiquesPageProps {
 export default async function SelectBoutiquesPage({
   searchParams,
 }: SelectBoutiquesPageProps) {
+  const [categories, tree] = await Promise.all([
+    getTailorCategories(),
+    getTailorCategoriesTree(),
+  ]);
+
   const sp = searchParams ? await searchParams : {};
   const raw = sp.image;
   const selectedImageFromProduct =
@@ -52,7 +60,7 @@ export default async function SelectBoutiquesPage({
       <SelectBoutiquesHeader />
       <main className={`main-with-bottom-nav ${styles.main}`}>
         <ProfileBlock profile={userProfile} />
-        <OrderTypeSelect types={orderTypes} />
+        <OrderTypeSelect categories={categories} tree={tree} />
         <SelectedImages
           images={images}
           productId={productId}

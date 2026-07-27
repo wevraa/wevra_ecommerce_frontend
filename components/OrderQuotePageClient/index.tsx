@@ -139,16 +139,27 @@ export default function OrderQuotePageClient({
       .then((data: { title?: string; category?: { name?: string } } | null) => {
         if (cancelled || !data) return;
         if (data.title) setProductTitle(data.title);
-        setOrderContext({
-          category: data.category?.name ?? data.title,
-          orderTypes: data.title ? [data.title] : undefined,
-        });
+        // Don't overwrite tailor category / order-type selections from select-boutiques
+        if (!orderContext.tailorCategoryId && !orderContext.orderTypeId) {
+          setOrderContext({
+            category: data.category?.name ?? data.title,
+            orderTypes: data.title ? [data.title] : undefined,
+          });
+        } else if (!orderContext.category && data.category?.name) {
+          setOrderContext({ category: data.category.name });
+        }
       })
       .catch(() => {});
     return () => {
       cancelled = true;
     };
-  }, [orderContext.productId, setOrderContext]);
+  }, [
+    orderContext.productId,
+    orderContext.tailorCategoryId,
+    orderContext.orderTypeId,
+    orderContext.category,
+    setOrderContext,
+  ]);
 
   const selectedIds = useMemo(
     () => new Set(selectedBoutiques.map((b) => b.id)),
@@ -568,7 +579,11 @@ export default function OrderQuotePageClient({
                     <span aria-hidden>›</span>
                   </Link>
                   <Link
-                    href="/measurement"
+                    href={
+                      orderContext.orderTypeId
+                        ? `/measurement?subcategoryId=${encodeURIComponent(orderContext.orderTypeId)}`
+                        : "/measurement"
+                    }
                     className={`${styles.statusRow} ${
                       hasMeasurementSelected ? styles.statusOk : styles.statusMuted
                     }`}

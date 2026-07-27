@@ -2,6 +2,8 @@ export interface MeasurementItem {
   id: string;
   name: string;
   value: number;
+  unit?: string;
+  imageUrl?: string;
 }
 
 export const defaultSize = "XS";

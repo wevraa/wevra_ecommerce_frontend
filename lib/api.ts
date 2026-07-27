@@ -305,6 +305,137 @@ export async function getTailors(): Promise<ApiTailor[]> {
   }
 }
 
+// Tailor categories (custom order types)
+export interface ApiTailorCategory {
+  id: string;
+  name: string;
+  description: string;
+  status: string;
+  sortOrder: number;
+  parentId: string | null;
+  createdAt?: string;
+  updatedAt?: string;
+  _count?: { children: number };
+}
+
+export interface ApiTailorCategoryChild {
+  id: string;
+  name: string;
+  description: string;
+  status: string;
+  sortOrder: number;
+}
+
+export interface ApiTailorCategoryTreeNode extends ApiTailorCategory {
+  children: ApiTailorCategoryChild[];
+}
+
+function tailorCategoriesBase(): string {
+  return `${API_BASE || "https://api.wevraa.in/api"}/v1/tailor-categories`;
+}
+
+export async function getTailorCategories(): Promise<ApiTailorCategory[]> {
+  try {
+    const res = await fetch(tailorCategoriesBase(), { next: { revalidate: 60 } });
+    if (!res.ok) return [];
+    const data = await res.json();
+    const list = Array.isArray(data) ? (data as ApiTailorCategory[]) : [];
+    return list
+      .filter((c) => c.status === "ACTIVE")
+      .sort((a, b) => a.sortOrder - b.sortOrder);
+  } catch {
+    return [];
+  }
+}
+
+export async function getTailorCategoriesTree(): Promise<ApiTailorCategoryTreeNode[]> {
+  try {
+    const res = await fetch(`${tailorCategoriesBase()}/tree`, {
+      next: { revalidate: 60 },
+    });
+    if (!res.ok) return [];
+    const data = await res.json();
+    const list = Array.isArray(data) ? (data as ApiTailorCategoryTreeNode[]) : [];
+    return list
+      .filter((c) => c.status === "ACTIVE")
+      .sort((a, b) => a.sortOrder - b.sortOrder)
+      .map((node) => ({
+        ...node,
+        children: (node.children ?? [])
+          .filter((child) => child.status === "ACTIVE")
+          .sort((a, b) => a.sortOrder - b.sortOrder),
+      }));
+  } catch {
+    return [];
+  }
+}
+
+// Measurement presets (size chips + measurement rows per order type)
+export interface ApiMeasurementPresetRow {
+  id: string;
+  subcategoryId: string;
+  presetId: string;
+  name: string;
+  value: string;
+  unit: string;
+  status: string;
+  imageUrl?: string | null;
+  sortOrder: number;
+}
+
+export interface ApiMeasurementPreset {
+  id: string;
+  subcategoryId: string;
+  label: string;
+  sortOrder: number;
+  measurements?: ApiMeasurementPresetRow[];
+  subcategory?: {
+    id: string;
+    name: string;
+    parent?: { id: string; name: string };
+  };
+}
+
+export async function getMeasurementPresets(
+  subcategoryId: string,
+  includeMeasurements = true
+): Promise<ApiMeasurementPreset[]> {
+  if (!subcategoryId) return [];
+  const base = API_BASE || "https://api.wevraa.in/api";
+  const params = new URLSearchParams({
+    subcategoryId,
+    includeMeasurements: String(includeMeasurements),
+  });
+  try {
+    const res = await fetch(`${base}/v1/measurement-presets?${params}`, {
+      next: { revalidate: 60 },
+    });
+    if (!res.ok) return [];
+    const data = await res.json();
+    const list = Array.isArray(data) ? (data as ApiMeasurementPreset[]) : [];
+    return list.sort((a, b) => a.sortOrder - b.sortOrder);
+  } catch {
+    return [];
+  }
+}
+
+/** Enabled measurement rows for a preset, sorted, as editor items. */
+export function presetToMeasurementItems(
+  preset: ApiMeasurementPreset | undefined
+): { id: string; name: string; value: number; unit: string; imageUrl?: string }[] {
+  if (!preset?.measurements?.length) return [];
+  return preset.measurements
+    .filter((m) => m.status === "ENABLED")
+    .sort((a, b) => a.sortOrder - b.sortOrder)
+    .map((m) => ({
+      id: m.id,
+      name: m.name,
+      value: Number(m.value) || 0,
+      unit: m.unit || "inches",
+      imageUrl: m.imageUrl ?? undefined,
+    }));
+}
+
 // Sleeve / Neck Designs
 export interface ApiDesign {
   id: string;

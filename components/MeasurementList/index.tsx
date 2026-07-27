@@ -166,17 +166,21 @@ export default function MeasurementList({ items }: MeasurementListProps) {
   }, [handleTouchMove]);
 
   useEffect(() => {
-    const EPS = 0.001;
-    const customized = items.some((item) => {
-      const v = values[item.id] ?? item.value;
-      return Math.abs(v - item.value) > EPS;
-    });
+    // Reset ruler values whenever the preset / item set changes
+    setValues(Object.fromEntries(items.map((item) => [item.id, item.value])));
+  }, [items]);
+
+  useEffect(() => {
     const measurements = items.map((item) => ({
       name: item.name,
       value: values[item.id] ?? item.value,
-      unit: "inches" as const,
+      unit: item.unit ?? "inches",
     }));
-    setOrderContext({ hasMeasurementSelected: customized, measurements });
+    // Selecting/editing a preset counts as measurement selected for the order flow
+    setOrderContext({
+      hasMeasurementSelected: items.length > 0,
+      measurements,
+    });
   }, [values, items, setOrderContext]);
 
   useEffect(() => {

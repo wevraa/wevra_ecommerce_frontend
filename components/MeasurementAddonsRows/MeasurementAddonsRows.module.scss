@@ -68,6 +68,12 @@
   }
 }
 
+.hint {
+  margin: 0;
+  font-size: $font-size-sm;
+  color: #584143;
+}
+
 .sizeBtn {
   flex-shrink: 0;
   min-width: 52px;

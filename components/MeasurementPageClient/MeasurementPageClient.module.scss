@@ -1,0 +1,76 @@
+@use "../../styles/variables" as *;
+@use "../../styles/mixins" as *;
+
+.main {
+  padding: $space-md;
+  background: #fcf9f8;
+  min-height: 60vh;
+}
+
+.message {
+  margin: $space-md 0;
+  font-size: $font-size-sm;
+  color: $color-text-muted;
+}
+
+.sizeRow {
+  display: flex;
+  gap: 8px;
+  overflow-x: auto;
+  margin-bottom: $space-md;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+
+  &::-webkit-scrollbar {
+    display: none;
+  }
+}
+
+.sizeChip {
+  flex-shrink: 0;
+  min-width: 52px;
+  height: 40px;
+  padding: 0 16px;
+  border: 1px solid #dfbfc1;
+  border-radius: 12px;
+  background: $color-white;
+  color: #1c1b1b;
+  font-size: 12px;
+  font-weight: $font-weight-semibold;
+  cursor: pointer;
+  font-family: inherit;
+
+  &:hover {
+    background: #f3dde1;
+  }
+}
+
+.sizeChipActive {
+  background: #85072e;
+  border-color: #85072e;
+  color: $color-white;
+}
+
+.content {
+  display: flex;
+  flex-direction: column;
+  gap: $space-lg;
+
+  @include mobile-first($tablet) {
+    flex-direction: row;
+    align-items: flex-start;
+  }
+}
+
+.left {
+  flex: 1;
+  min-width: 0;
+}
+
+.right {
+  flex-shrink: 0;
+
+  @include mobile-first($tablet) {
+    width: 280px;
+  }
+}

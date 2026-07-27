@@ -25,9 +25,15 @@ export interface OrderContext {
   productImage?: string;
   sleeveDesignImage?: string;
   category?: string;
+  /** Parent tailor category id from /v1/tailor-categories. */
+  tailorCategoryId?: string;
+  /** Child order-type id from /v1/tailor-categories/tree. */
+  orderTypeId?: string;
   orderTypes?: string[];
-  /** Selected blouse size label (e.g. "38"). */
+  /** Selected size preset label (e.g. "34"). */
   selectedSize?: string;
+  /** Selected measurement preset id. */
+  selectedPresetId?: string;
   measurements?: OrderMeasurement[];
   addons?: OrderAddon[];
   /** True when at least one add-on toggle is on (from /addons). */

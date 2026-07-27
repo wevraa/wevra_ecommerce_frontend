@@ -15,6 +15,16 @@
   margin: 0 0 $space-sm;
 }
 
+.titleSpaced {
+  margin-top: $space-md;
+}
+
+.empty {
+  margin: 0;
+  font-size: $font-size-sm;
+  color: #584143;
+}
+
 .chips {
   display: flex;
   flex-wrap: nowrap;

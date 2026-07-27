@@ -1,25 +1,27 @@
-import Link from "next/link";
-import MeasurementHeader from "@/components/MeasurementHeader";
-import MeasurementList from "@/components/MeasurementList";
-import MeasurementModel from "@/components/MeasurementModel";
 import BottomNav from "@/components/BottomNav";
-import { measurementItems } from "@/data/measurement";
-import styles from "./measurement.module.scss";
+import MeasurementPageClient from "@/components/MeasurementPageClient";
 
-export default function MeasurementPage() {
+interface MeasurementPageProps {
+  searchParams?: Promise<{ [key: string]: string | string[] | undefined }>;
+}
+
+function pickParam(
+  sp: { [key: string]: string | string[] | undefined },
+  key: string
+): string | undefined {
+  const raw = sp[key];
+  if (typeof raw === "string") return raw;
+  if (Array.isArray(raw)) return raw[0];
+  return undefined;
+}
+
+export default async function MeasurementPage({ searchParams }: MeasurementPageProps) {
+  const sp = searchParams ? await searchParams : {};
+  const subcategoryId = pickParam(sp, "subcategoryId");
+
   return (
     <>
-      <MeasurementHeader />
-      <main className={`${styles.main} main-with-bottom-nav`}>
-        <div className={styles.content}>
-          <div className={styles.left}>
-            <MeasurementList items={measurementItems} />
-          </div>
-          <div className={styles.right}>
-            <MeasurementModel />
-          </div>
-        </div>
-      </main>
+      <MeasurementPageClient subcategoryIdFromUrl={subcategoryId} />
       <BottomNav />
     </>
   );
