@@ -1,0 +1,54 @@
+@use "../../styles/variables" as *;
+@use "../../styles/mixins" as *;
+
+.wrap {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: $space-md;
+  padding: $space-md $space-md $space-xl;
+  background: #fcf9f9;
+}
+
+.cancelBtn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  padding: $space-md $space-lg;
+  border: 1px solid #d8d8d8;
+  background: #f0f0f0;
+  color: $color-text-muted;
+  font-size: $font-size-base;
+  font-weight: $font-weight-semibold;
+  cursor: pointer;
+  border-radius: 12px;
+  font-family: inherit;
+}
+
+.nextBtn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  padding: $space-md $space-lg;
+  border: none;
+  background: $color-deep-red;
+  color: $color-white;
+  font-size: $font-size-base;
+  font-weight: $font-weight-semibold;
+  cursor: pointer;
+  border-radius: 12px;
+  font-family: inherit;
+
+  &:hover {
+    background: #9a1f3c;
+  }
+}
+
+@include mobile-first($desktop) {
+  .wrap {
+    max-width: $max-content-width;
+    margin: 0 auto;
+    padding: $space-lg $space-lg $space-2xl;
+  }
+}

@@ -2,31 +2,44 @@
 @use "../../styles/mixins" as *;
 
 .section {
-  padding: 0 $space-md $space-lg;
-  background: $color-white;
+  padding: $space-lg $space-md 0;
+  background: #fcf9f9;
+}
+
+.headerRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: $space-sm;
 }
 
 .title {
-  font-size: $font-size-base;
-  font-weight: $font-weight-bold;
-  color: $color-text;
-  margin-bottom: $space-md;
+  font-size: $font-size-xs;
+  font-weight: $font-weight-semibold;
+  color: #9a9a9a;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  margin: 0;
+}
+
+.slots {
+  font-size: $font-size-sm;
+  font-weight: $font-weight-semibold;
+  color: $color-deep-red;
 }
 
 .layout {
   display: flex;
   flex-direction: column;
+  align-items: center;
   gap: $space-sm;
 }
 
-.primaryRowWrap {
-  position: relative;
-}
-
 .gridRow {
+  width: 100%;
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 8px;
+  gap: 10px;
 }
 
 .card {
@@ -36,6 +49,7 @@
   background: $color-light-pink;
   border: none;
   padding: 0;
+  border-radius: 12px;
   cursor: default;
 }
 
@@ -54,7 +68,7 @@
   bottom: 0;
   left: 0;
   right: 0;
-  padding: $space-sm $space-md;
+  padding: 10px $space-sm;
   background: $color-deep-red;
   color: $color-white;
   font-size: $font-size-xs;
@@ -62,44 +76,23 @@
   text-align: center;
 }
 
-.plusBadge {
-  position: absolute;
-  top: $space-sm;
-  right: $space-sm;
-  width: 24px;
-  height: 24px;
-  border-radius: 50%;
-  background: $color-white;
-  color: $color-deep-red;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-weight: $font-weight-bold;
-  font-size: $font-size-sm;
-}
-
 .expandBtn {
-  position: absolute;
-  left: 50%;
-  bottom: 36px;
-  z-index: 2;
-  transform: translate(-50%, 0);
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 40px;
-  height: 40px;
+  width: 36px;
+  height: 36px;
   margin: 0;
   padding: 0;
-  border: none;
-  background: $color-black;
-  color: $color-white;
-  border-radius: 50%;
+  border: 1px solid #d8d8d8;
+  background: $color-white;
+  color: $color-deep-red;
+  border-radius: 8px;
   cursor: pointer;
   transition: background 0.15s ease;
 
   &:hover {
-    background: #333;
+    background: $color-light-pink;
   }
 
   svg {
@@ -115,6 +108,6 @@
   .section {
     max-width: $max-content-width;
     margin: 0 auto;
-    padding: 0 $space-lg $space-xl;
+    padding: $space-xl $space-lg 0;
   }
 }

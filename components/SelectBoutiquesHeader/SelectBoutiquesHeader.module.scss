@@ -5,12 +5,12 @@
   position: sticky;
   top: 0;
   z-index: 100;
-  display: flex;
+  display: grid;
+  grid-template-columns: 40px 1fr 40px;
   align-items: center;
-  gap: $space-md;
   padding: $space-md;
-  background: $color-white;
-  border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+  background: #fcf9f9;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.04);
 }
 
 .backBtn {
@@ -25,70 +25,23 @@
   color: $color-text;
   cursor: pointer;
   border-radius: 8px;
-  flex-shrink: 0;
-  text-decoration: none;
 
   &:hover {
     background: $color-light-pink;
   }
 }
 
-.searchWrap {
-  flex: 1;
-  display: flex;
-  align-items: center;
-  gap: $space-sm;
-  height: 44px;
-  padding: 0 $space-md;
-  background: #f5f5f5;
-  border: 1px solid $color-pink;
-  border-radius: 10px;
+.title {
+  margin: 0;
+  text-align: center;
+  font-size: $font-size-lg;
+  font-weight: $font-weight-bold;
+  color: $color-deep-red;
 }
 
-.searchIcon {
-  flex-shrink: 0;
-  color: $color-text-muted;
-}
-
-.input {
-  flex: 1;
-  min-width: 0;
-  border: none;
-  background: transparent;
-  font-size: $font-size-sm;
-  color: $color-text;
-
-  &::placeholder {
-    color: $color-text-muted;
-  }
-
-  &:focus {
-    outline: none;
-  }
-}
-
-.locationIcon {
-  flex-shrink: 0;
-  color: $color-text-muted;
-  cursor: pointer;
-}
-
-.bellBtn {
-  flex-shrink: 0;
+.spacer {
   width: 40px;
   height: 40px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border: none;
-  background: transparent;
-  color: $color-text;
-  cursor: pointer;
-  border-radius: 8px;
-
-  &:hover {
-    background: $color-light-pink;
-  }
 }
 
 @include mobile-first($desktop) {

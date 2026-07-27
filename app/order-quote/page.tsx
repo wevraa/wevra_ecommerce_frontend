@@ -1,10 +1,13 @@
 import OrderQuotePageClient from "@/components/OrderQuotePageClient";
 import BottomNav from "@/components/BottomNav";
+import { getTailors } from "@/lib/api";
 
-export default function OrderQuotePage() {
+export default async function OrderQuotePage() {
+  const tailors = await getTailors();
+
   return (
     <>
-      <OrderQuotePageClient />
+      <OrderQuotePageClient tailors={tailors} />
       <BottomNav />
     </>
   );

@@ -2,15 +2,17 @@
 @use "../../styles/mixins" as *;
 
 .section {
-  padding: $space-lg $space-md;
-  background: $color-white;
+  padding: $space-md $space-md 0;
+  background: #fcf9f9;
 }
 
-.inner {
+.card {
   display: flex;
   align-items: center;
   gap: $space-md;
-  margin-bottom: $space-md;
+  padding: $space-md;
+  background: #f3ecee;
+  border-radius: 14px;
 }
 
 .avatarWrap {
@@ -18,60 +20,62 @@
   flex-shrink: 0;
   width: 72px;
   height: 72px;
-  border-radius: 50%;
-  overflow: hidden;
-  background: $color-light-pink;
 }
 
 .avatar {
   width: 100%;
   height: 100%;
   object-fit: cover;
+  border-radius: 12px;
+}
+
+.checkBadge {
+  position: absolute;
+  right: -2px;
+  bottom: -2px;
+  width: 22px;
+  height: 22px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background: $color-deep-red;
+  color: $color-white;
+  border: 2px solid $color-white;
+  z-index: 1;
 }
 
 .info {
   flex: 1;
   min-width: 0;
-
-  .editBtn {
-  display: block;
-  width: 150px;
- padding: 4px;
- margin-top: 12px;
-  border: 2px solid $color-deep-red;
-  background: $color-white;
-  color: $color-deep-red;
-  font-size: $font-size-sm;
-  font-weight: $font-weight-bold;
-  cursor: pointer;
-  text-align: center;
-  text-decoration: none;
-
-  &:hover {
-    background: $color-light-pink;
-  }
-}
 }
 
 .name {
-  font-size: $font-size-lg;
+  font-size: $font-size-base;
   font-weight: $font-weight-bold;
   color: $color-text;
-  margin: 0 0 $space-xs;
+  margin: 0 0 2px;
+  line-height: 1.3;
 }
 
 .mobile {
   font-size: $font-size-sm;
   color: $color-text-muted;
-  margin: 0;
+  margin: 0 0 $space-xs;
 }
 
-
+.editLink {
+  font-size: $font-size-sm;
+  font-weight: $font-weight-medium;
+  color: $color-deep-red;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
 
 @include mobile-first($desktop) {
   .section {
     max-width: $max-content-width;
     margin: 0 auto;
-    padding: $space-xl $space-lg;
+    padding: $space-lg $space-lg 0;
   }
 }

@@ -433,6 +433,13 @@ export const orderTypes = [
   { id: "lining", label: "Lining Blouse", selected: false },
 ];
 
+export const blouseSizes = [
+  { id: "32", label: "32" },
+  { id: "34", label: "34" },
+  { id: "36", label: "36" },
+  { id: "38", label: "38" },
+];
+
 export interface SelectedImage {
   id: string;
   image: string;

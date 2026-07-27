@@ -1,13 +1,11 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import * as Select from "@radix-ui/react-select";
 import Link from "next/link";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import LoginModal from "@/components/LoginModal";
-import BoutiqueSelectionHeader from "@/components/BoutiqueSelectionHeader";
-import BoutiqueSelectionList from "@/components/BoutiqueSelectionList";
 import { getAccessToken, getAuthUserId } from "@/lib/auth";
 import { localDateToRequiredByIso } from "@/lib/chat/format";
 import type { CustomerOrderRequestInput } from "@/lib/chat/types";
@@ -20,10 +18,11 @@ import {
 import { ChatApiError } from "@/lib/chat/types";
 import { useBoutiquesSelectionStore } from "@/lib/stores/boutiquesSelectionStore";
 import { buildAddonsHref } from "@/lib/addonsNavigation";
+import type { ApiTailor } from "@/lib/api";
 import styles from "./OrderQuotePageClient.module.scss";
 
 const API_BASE = process.env.NEXT_PUBLIC_API_BASE_URL ?? "https://api.wevraa.in/api";
-const ICON_COLORS = ["orange", "yellow", "purple", "darkpurple", "lightgray"];
+const PLACEHOLDER_IMAGE = "/images/placeholder-rect.svg";
 
 /** Local calendar date as yyyy-mm-dd (no UTC shift). */
 function toIsoDateLocal(d: Date): string {
@@ -80,17 +79,39 @@ function isoBelongsToMonth(iso: string, year: number, monthIndex: number): boole
   return sy === year && sm === monthIndex + 1;
 }
 
-export default function OrderQuotePageClient() {
+function formatReviewCount(n: number): string {
+  if (n >= 1000) {
+    const k = n / 1000;
+    return `${k % 1 === 0 ? k.toFixed(0) : k.toFixed(1)}k Reviews`;
+  }
+  return `${n} Reviews`;
+}
+
+interface OrderQuotePageClientProps {
+  tailors?: ApiTailor[];
+}
+
+export default function OrderQuotePageClient({
+  tailors = [],
+}: OrderQuotePageClientProps) {
   const router = useRouter();
+  const boutiqueSectionRef = useRef<HTMLElement | null>(null);
   const [sending, setSending] = useState(false);
   const [loginOpen, setLoginOpen] = useState(false);
   const [sendError, setSendError] = useState<string | null>(null);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [activeBoutiqueId, setActiveBoutiqueId] = useState<string | null>(null);
+
   const now = useMemo(() => new Date(), []);
   const monthSlots = useMemo(() => buildMonthsThisYearFrom(now), [now]);
-  const initialYM = monthSlots[0]?.value ?? `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}`;
+  const initialYM =
+    monthSlots[0]?.value ??
+    `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}`;
 
   const [viewYM, setViewYM] = useState(initialYM);
-  const [selectedDate, setSelectedDate] = useState<string | null>(() => toIsoDateLocal(now));
+  const [selectedDate, setSelectedDate] = useState<string | null>(() =>
+    toIsoDateLocal(now)
+  );
 
   const { year, monthIndex } = parseViewYM(viewYM);
   const dayCells = useMemo(
@@ -122,20 +143,17 @@ export default function OrderQuotePageClient() {
     };
   }, [orderContext.productId, setOrderContext]);
 
-  const boutiqueNames =
-    selectedBoutiques.length > 0
-      ? selectedBoutiques.map((b) => b.name).join(", ")
-      : "No boutiques selected";
-
-  const boutiqueItems = selectedBoutiques.map((b, i) => ({
-    id: b.id,
-    name: b.name,
-    iconColor: ICON_COLORS[i % ICON_COLORS.length],
-  }));
-
-  const hasProduct =
-    Boolean(orderContext.productImage) ||
-    Boolean(orderContext.sleeveDesignImage);
+  useEffect(() => {
+    if (selectedBoutiques.length === 0) {
+      setActiveBoutiqueId(null);
+      return;
+    }
+    setActiveBoutiqueId((prev) =>
+      prev && selectedBoutiques.some((b) => b.id === prev)
+        ? prev
+        : selectedBoutiques[0].id
+    );
+  }, [selectedBoutiques]);
 
   const hasAddonsSelected = orderContext.hasAddonsSelected === true;
   const hasMeasurementSelected = orderContext.hasMeasurementSelected === true;
@@ -145,6 +163,55 @@ export default function OrderQuotePageClient() {
     productId: orderContext.productId,
     productImage: orderContext.productImage,
   });
+
+  const quoteItems = useMemo(() => {
+    const items: { id: string; title: string; image: string }[] = [];
+    if (orderContext.productImage) {
+      items.push({
+        id: "fabric",
+        title: productTitle,
+        image: orderContext.productImage,
+      });
+    }
+    if (orderContext.sleeveDesignImage) {
+      items.push({
+        id: "sleeve",
+        title: productTitle,
+        image: orderContext.sleeveDesignImage,
+      });
+    }
+    if (items.length === 0) {
+      items.push({
+        id: "default",
+        title: productTitle,
+        image: "/images/product-5.svg",
+      });
+    }
+    return items;
+  }, [orderContext.productImage, orderContext.sleeveDesignImage, productTitle]);
+
+  const enrichedBoutiques = useMemo(() => {
+    return selectedBoutiques.map((b, index) => {
+      const tailor = tailors.find((t) => t.id === b.id);
+      const reviewSeed = 800 + ((b.id.charCodeAt(0) || 0) % 7) * 400;
+      return {
+        id: b.id,
+        name: b.name,
+        image: PLACEHOLDER_IMAGE,
+        ordersCompleted: tailor ? Math.max(50, Number(tailor.experience) * 40) : 200,
+        holdingOrders: 3 + (index % 5),
+        reviewCount: reviewSeed,
+        experience: tailor?.experience,
+        address: b.address ?? tailor?.addressLine1,
+      };
+    });
+  }, [selectedBoutiques, tailors]);
+
+  const filteredBoutiques = useMemo(() => {
+    const q = searchQuery.trim().toLowerCase();
+    if (!q) return enrichedBoutiques;
+    return enrichedBoutiques.filter((b) => b.name.toLowerCase().includes(q));
+  }, [enrichedBoutiques, searchQuery]);
 
   const applyViewYM = (value: string) => {
     setViewYM(value);
@@ -163,6 +230,10 @@ export default function OrderQuotePageClient() {
     router.push(
       params.size > 0 ? `/select-boutiques?${params.toString()}` : "/select-boutiques"
     );
+  };
+
+  const scrollToBoutiques = () => {
+    boutiqueSectionRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
   };
 
   const handleSend = async () => {
@@ -222,9 +293,12 @@ export default function OrderQuotePageClient() {
     }
   };
 
+  const selectedMonthLabel =
+    monthSlots.find((s) => s.value === viewYM)?.label ?? "Month";
+
   return (
     <main className={styles.main}>
-      <div className={styles.topBar}>
+      <header className={styles.header}>
         <button
           type="button"
           onClick={goToSelectBoutiques}
@@ -232,8 +306,8 @@ export default function OrderQuotePageClient() {
           aria-label="Back"
         >
           <svg
-            width="24"
-            height="24"
+            width="22"
+            height="22"
             viewBox="0 0 24 24"
             fill="none"
             stroke="currentColor"
@@ -242,25 +316,32 @@ export default function OrderQuotePageClient() {
             <polyline points="15 18 9 12 15 6" />
           </svg>
         </button>
-      </div>
+        <h1 className={styles.headerTitle}>Order Preview</h1>
+        <span className={styles.headerSpacer} aria-hidden />
+      </header>
 
-      {selectedBoutiques.length === 0 ? (
-        <div className={styles.emptyState}>
-          <p>No boutiques selected.</p>
-          <button type="button" className={styles.emptyLink} onClick={goToSelectBoutiques}>
-            Go back and select boutiques
-          </button>
-        </div>
-      ) : (
-        <>
-          <BoutiqueSelectionHeader count={selectedBoutiques.length} names={boutiqueNames}>
-            <BoutiqueSelectionList items={boutiqueItems} readOnly />
-          </BoutiqueSelectionHeader>
-          <p className={styles.boutiqueNote}>
-            Approximate time for order finish based upon selected boutiques
-          </p>
-        </>
-      )}
+      <div className={styles.searchWrap}>
+        <span className={styles.searchIcon} aria-hidden>
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+            <circle cx="11" cy="11" r="8" />
+            <path d="m21 21-4.35-4.35" />
+          </svg>
+        </span>
+        <input
+          type="search"
+          className={styles.searchInput}
+          placeholder="Search boutiques..."
+          value={searchQuery}
+          onChange={(e) => setSearchQuery(e.target.value)}
+          aria-label="Search boutiques"
+        />
+        <span className={styles.locationIcon} aria-hidden>
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+            <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" />
+            <circle cx="12" cy="10" r="3" />
+          </svg>
+        </span>
+      </div>
 
       <div className={styles.content}>
         {sendError ? (
@@ -268,23 +349,73 @@ export default function OrderQuotePageClient() {
             {sendError}
           </p>
         ) : null}
+
+        {selectedBoutiques.length === 0 ? (
+          <div className={styles.emptyState}>
+            <p>No boutiques selected.</p>
+            <button type="button" className={styles.emptyLink} onClick={goToSelectBoutiques}>
+              Go back and select boutiques
+            </button>
+          </div>
+        ) : (
+          <section className={styles.sendingSection}>
+            <div className={styles.sendingHeader}>
+              <div>
+                <p className={styles.sendingLabel}>Sending Request To</p>
+                <p className={styles.sendingCount}>
+                  {selectedBoutiques.length} Boutique
+                  {selectedBoutiques.length === 1 ? "" : "s"}
+                </p>
+              </div>
+              <button
+                type="button"
+                className={styles.viewAllBtn}
+                onClick={scrollToBoutiques}
+              >
+                View All
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden>
+                  <polyline points="9 18 15 12 9 6" />
+                </svg>
+              </button>
+            </div>
+            <div className={styles.chipRow} role="list">
+              {filteredBoutiques.map((b) => (
+                <button
+                  key={b.id}
+                  type="button"
+                  role="listitem"
+                  className={`${styles.chip} ${activeBoutiqueId === b.id ? styles.chipActive : ""}`}
+                  onClick={() => setActiveBoutiqueId(b.id)}
+                >
+                  {b.name}
+                </button>
+              ))}
+              {filteredBoutiques.length === 0 ? (
+                <p className={styles.noSearchResults}>No boutiques match your search.</p>
+              ) : null}
+            </div>
+          </section>
+        )}
+
         <section className={styles.dateSection}>
           <div className={styles.dateLabel}>
-            <span className={styles.dateLabelText}>When you Required :</span>
+            <span className={styles.dateLabelText}>Delivery Required By</span>
             <div className={styles.monthPicker}>
-              <span className={styles.monthPickerLabel} id="quote-month-field-label">
-                Current month of the year
+              <span className={styles.srOnly} id="quote-month-field-label">
+                Select month
               </span>
               <Select.Root value={viewYM} onValueChange={applyViewYM}>
                 <Select.Trigger
                   className={styles.monthSelectTrigger}
                   aria-labelledby="quote-month-field-label"
                 >
-                  <Select.Value placeholder="Select month" />
+                  <Select.Value placeholder="Select month">
+                    {selectedMonthLabel}
+                  </Select.Value>
                   <Select.Icon className={styles.monthSelectIcon} aria-hidden>
                     <svg
-                      width={16}
-                      height={16}
+                      width={14}
+                      height={14}
                       viewBox="0 0 24 24"
                       fill="none"
                       stroke="currentColor"
@@ -365,102 +496,157 @@ export default function OrderQuotePageClient() {
           </div>
         </section>
 
-        <div className={styles.productCard}>
-          <div className={styles.productInfo}>
-            <h3 className={styles.productName}>{productTitle}</h3>
-            <p
-              className={
-                hasAddonsSelected ? styles.selectionPositive : styles.addonsWarning
-              }
-            >
-              {hasAddonsSelected ? "Add ons selected" : "No Add-ons Selected"}
-            </p>
-            {hasAddonsSelected && orderContext.addons?.length ? (
-              <ul className={styles.selectedAddonsList}>
-                {orderContext.addons.map((addon) => (
-                  <li key={addon.optionName}>{addon.optionName}</li>
-                ))}
-              </ul>
-            ) : null}
-            <Link href={addonsHref} className={styles.addonsLink}>
-              Add-ons to quote better
-              <span aria-hidden>›</span>
-            </Link>
-            <p
-              className={
-                hasMeasurementSelected
-                  ? styles.selectionPositive
-                  : styles.measurementPending
-              }
-            >
-              {hasMeasurementSelected
-                ? "Measurement added"
-                : "No measurement selected"}
-            </p>
-            <Link href="/measurement" className={styles.measurementLink}>
-              Tap to Select Measurement
-              <span aria-hidden>›</span>
-            </Link>
+        <section className={styles.itemsSection}>
+          <div className={styles.itemsHeader}>
+            <h2 className={styles.sectionTitle}>Items for Quote</h2>
+            <span className={styles.itemsBadge}>
+              {quoteItems.length} Item{quoteItems.length === 1 ? "" : "s"}
+            </span>
           </div>
 
-          <div className={styles.productImages}>
-            {hasProduct ? (
-              <>
-                {orderContext.productImage && (
-                  <div className={styles.productImageWrap}>
-                    <div className={styles.productImage}>
-                      <Image
-                        src={orderContext.productImage}
-                        alt="Fabric"
-                        fill
-                        sizes="100px"
-                        style={{ objectFit: "cover" }}
-                      />
-                    </div>
-                    <span className={styles.imageLabel}>Fabric</span>
-                  </div>
-                )}
-                {orderContext.sleeveDesignImage && (
-                  <div className={styles.productImageWrap}>
-                    <div className={styles.productImage}>
-                      <Image
-                        src={orderContext.sleeveDesignImage}
-                        alt="Sleeve Design"
-                        fill
-                        sizes="100px"
-                        style={{ objectFit: "cover" }}
-                      />
-                    </div>
-                    <span className={styles.imageLabel}>Sleeve Design</span>
-                  </div>
-                )}
-              </>
-            ) : (
-              <div className={styles.productImage}>
-                <Image
-                  src="/images/product-5.svg"
-                  alt=""
-                  fill
-                  sizes="80px"
-                  style={{ objectFit: "cover" }}
-                />
-              </div>
-            )}
+          <div className={styles.itemList}>
+            {quoteItems.map((item) => (
+              <article key={item.id} className={styles.itemCard}>
+                <div className={styles.itemThumb}>
+                  <Image
+                    src={item.image}
+                    alt=""
+                    fill
+                    sizes="64px"
+                    style={{ objectFit: "cover" }}
+                  />
+                </div>
+                <div className={styles.itemBody}>
+                  <h3 className={styles.itemTitle}>{item.title}</h3>
+                  <Link
+                    href={addonsHref}
+                    className={`${styles.statusRow} ${
+                      hasAddonsSelected ? styles.statusOk : styles.statusMuted
+                    }`}
+                  >
+                    <span className={styles.statusLeft}>
+                      <span className={styles.statusIcon} aria-hidden>
+                        {hasAddonsSelected ? (
+                          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                            <polyline points="20 6 9 17 4 12" />
+                          </svg>
+                        ) : (
+                          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                            <circle cx="12" cy="12" r="10" />
+                            <line x1="12" y1="16" x2="12" y2="12" />
+                            <line x1="12" y1="8" x2="12.01" y2="8" />
+                          </svg>
+                        )}
+                      </span>
+                      {hasAddonsSelected ? "Add-ons selected" : "No Add-ons selected"}
+                    </span>
+                    <span aria-hidden>›</span>
+                  </Link>
+                  <Link
+                    href="/measurement"
+                    className={`${styles.statusRow} ${
+                      hasMeasurementSelected ? styles.statusOk : styles.statusMuted
+                    }`}
+                  >
+                    <span className={styles.statusLeft}>
+                      <span className={styles.statusIcon} aria-hidden>
+                        {hasMeasurementSelected ? (
+                          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                            <polyline points="20 6 9 17 4 12" />
+                          </svg>
+                        ) : (
+                          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                            <circle cx="12" cy="12" r="10" />
+                            <line x1="12" y1="16" x2="12" y2="12" />
+                            <line x1="12" y1="8" x2="12.01" y2="8" />
+                          </svg>
+                        )}
+                      </span>
+                      {hasMeasurementSelected
+                        ? "Measurement Added"
+                        : "No measurement selected"}
+                    </span>
+                    <span aria-hidden>›</span>
+                  </Link>
+                </div>
+              </article>
+            ))}
           </div>
-        </div>
 
-        <div className={styles.btn_wrap}>
           <button
             type="button"
-            className={styles.addItemsBtn}
+            className={styles.addMoreBtn}
             onClick={() => router.push(addonsHref)}
           >
-            <span className={styles.addItemsPlus} aria-hidden>
+            <span className={styles.addMorePlus} aria-hidden>
               +
             </span>
-            Add Items
+            Add more items
           </button>
-        </div>
+        </section>
+
+        {selectedBoutiques.length > 0 ? (
+          <section className={styles.boutiqueSection} ref={boutiqueSectionRef}>
+            <h2 className={styles.sectionTitle}>Select Boutique</h2>
+            <div className={styles.boutiqueList}>
+              {filteredBoutiques.map((b) => {
+                const isActive = activeBoutiqueId === b.id;
+                return (
+                  <article
+                    key={b.id}
+                    className={`${styles.boutiqueCard} ${isActive ? styles.boutiqueCardActive : ""}`}
+                  >
+                    <button
+                      type="button"
+                      className={styles.boutiqueImageWrap}
+                      onClick={() => setActiveBoutiqueId(b.id)}
+                      aria-pressed={isActive}
+                      aria-label={`${isActive ? "Selected" : "Select"} ${b.name}`}
+                    >
+                      <Image
+                        src={b.image}
+                        alt=""
+                        fill
+                        className={styles.boutiqueImage}
+                        sizes="(max-width: 768px) 100vw, 480px"
+                      />
+                      <span
+                        className={`${styles.checkCircle} ${isActive ? styles.checkCircleOn : ""}`}
+                        aria-hidden
+                      >
+                        {isActive ? (
+                          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3">
+                            <polyline points="20 6 9 17 4 12" />
+                          </svg>
+                        ) : null}
+                      </span>
+                    </button>
+                    <div className={styles.boutiqueInfo}>
+                      <div className={styles.boutiqueInfoTop}>
+                        <h3 className={styles.boutiqueName}>{b.name}</h3>
+                        <span className={styles.reviewBadge}>
+                          ★ {formatReviewCount(b.reviewCount)}
+                        </span>
+                      </div>
+                      <p className={styles.boutiqueMeta}>
+                        {b.ordersCompleted} orders Completed • Holding {b.holdingOrders} Orders
+                      </p>
+                      <button
+                        type="button"
+                        className={`${styles.viewDetailsBtn} ${
+                          isActive ? styles.viewDetailsBtnSolid : ""
+                        }`}
+                        onClick={() => setActiveBoutiqueId(b.id)}
+                      >
+                        View Details
+                      </button>
+                    </div>
+                  </article>
+                );
+              })}
+            </div>
+          </section>
+        ) : null}
 
         <div className={styles.footerBtns}>
           <button type="button" className={styles.cancelBtn} onClick={goToSelectBoutiques}>

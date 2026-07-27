@@ -3,14 +3,15 @@ import ProfileBlock from "@/components/ProfileBlock";
 import OrderTypeSelect from "@/components/OrderTypeSelect";
 import SelectedImages from "@/components/SelectedImages";
 import MeasurementAddonsRows from "@/components/MeasurementAddonsRows";
-import AllBoutiques from "@/components/AllBoutiques";
+import SelectBoutiquesActions from "@/components/SelectBoutiquesActions";
+import OrderParamsSync from "@/components/OrderParamsSync";
 import BottomNav from "@/components/BottomNav";
-import { getTailors } from "@/lib/api";
 import {
   userProfile,
   orderTypes,
   selectedImages as defaultSelectedImages,
 } from "@/data/dummy";
+import styles from "./select-boutiques.module.scss";
 
 interface SelectBoutiquesPageProps {
   searchParams?: Promise<{ [key: string]: string | string[] | undefined }>;
@@ -19,7 +20,6 @@ interface SelectBoutiquesPageProps {
 export default async function SelectBoutiquesPage({
   searchParams,
 }: SelectBoutiquesPageProps) {
-  const tailors = await getTailors();
   const sp = searchParams ? await searchParams : {};
   const raw = sp.image;
   const selectedImageFromProduct =
@@ -44,9 +44,13 @@ export default async function SelectBoutiquesPage({
   );
 
   return (
-    <>
+    <div className={styles.page}>
+      <OrderParamsSync
+        productId={productId}
+        productImage={selectedImageFromProduct}
+      />
       <SelectBoutiquesHeader />
-      <main className="main-with-bottom-nav">
+      <main className={`main-with-bottom-nav ${styles.main}`}>
         <ProfileBlock profile={userProfile} />
         <OrderTypeSelect types={orderTypes} />
         <SelectedImages
@@ -54,15 +58,16 @@ export default async function SelectBoutiquesPage({
           productId={productId}
           productImage={selectedImageFromProduct}
         />
-        <MeasurementAddonsRows productId={productId} productImage={selectedImageFromProduct} />
-        <AllBoutiques
-          tailors={tailors}
-          compact
+        <MeasurementAddonsRows
+          productId={productId}
+          productImage={selectedImageFromProduct}
+        />
+        <SelectBoutiquesActions
           productId={productId}
           productImage={selectedImageFromProduct}
         />
       </main>
       <BottomNav />
-    </>
+    </div>
   );
 }

@@ -2,31 +2,45 @@
 @use "../../styles/mixins" as *;
 
 .section {
-  padding: 0 $space-md $space-lg;
-  background: $color-white;
+  padding: $space-lg $space-md 0;
+  background: #fcf9f9;
 }
 
 .title {
-  font-size: $font-size-base;
-  font-weight: $font-weight-bold;
-  color: $color-text;
-  margin-bottom: $space-md;
+  font-size: $font-size-xs;
+  font-weight: $font-weight-semibold;
+  color: #9a9a9a;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  margin: 0 0 $space-sm;
 }
 
 .chips {
   display: flex;
-  flex-wrap: wrap;
+  flex-wrap: nowrap;
   gap: $space-sm;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+
+  &::-webkit-scrollbar {
+    display: none;
+  }
 }
 
 .chip {
-  padding: $space-sm $space-md;
-  border: 1px solid $color-deep-red;
+  flex-shrink: 0;
+  padding: 10px 16px;
+  border: 1px solid #d8d8d8;
+  border-radius: 10px;
   background: $color-white;
   color: $color-text;
   font-size: $font-size-sm;
   font-weight: $font-weight-medium;
   cursor: pointer;
+  white-space: nowrap;
+  transition: background 0.15s ease, color 0.15s ease, border-color 0.15s ease;
 
   &:hover {
     background: $color-light-pink;
@@ -43,6 +57,6 @@
   .section {
     max-width: $max-content-width;
     margin: 0 auto;
-    padding: 0 $space-lg $space-xl;
+    padding: $space-xl $space-lg 0;
   }
 }

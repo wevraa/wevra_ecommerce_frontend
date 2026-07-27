@@ -26,6 +26,8 @@ export interface OrderContext {
   sleeveDesignImage?: string;
   category?: string;
   orderTypes?: string[];
+  /** Selected blouse size label (e.g. "38"). */
+  selectedSize?: string;
   measurements?: OrderMeasurement[];
   addons?: OrderAddon[];
   /** True when at least one add-on toggle is on (from /addons). */

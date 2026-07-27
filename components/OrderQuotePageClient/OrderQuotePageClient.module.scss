@@ -3,56 +3,24 @@
 
 .main {
   min-height: 100vh;
-  background: #f5f5f5;
-  padding-bottom: $bottom-nav-height;
+  background: #f7f4f4;
+  padding-bottom: calc(#{$bottom-nav-height} + #{$space-lg});
 
   @include mobile-first($desktop) {
-    padding-bottom: 0;
+    padding-bottom: $space-xl;
   }
 }
 
-.headerBar {
-  display: flex;
+.header {
+  position: sticky;
+  top: 0;
+  z-index: 20;
+  display: grid;
+  grid-template-columns: 40px 1fr 40px;
   align-items: center;
-  gap: $space-md;
   padding: $space-md;
   background: $color-white;
-  border-bottom: 1px solid rgba(0, 0, 0, 0.06);
-}
-
-.topBar {
-  padding: $space-md $space-md 0;
-  background: $color-white;
-}
-
-.boutiqueNote {
-  margin: 0;
-  padding: $space-sm $space-lg $space-md;
-  font-size: $font-size-xs;
-  color: $color-text-muted;
-  background: $color-white;
-  border-bottom: 1px solid rgba(0, 0, 0, 0.06);
-}
-
-.emptyState {
-  padding: $space-xl $space-lg;
-  text-align: center;
-  background: $color-white;
-  color: $color-text-muted;
-  font-size: $font-size-sm;
-}
-
-.emptyLink {
-  display: inline-block;
-  margin-top: $space-md;
-  color: $color-deep-red;
-  font-weight: $font-weight-medium;
-  text-decoration: underline;
-  background: transparent;
-  border: none;
-  cursor: pointer;
-  font-size: $font-size-sm;
-  padding: 0;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.04);
 }
 
 .backBtn {
@@ -62,73 +30,67 @@
   width: 40px;
   height: 40px;
   padding: 0;
-  border: none;
-  background: transparent;
+  border: 1px solid #e8e8e8;
+  background: $color-white;
   color: $color-text;
   cursor: pointer;
-  border-radius: 8px;
+  border-radius: 10px;
 
   &:hover {
     background: $color-light-pink;
   }
 }
 
-.boutiqueSummary {
-  flex: 1;
-  display: flex;
-  align-items: center;
-  gap: $space-md;
-  min-width: 0;
-}
-
-.iconWrap {
-  flex-shrink: 0;
-  width: 48px;
-  height: 48px;
-  position: relative;
-}
-
-.circle {
-  position: absolute;
-  border-radius: 50%;
-  &.b1 { width: 48px; height: 48px; background: #1e3a5f; top: 0; left: 0; }
-  &.b2 { width: 40px; height: 40px; background: #eab308; top: 4px; left: 4px; }
-  &.b3 { width: 32px; height: 32px; background: #6b7280; top: 8px; left: 10px; }
-}
-
-.summaryText {
-  min-width: 0;
-}
-
-.summaryTitle {
-  font-size: $font-size-base;
+.headerTitle {
+  margin: 0;
+  text-align: center;
+  font-size: $font-size-lg;
   font-weight: $font-weight-bold;
   color: $color-text;
-  margin: 0 0 2px;
 }
 
-.summarySub {
-  font-size: $font-size-xs;
-  color: $color-text-muted;
-  margin: 0;
-}
-
-.arrowBtn {
-  flex-shrink: 0;
+.headerSpacer {
   width: 40px;
   height: 40px;
+}
+
+.searchWrap {
   display: flex;
   align-items: center;
-  justify-content: center;
+  gap: $space-sm;
+  margin: $space-md $space-md 0;
+  padding: 0 $space-md;
+  height: 48px;
+  background: $color-white;
+  border: 1px solid #ececec;
+  border-radius: 12px;
+}
+
+.searchIcon {
+  flex-shrink: 0;
+  color: #9a9a9a;
+}
+
+.searchInput {
+  flex: 1;
+  min-width: 0;
   border: none;
   background: transparent;
+  font-size: $font-size-sm;
   color: $color-text;
-  cursor: pointer;
-  border-radius: 8px;
 
-  &:hover {
-    background: $color-light-pink;
+  &::placeholder {
+    color: #9a9a9a;
   }
+
+  &:focus {
+    outline: none;
+  }
+}
+
+.locationIcon {
+  flex-shrink: 0;
+  color: $color-deep-red;
 }
 
 .content {
@@ -146,6 +108,108 @@
   font-size: $font-size-sm;
 }
 
+.emptyState {
+  padding: $space-xl $space-lg;
+  text-align: center;
+  background: $color-white;
+  border-radius: 14px;
+  color: $color-text-muted;
+  font-size: $font-size-sm;
+  margin-bottom: $space-md;
+}
+
+.emptyLink {
+  display: inline-block;
+  margin-top: $space-md;
+  color: $color-deep-red;
+  font-weight: $font-weight-medium;
+  text-decoration: underline;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  font-size: $font-size-sm;
+  padding: 0;
+}
+
+.sendingSection {
+  margin-bottom: $space-lg;
+}
+
+.sendingHeader {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: $space-md;
+  margin-bottom: $space-sm;
+}
+
+.sendingLabel {
+  margin: 0;
+  font-size: $font-size-xs;
+  font-weight: $font-weight-semibold;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: $color-text;
+}
+
+.sendingCount {
+  margin: 2px 0 0;
+  font-size: $font-size-base;
+  font-weight: $font-weight-bold;
+  color: $color-deep-red;
+}
+
+.viewAllBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  border: none;
+  background: transparent;
+  color: $color-deep-red;
+  font-size: $font-size-sm;
+  font-weight: $font-weight-semibold;
+  cursor: pointer;
+  padding: 0;
+  font-family: inherit;
+}
+
+.chipRow {
+  display: flex;
+  gap: $space-sm;
+  overflow-x: auto;
+  padding: 2px 0;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+
+  &::-webkit-scrollbar {
+    display: none;
+  }
+}
+
+.chip {
+  flex-shrink: 0;
+  padding: 10px 16px;
+  border: none;
+  border-radius: 10px;
+  background: #ececec;
+  color: $color-text;
+  font-size: $font-size-sm;
+  font-weight: $font-weight-medium;
+  cursor: pointer;
+  font-family: inherit;
+}
+
+.chipActive {
+  background: $color-deep-red;
+  color: $color-white;
+}
+
+.noSearchResults {
+  margin: 0;
+  font-size: $font-size-sm;
+  color: $color-text-muted;
+}
+
 .dateSection {
   margin-bottom: $space-lg;
 }
@@ -154,30 +218,30 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
+  gap: $space-md;
   margin-bottom: $space-sm;
 }
 
 .dateLabelText {
-  font-size: $font-size-sm;
+  font-size: $font-size-base;
+  font-weight: $font-weight-bold;
   color: $color-text;
 }
 
 .monthPicker {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-  min-width: 0;
-  max-width: min(100%, 280px);
   flex-shrink: 0;
 }
 
-.monthPickerLabel {
-  font-size: 10px;
-  font-weight: $font-weight-semibold;
-  color: $color-text-muted;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-  line-height: 1.25;
+.srOnly {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
 }
 
 .monthSelectTrigger {
@@ -185,23 +249,16 @@
   align-items: center;
   justify-content: space-between;
   gap: $space-sm;
-  width: 100%;
-  min-height: 44px;
-  padding: $space-sm $space-md;
-  border: 1px solid rgba(0, 0, 0, 0.12);
-  border-radius: 12px;
+  min-height: 36px;
+  padding: 6px 12px;
+  border: 1px solid #e0e0e0;
+  border-radius: 10px;
   background: $color-white;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
   font-family: inherit;
   font-size: $font-size-sm;
-  font-weight: $font-weight-semibold;
+  font-weight: $font-weight-medium;
   color: $color-text;
   cursor: pointer;
-  transition: border-color 0.15s ease, box-shadow 0.15s ease;
-
-  &:hover {
-    border-color: rgba(0, 0, 0, 0.18);
-  }
 
   &:focus {
     outline: none;
@@ -209,12 +266,6 @@
 
   &[data-state="open"] {
     border-color: $color-deep-red;
-    box-shadow: 0 0 0 3px rgba($color-deep-red, 0.14);
-  }
-
-  &[data-placeholder] {
-    color: $color-text-muted;
-    font-weight: $font-weight-medium;
   }
 
   &[data-state="open"] .monthSelectIcon {
@@ -225,8 +276,7 @@
 .monthSelectIcon {
   display: flex;
   flex-shrink: 0;
-  color: $color-deep-red;
-  opacity: 0.9;
+  color: $color-text-muted;
   transition: transform 0.2s ease;
 }
 
@@ -250,7 +300,7 @@
   display: flex;
   align-items: center;
   gap: $space-sm;
-  min-height: 48px;
+  min-height: 44px;
   padding: $space-sm $space-md;
   padding-right: $space-xl;
   border-radius: 8px;
@@ -262,7 +312,6 @@
 
   &[data-highlighted] {
     background: rgba($color-deep-red, 0.07);
-    color: $color-text;
   }
 
   &[data-state="checked"] {
@@ -292,7 +341,6 @@
   font-size: 10px;
   font-weight: $font-weight-semibold;
   color: $color-deep-red;
-  letter-spacing: 0.02em;
 }
 
 .monthItemIndicator {
@@ -304,20 +352,13 @@
   color: $color-deep-red;
 }
 
-@include mobile-first($tablet) {
-  .monthPicker {
-    max-width: 300px;
-  }
-}
-
 .dateStrip {
   display: flex;
   gap: $space-sm;
   overflow-x: auto;
-  padding: $space-sm 0;
+  padding: $space-xs 0;
   -webkit-overflow-scrolling: touch;
   scrollbar-width: none;
-  -ms-overflow-style: none;
 
   &::-webkit-scrollbar {
     display: none;
@@ -326,25 +367,33 @@
 
 .dateCard {
   flex-shrink: 0;
-  width: 64px;
-  padding: $space-sm $space-md;
-  border: none;
-  border-radius: 10px;
+  width: 58px;
+  padding: 10px 8px;
+  border: 1px solid #e5e5e5;
+  border-radius: 12px;
   background: $color-white;
-  color: $color-text-muted;
-  font-size: $font-size-xs;
+  color: $color-text;
   text-align: center;
   cursor: pointer;
+  font-family: inherit;
+  transition: background 0.15s ease, color 0.15s ease, box-shadow 0.15s ease;
 
   &.selected {
     background: $color-deep-red;
+    border-color: $color-deep-red;
     color: $color-white;
+    box-shadow: 0 6px 16px rgba($color-deep-red, 0.35);
   }
 }
 
 .dateDay {
   display: block;
-  margin-bottom: 2px;
+  margin-bottom: 4px;
+  font-size: 10px;
+  font-weight: $font-weight-semibold;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  opacity: 0.85;
 }
 
 .dateNum {
@@ -352,143 +401,245 @@
   font-size: $font-size-base;
 }
 
-.productCard {
-  background: $color-white;
-  border-radius: 12px;
-  padding: $space-md;
-  margin-bottom: $space-md;
-  display: flex;
-  gap: $space-md;
+.itemsSection {
+  margin-bottom: $space-lg;
 }
 
-.productInfo {
+.itemsHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: $space-sm;
+}
+
+.sectionTitle {
+  margin: 0;
+  font-size: $font-size-base;
+  font-weight: $font-weight-bold;
+  color: $color-text;
+}
+
+.itemsBadge {
+  display: inline-flex;
+  align-items: center;
+  padding: 4px 10px;
+  border-radius: 999px;
+  background: #ececec;
+  color: $color-text-muted;
+  font-size: $font-size-xs;
+  font-weight: $font-weight-semibold;
+}
+
+.itemList {
+  display: flex;
+  flex-direction: column;
+  gap: $space-sm;
+  margin-bottom: $space-md;
+}
+
+.itemCard {
+  display: flex;
+  gap: $space-md;
+  padding: $space-md;
+  background: $color-white;
+  border-radius: 14px;
+  border: 1px solid #efefef;
+}
+
+.itemThumb {
+  position: relative;
+  flex-shrink: 0;
+  width: 64px;
+  height: 64px;
+  border-radius: 10px;
+  overflow: hidden;
+  background: $color-light-pink;
+}
+
+.itemBody {
   flex: 1;
   min-width: 0;
 }
 
-.productName {
-  font-size: $font-size-base;
+.itemTitle {
+  margin: 0 0 $space-sm;
+  font-size: $font-size-sm;
   font-weight: $font-weight-bold;
   color: $color-text;
-  margin: 0 0 $space-sm;
 }
 
-.addonsWarning {
-  font-size: $font-size-sm;
-  color: $color-deep-red;
-  margin: 0 0 2px;
-}
-
-.addonsLink {
-  font-size: $font-size-sm;
-  color: $color-text-muted;
-  margin: 0 0 $space-sm;
+.statusRow {
   display: flex;
   align-items: center;
- gap: 16px;
-  cursor: pointer;
-}
-
-.selectionPositive {
-  font-size: $font-size-sm;
-  color: #16a34a;
-  margin: 0 0 2px;
-}
-
-.selectedAddonsList {
-  font-size: $font-size-sm;
-  color: $color-text-muted;
-  margin: 0 0 $space-sm;
-  padding-left: 1.1rem;
-  list-style: disc;
-}
-
-.measurementPending {
-  font-size: $font-size-sm;
-  color: $color-deep-red;
-  margin: 0 0 2px;
-}
-
-.measurementLink {
-  font-size: $font-size-sm;
-  color: $color-text-muted;
-  margin: 0;
-  display: flex;
-  align-items: center;
-  gap: 16px;
-  cursor: pointer;
-}
-
-.productImages {
-  flex-shrink: 0;
-  display: flex;
-  flex-direction: column;
-  gap: $space-xs;
-}
-
-.productImageWrap {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 4px;
-}
-
-.productImage {
-  flex-shrink: 0;
-  width: 90px;
-  height: 90px;
-  background: $color-light-pink;
-  overflow: hidden;
-  position: relative;
-  border-radius: 6px;
-}
-
-.imageLabel {
-  font-size: 10px;
-  color: $color-text-muted;
-  text-align: center;
+  justify-content: space-between;
+  gap: $space-sm;
+  margin-bottom: 6px;
+  text-decoration: none;
+  font-size: $font-size-xs;
   font-weight: $font-weight-medium;
+
+  &:last-child {
+    margin-bottom: 0;
+  }
 }
 
-.btn_wrap{
-  display: flex;
+.statusLeft {
+  display: inline-flex;
   align-items: center;
-  justify-content: center;
+  gap: 6px;
+  min-width: 0;
 }
 
-.addItemsBtn {
-  width: 250px;
-  padding: 12px;
-  border: none;
-  background: $color-deep-red;
-  color: $color-white;
-  font-size: $font-size-base;
-  font-weight: $font-weight-bold;
-  cursor: pointer;
-  border-radius: 26px;
+.statusIcon {
+  display: inline-flex;
+  flex-shrink: 0;
+}
+
+.statusMuted {
+  color: $color-text-muted;
+}
+
+.statusOk {
+  color: $color-deep-red;
+}
+
+.addMoreBtn {
+  width: 100%;
   display: flex;
   align-items: center;
   justify-content: center;
   gap: $space-sm;
-  margin-bottom: 12px;
+  padding: 14px $space-md;
+  border: 1.5px dashed rgba($color-deep-red, 0.45);
+  border-radius: 12px;
+  background: transparent;
+  color: $color-deep-red;
+  font-size: $font-size-sm;
+  font-weight: $font-weight-semibold;
+  cursor: pointer;
+  font-family: inherit;
 
   &:hover {
-    background: #6f0f2a;
+    background: rgba($color-deep-red, 0.04);
   }
 }
 
-.addItemsPlus {
+.addMorePlus {
+  font-size: $font-size-lg;
+  line-height: 1;
+  font-weight: $font-weight-bold;
+}
+
+.boutiqueSection {
+  margin-bottom: $space-lg;
+}
+
+.boutiqueList {
+  display: flex;
+  flex-direction: column;
+  gap: $space-md;
+  margin-top: $space-sm;
+}
+
+.boutiqueCard {
+  background: $color-white;
+  border-radius: 16px;
+  overflow: hidden;
+  border: 1px solid #efefef;
+}
+
+.boutiqueCardActive {
+  border-color: rgba($color-deep-red, 0.25);
+}
+
+.boutiqueImageWrap {
+  position: relative;
+  display: block;
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  background: $color-light-pink;
+}
+
+.boutiqueImage {
+  object-fit: cover;
+}
+
+.checkCircle {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: $color-white;
+  border: 1.5px solid #d8d8d8;
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 28px;
-  height: 28px;
+}
+
+.checkCircleOn {
+  background: $color-deep-red;
+  border-color: $color-deep-red;
+  color: $color-white;
+}
+
+.boutiqueInfo {
+  padding: $space-md;
+}
+
+.boutiqueInfoTop {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: $space-sm;
+  margin-bottom: 4px;
+}
+
+.boutiqueName {
+  margin: 0;
+  font-size: $font-size-base;
+  font-weight: $font-weight-bold;
+  color: $color-text;
+}
+
+.reviewBadge {
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  padding: 4px 8px;
+  border-radius: 999px;
+  background: $color-light-pink;
+  color: $color-deep-red;
+  font-size: 11px;
+  font-weight: $font-weight-semibold;
+}
+
+.boutiqueMeta {
+  margin: 0 0 $space-md;
+  font-size: $font-size-xs;
+  color: $color-text-muted;
+}
+
+.viewDetailsBtn {
+  width: 100%;
+  padding: 12px $space-md;
+  border: 1.5px solid $color-deep-red;
+  border-radius: 10px;
   background: $color-white;
   color: $color-deep-red;
-  border-radius: 50%;
-  font-size: $font-size-lg;
-  font-weight: $font-weight-bold;
-  line-height: 1;
+  font-size: $font-size-sm;
+  font-weight: $font-weight-semibold;
+  cursor: pointer;
+  font-family: inherit;
+}
+
+.viewDetailsBtnSolid {
+  background: $color-deep-red;
+  color: $color-white;
 }
 
 .footerBtns {
@@ -504,13 +655,13 @@
   justify-content: center;
   width: 100%;
   padding: $space-md $space-lg;
-  border: none;
-  background: #4b5563;
-  color: $color-white;
+  border: 1px solid #d8d8d8;
+  background: #f0f0f0;
+  color: $color-text-muted;
   font-size: $font-size-base;
   font-weight: $font-weight-semibold;
   cursor: pointer;
-  border-radius: 26px;
+  border-radius: 12px;
   font-family: inherit;
   box-sizing: border-box;
 }
@@ -519,17 +670,18 @@
   width: 100%;
   padding: $space-md $space-lg;
   border: none;
-  background: #1847B5;
+  background: $color-deep-red;
   color: $color-white;
   font-size: $font-size-base;
   font-weight: $font-weight-semibold;
   cursor: pointer;
-  border-radius: 26px;
+  border-radius: 12px;
   box-sizing: border-box;
+  font-family: inherit;
   transition: background 0.15s ease;
 
   &:hover:not(:disabled) {
-    background: #6f0f2a;
+    background: #9a1f3c;
   }
 
   &:disabled {
