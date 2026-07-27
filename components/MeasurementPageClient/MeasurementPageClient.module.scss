@@ -2,13 +2,20 @@
 @use "../../styles/mixins" as *;
 
 .main {
-  padding: $space-md;
-  background: #fcf9f8;
-  min-height: 60vh;
+  padding: 0;
+  background: #f0f2f5;
+  overflow: hidden;
+  height: calc(100dvh - $header-height - $bottom-nav-height);
+  display: flex;
+  flex-direction: column;
+
+  @include mobile-first($desktop) {
+    height: calc(100dvh - $header-height);
+  }
 }
 
 .message {
-  margin: $space-md 0;
+  margin: $space-md;
   font-size: $font-size-sm;
   color: $color-text-muted;
 }
@@ -17,7 +24,10 @@
   display: flex;
   gap: 8px;
   overflow-x: auto;
-  margin-bottom: $space-md;
+  flex-shrink: 0;
+  padding: $space-sm $space-md;
+  background: #fcf9f8;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.06);
   -webkit-overflow-scrolling: touch;
   scrollbar-width: none;
 
@@ -29,8 +39,8 @@
 .sizeChip {
   flex-shrink: 0;
   min-width: 52px;
-  height: 40px;
-  padding: 0 16px;
+  height: 36px;
+  padding: 0 14px;
   border: 1px solid #dfbfc1;
   border-radius: 12px;
   background: $color-white;
@@ -53,24 +63,40 @@
 
 .content {
   display: flex;
-  flex-direction: column;
-  gap: $space-lg;
-
-  @include mobile-first($tablet) {
-    flex-direction: row;
-    align-items: flex-start;
-  }
+  flex-direction: row;
+  align-items: stretch;
+  flex: 1;
+  min-height: 0;
+  width: 100%;
+  overflow: hidden;
 }
 
 .left {
-  flex: 1;
+  width: 55%;
+  flex: 0 0 55%;
   min-width: 0;
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding: $space-sm;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(0, 0, 0, 0.15) transparent;
+
+  &::-webkit-scrollbar {
+    width: 4px;
+  }
+
+  &::-webkit-scrollbar-thumb {
+    background: rgba(0, 0, 0, 0.15);
+    border-radius: 4px;
+  }
 }
 
 .right {
-  flex-shrink: 0;
-
-  @include mobile-first($tablet) {
-    width: 280px;
-  }
+  width: 45%;
+  flex: 0 0 45%;
+  min-width: 0;
+  background: #e8ecf0;
+  position: relative;
+  overflow: hidden;
 }
