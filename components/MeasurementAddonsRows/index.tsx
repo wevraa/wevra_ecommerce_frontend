@@ -102,11 +102,11 @@ export default function MeasurementAddonsRows({
       .then((data) => {
         if (cancelled) return;
         setPresets(data);
-        // Auto-select first / stored preset when category changes
+        // Restore only an existing user selection — never auto-pick a size
+        // (so a cleared order after Send stays blank until the user chooses).
         const preferred =
           data.find((p) => p.id === orderContext.selectedPresetId) ??
-          data.find((p) => p.label === orderContext.selectedSize) ??
-          data[0];
+          data.find((p) => p.label === orderContext.selectedSize);
         if (preferred) {
           const items = presetToMeasurementItems(preferred);
           setOrderContext({
@@ -115,7 +115,7 @@ export default function MeasurementAddonsRows({
             measurements: items.map((m) => ({
               name: m.name,
               value: m.value,
-              unit: m.unit,
+              unit: m.unit || "INCHES",
             })),
             hasMeasurementSelected: true,
           });
@@ -145,7 +145,7 @@ export default function MeasurementAddonsRows({
       measurements: items.map((m) => ({
         name: m.name,
         value: m.value,
-        unit: m.unit,
+        unit: m.unit || "INCHES",
       })),
       hasMeasurementSelected: true,
     });

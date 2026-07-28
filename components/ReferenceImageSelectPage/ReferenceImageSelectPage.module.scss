@@ -1,0 +1,208 @@
+@use "../../styles/variables" as *;
+@use "../../styles/mixins" as *;
+
+.page {
+  min-height: 100vh;
+  background: #fcf9f8;
+  padding-bottom: calc(#{$bottom-nav-height} + #{$space-lg});
+}
+
+.header {
+  position: sticky;
+  top: 0;
+  z-index: 50;
+  display: grid;
+  grid-template-columns: 40px 1fr 56px;
+  align-items: center;
+  gap: $space-sm;
+  padding: $space-md;
+  background: #85072e;
+  color: $color-white;
+}
+
+.backBtn,
+.doneBtn {
+  border: none;
+  background: transparent;
+  color: $color-white;
+  cursor: pointer;
+  font-family: inherit;
+}
+
+.backBtn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 8px;
+
+  &:hover {
+    background: rgba(255, 255, 255, 0.12);
+  }
+}
+
+.doneBtn {
+  justify-self: end;
+  font-size: $font-size-sm;
+  font-weight: $font-weight-semibold;
+  padding: 8px 0;
+}
+
+.titleBlock {
+  text-align: center;
+  min-width: 0;
+}
+
+.title {
+  margin: 0;
+  font-size: 18px;
+  font-weight: $font-weight-bold;
+}
+
+.subtitle {
+  margin: 2px 0 0;
+  font-size: 11px;
+  opacity: 0.85;
+}
+
+.uploadSection,
+.designsSection {
+  padding: $space-md;
+}
+
+.sectionLabel {
+  margin: 0 0 $space-sm;
+  font-size: 12px;
+  font-weight: $font-weight-semibold;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: #584143;
+}
+
+.uploadCard {
+  position: relative;
+  display: block;
+  width: 100%;
+  aspect-ratio: 25 / 10;
+  border: 2px dashed #dfbfc1;
+  border-radius: 14px;
+  background: $color-white;
+  overflow: hidden;
+  padding: 0;
+  cursor: pointer;
+}
+
+.uploadPreview {
+  object-fit: cover;
+}
+
+.uploadPlaceholder {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  color: #584143;
+  font-size: $font-size-sm;
+}
+
+.uploadPlus {
+  font-size: 28px;
+  line-height: 1;
+  color: #85072e;
+}
+
+.clearBtn {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  width: 28px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background: rgba(0, 0, 0, 0.55);
+  color: $color-white;
+  font-size: 18px;
+  z-index: 2;
+}
+
+.hiddenInput {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+.card {
+  position: relative;
+  aspect-ratio: 3 / 4;
+  border: 2px solid transparent;
+  border-radius: 12px;
+  overflow: hidden;
+  background: #e8e8e8;
+  padding: 0;
+  cursor: pointer;
+}
+
+.cardSelected {
+  border-color: #85072e;
+  box-shadow: 0 0 0 2px rgba(133, 7, 46, 0.2);
+}
+
+.cardImage {
+  object-fit: cover;
+}
+
+.cardLabel {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  padding: 8px;
+  background: rgba(133, 7, 46, 0.9);
+  color: $color-white;
+  font-size: 11px;
+  font-weight: $font-weight-semibold;
+  text-align: center;
+}
+
+.message {
+  margin: $space-md 0;
+  font-size: $font-size-sm;
+  color: $color-text-muted;
+}
+
+.uploadOptions {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.uploadOptionBtn {
+  width: 100%;
+  padding: 14px 16px;
+  border: 1px solid #e5e5e5;
+  border-radius: 12px;
+  background: $color-white;
+  font-size: $font-size-base;
+  font-weight: $font-weight-semibold;
+  cursor: pointer;
+  font-family: inherit;
+  text-align: left;
+
+  &:active {
+    background: #f6f3f2;
+  }
+}

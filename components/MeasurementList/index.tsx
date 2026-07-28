@@ -174,7 +174,7 @@ export default function MeasurementList({ items }: MeasurementListProps) {
     const measurements = items.map((item) => ({
       name: item.name,
       value: values[item.id] ?? item.value,
-      unit: item.unit ?? "inches",
+      unit: item.unit ?? "INCHES",
     }));
     // Selecting/editing a preset counts as measurement selected for the order flow
     setOrderContext({

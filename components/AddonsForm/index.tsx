@@ -1,12 +1,13 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import type { ApiAccessoryOption } from "@/lib/api";
 import type { AddonsNavParams } from "@/lib/addonsNavigation";
 import { getAddonsReturnHref } from "@/lib/addonsNavigation";
 import { useBoutiquesSelectionStore } from "@/lib/stores/boutiquesSelectionStore";
 import { useBoutiqueOrderStore } from "@/lib/stores/boutiqueOrderStore";
+import { navigateBack } from "@/lib/navigateBack";
 import styles from "./AddonsForm.module.scss";
 
 const API_BASE = process.env.NEXT_PUBLIC_API_BASE_URL ?? "https://api.wevraa.in/api";
@@ -19,11 +20,19 @@ const VIEWS: { key: GarmentView; label: string }[] = [
   { key: "side", label: "Side" },
 ];
 
-const emptyDrawings: Record<GarmentView, string | null> = {
-  back: null,
-  front: null,
-  side: null,
-};
+function buildReferenceHref(
+  path: "/addons/hangings" | "/addons/drawing",
+  view: GarmentView,
+  nav: AddonsNavParams
+): string {
+  const params = new URLSearchParams();
+  params.set("view", view);
+  if (nav.returnTo) params.set("returnTo", nav.returnTo);
+  if (nav.productId) params.set("productId", nav.productId);
+  if (nav.productImage) params.set("image", nav.productImage);
+  if (nav.boutiqueId) params.set("boutiqueId", nav.boutiqueId);
+  return `${path}?${params.toString()}`;
+}
 
 export default function AddonsForm({
   productId: productIdFromUrl,
@@ -41,11 +50,13 @@ export default function AddonsForm({
   const [selected, setSelected] = useState<Record<string, boolean>>({});
   const [loaded, setLoaded] = useState(false);
   const [activeView, setActiveView] = useState<GarmentView>("front");
-  const [drawingPreviews, setDrawingPreviews] =
-    useState<Record<GarmentView, string | null>>(emptyDrawings);
-  const fileInputRef = useRef<HTMLInputElement>(null);
-  const drawingPreviewsRef = useRef(drawingPreviews);
-  drawingPreviewsRef.current = drawingPreviews;
+
+  const navParams: AddonsNavParams = {
+    returnTo,
+    productId: productIdFromUrl ?? orderContext.productId,
+    productImage: productImageFromUrl ?? orderContext.productImage,
+    boutiqueId,
+  };
 
   useEffect(() => {
     if (productIdFromUrl || productImageFromUrl) {
@@ -77,16 +88,19 @@ export default function AddonsForm({
       .then((json: unknown) => {
         const raw = Array.isArray(json) ? json : (json as { data?: unknown[] })?.data ?? [];
         const list = Array.isArray(raw) ? raw : [];
-        const options: ApiAccessoryOption[] = list.map((item: unknown, index: number) => {
-          const o = item as Record<string, unknown>;
-          const id = typeof o.id === "string" ? o.id : `opt-${index}`;
-          const name = typeof o.name === "string" ? o.name : "";
-          return { id, name };
-        }).filter((o) => o.name);
+        const options: ApiAccessoryOption[] = list
+          .map((item: unknown, index: number) => {
+            const o = item as Record<string, unknown>;
+            const id = typeof o.id === "string" ? o.id : `opt-${index}`;
+            const name = typeof o.name === "string" ? o.name : "";
+            return { id, name };
+          })
+          .filter((o) => o.name);
         setAccessoryOptions(options);
         setSelected((prev) => {
           const savedNames = new Set(
-            useBoutiquesSelectionStore.getState().orderContext.addons?.map((a) => a.optionName) ?? []
+            useBoutiquesSelectionStore.getState().orderContext.addons?.map((a) => a.optionName) ??
+              []
           );
           const next = { ...prev };
           for (const opt of options) {
@@ -101,35 +115,10 @@ export default function AddonsForm({
       .finally(() => setLoaded(true));
   }, []);
 
-  useEffect(() => {
-    return () => {
-      Object.values(drawingPreviewsRef.current).forEach((url) => {
-        if (url) URL.revokeObjectURL(url);
-      });
-    };
-  }, []);
-
-  const handleDrawingPickClick = () => {
-    fileInputRef.current?.click();
-  };
-
-  const handleDrawingFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    e.target.value = "";
-    if (!file || !file.type.startsWith("image/")) return;
-    setDrawingPreviews((prev) => {
-      const old = prev[activeView];
-      if (old) URL.revokeObjectURL(old);
-      return {
-        ...prev,
-        [activeView]: URL.createObjectURL(file),
-      };
-    });
-  };
-
-  const currentDrawing = drawingPreviews[activeView];
   const hangingSlotId = `hanging-${activeView}`;
+  const drawingSlotId = `drawing-${activeView}`;
   const hangingImage = selectedImageByProductAndSlot.global?.[hangingSlotId] ?? null;
+  const drawingImage = selectedImageByProductAndSlot.global?.[drawingSlotId] ?? null;
 
   const handleContinueToOrder = () => {
     const hasAny = Object.values(selected).some(Boolean);
@@ -143,7 +132,8 @@ export default function AddonsForm({
 
     const productId = orderContext.productId ?? productIdFromUrl;
     const productImage = orderContext.productImage ?? productImageFromUrl;
-    router.push(
+    navigateBack(
+      router,
       getAddonsReturnHref({
         returnTo: returnTo ?? "select-boutiques",
         productId,
@@ -208,15 +198,13 @@ export default function AddonsForm({
             <button
               type="button"
               className={`${styles.uploadCard} ${styles.uploadCardButton}`}
-              onClick={() => {
-                const params = new URLSearchParams();
-                params.set("slot", hangingSlotId);
-                params.set("returnTo", "addons");
-                router.push(`/select-sleeve-design?${params.toString()}`);
-              }}
+              onClick={() =>
+                router.push(buildReferenceHref("/addons/hangings", activeView, navParams))
+              }
               aria-label={`Select hanging design for ${activeView} view`}
             >
               {hangingImage ? (
+                // eslint-disable-next-line @next/next/no-img-element
                 <img
                   src={hangingImage}
                   alt={`Hanging preview (${activeView})`}
@@ -235,24 +223,18 @@ export default function AddonsForm({
             <p className={styles.subtitle}>
               Upload your drawing pattern if required
             </p>
-            <input
-              ref={fileInputRef}
-              type="file"
-              accept="image/*"
-              className={styles.hiddenFileInput}
-              aria-hidden
-              tabIndex={-1}
-              onChange={handleDrawingFileChange}
-            />
             <button
               type="button"
               className={`${styles.uploadCard} ${styles.uploadCardButton}`}
-              onClick={handleDrawingPickClick}
+              onClick={() =>
+                router.push(buildReferenceHref("/addons/drawing", activeView, navParams))
+              }
               aria-label={`Select drawing image for ${activeView} view`}
             >
-              {currentDrawing ? (
+              {drawingImage ? (
+                // eslint-disable-next-line @next/next/no-img-element
                 <img
-                  src={currentDrawing}
+                  src={drawingImage}
                   alt={`Drawing preview (${activeView})`}
                   className={styles.uploadPreview}
                 />

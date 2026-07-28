@@ -37,6 +37,62 @@
   object-fit: cover;
 }
 
+.avatarInitials {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #85072e;
+  color: $color-white;
+  font-size: 20px;
+  font-weight: $font-weight-semibold;
+  letter-spacing: 0.02em;
+}
+
+.avatarGuest {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 12px;
+  border: 2px solid #ffb2ba;
+  background: #f0eded;
+  color: #584143;
+}
+
+.avatarSkeleton {
+  border-radius: 12px;
+  background: linear-gradient(90deg, #eee 25%, #f5f5f5 50%, #eee 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.2s ease-in-out infinite;
+}
+
+.skelLine {
+  display: block;
+  border-radius: 4px;
+  background: linear-gradient(90deg, #eee 25%, #f5f5f5 50%, #eee 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.2s ease-in-out infinite;
+}
+
+.skelName {
+  width: 70%;
+  height: 18px;
+  margin-bottom: 8px;
+}
+
+.skelMobile {
+  width: 45%;
+  height: 14px;
+}
+
+@keyframes shimmer {
+  0% {
+    background-position: 200% 0;
+  }
+  100% {
+    background-position: -200% 0;
+  }
+}
+
 .checkBadge {
   position: absolute;
   right: -4px;

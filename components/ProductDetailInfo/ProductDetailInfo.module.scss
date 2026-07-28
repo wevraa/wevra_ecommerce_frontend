@@ -12,10 +12,18 @@
   margin-bottom: $space-xs;
 }
 
-.descriptionLabel {
+.description {
   font-size: $font-size-sm;
   color: $color-text-muted;
-  margin-bottom: $space-sm;
+  margin: 0 0 $space-sm;
+  line-height: 1.4;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  word-break: break-word;
 }
 
 .price {

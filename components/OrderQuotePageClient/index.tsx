@@ -8,7 +8,7 @@ import { useRouter } from "next/navigation";
 import LoginModal from "@/components/LoginModal";
 import { getAccessToken, getAuthUserId } from "@/lib/auth";
 import { localDateToRequiredByIso } from "@/lib/chat/format";
-import type { CustomerOrderRequestInput } from "@/lib/chat/types";
+import type { CustomerOrderRequestInput, ChatAddon, ChatMeasurement } from "@/lib/chat/types";
 import {
   prepareAndCachePendingOrder,
   sendOrderRequestViaChat,
@@ -16,16 +16,76 @@ import {
   ChatUnauthorizedError,
 } from "@/lib/chat/startChat";
 import { ChatApiError } from "@/lib/chat/types";
+import { sanitizeMeasurementsForApi } from "@/lib/chat/orderRequest";
 import {
   useBoutiquesSelectionStore,
   MAX_BOUTIQUE_SELECTION,
+  resetBoutiquesSelection,
+  type OrderAddon,
+  type OrderContext,
 } from "@/lib/stores/boutiquesSelectionStore";
+import {
+  resetBoutiqueOrderImages,
+  useBoutiqueOrderStore,
+} from "@/lib/stores/boutiqueOrderStore";
 import { buildAddonsHref } from "@/lib/addonsNavigation";
+import { markOrderFlowReset } from "@/lib/orderFlowReset";
+import { navigateBack } from "@/lib/navigateBack";
 import type { ApiTailor } from "@/lib/api";
 import styles from "./OrderQuotePageClient.module.scss";
 
 const API_BASE = process.env.NEXT_PUBLIC_API_BASE_URL ?? "https://api.wevraa.in/api";
 const PLACEHOLDER_IMAGE = "/images/placeholder-rect.svg";
+
+/** All measurement rows selected on select-boutiques / measurement page. */
+function measurementsForSend(ctx: OrderContext): ChatMeasurement[] {
+  return sanitizeMeasurementsForApi(ctx.measurements) ?? [];
+}
+
+/** Accessory toggles + hanging/drawing reference images. */
+function addonsForSend(
+  ctx: OrderContext,
+  slotMap: Record<string, Record<string, string>>
+): ChatAddon[] {
+  const fromToggles: OrderAddon[] = (ctx.addons ?? []).filter(
+    (a) => Boolean(a?.optionName) && Boolean(a?.subOptionName)
+  );
+
+  const images: ChatAddon[] = [];
+  const seen = new Set(
+    fromToggles.map((a) => `${a.optionName}::${a.subOptionName}::${a.imageUrl ?? ""}`)
+  );
+
+  for (const bySlot of Object.values(slotMap)) {
+    for (const [slotId, url] of Object.entries(bySlot ?? {})) {
+      if (!url) continue;
+      let optionName = "";
+      let subOptionName = "";
+      if (slotId.startsWith("hanging-")) {
+        optionName = "Hanging";
+        subOptionName = slotId.replace(/^hanging-/, "");
+      } else if (slotId.startsWith("drawing-")) {
+        optionName = "Drawing";
+        subOptionName = slotId.replace(/^drawing-/, "");
+      } else {
+        continue;
+      }
+      const key = `${optionName}::${subOptionName}::${url}`;
+      if (seen.has(key)) continue;
+      seen.add(key);
+      images.push({ optionName, subOptionName, imageUrl: url });
+    }
+  }
+
+  return [
+    ...fromToggles.map((a) => ({
+      optionName: a.optionName,
+      subOptionName: a.subOptionName,
+      ...(a.imageUrl ? { imageUrl: a.imageUrl } : {}),
+    })),
+    ...images,
+  ];
+}
 
 /** Local calendar date as yyyy-mm-dd (no UTC shift). */
 function toIsoDateLocal(d: Date): string {
@@ -42,16 +102,19 @@ function daysInMonth(year: number, monthIndex: number): number {
 /** One card per day in the given month. */
 function buildMonthDayCells(
   year: number,
-  monthIndex: number
-): { iso: string; day: string; num: string }[] {
+  monthIndex: number,
+  todayIso: string
+): { iso: string; day: string; num: string; disabled: boolean }[] {
   const n = daysInMonth(year, monthIndex);
-  const cells: { iso: string; day: string; num: string }[] = [];
+  const cells: { iso: string; day: string; num: string; disabled: boolean }[] = [];
   for (let day = 1; day <= n; day++) {
     const d = new Date(year, monthIndex, day);
+    const iso = toIsoDateLocal(d);
     cells.push({
-      iso: toIsoDateLocal(d),
+      iso,
       day: d.toLocaleDateString("en-IN", { weekday: "short" }),
       num: String(day),
+      disabled: iso < todayIso,
     });
   }
   return cells;
@@ -99,6 +162,7 @@ export default function OrderQuotePageClient({
 }: OrderQuotePageClientProps) {
   const router = useRouter();
   const boutiqueSectionRef = useRef<HTMLElement | null>(null);
+  const dateSectionRef = useRef<HTMLElement | null>(null);
   const [sending, setSending] = useState(false);
   const [loginOpen, setLoginOpen] = useState(false);
   const [sendError, setSendError] = useState<string | null>(null);
@@ -112,14 +176,14 @@ export default function OrderQuotePageClient({
     `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}`;
 
   const [viewYM, setViewYM] = useState(initialYM);
-  const [selectedDate, setSelectedDate] = useState<string | null>(() =>
-    toIsoDateLocal(now)
-  );
+  /** Must be explicitly chosen before Send is allowed. */
+  const [selectedDate, setSelectedDate] = useState<string | null>(null);
 
+  const todayIso = useMemo(() => toIsoDateLocal(now), [now]);
   const { year, monthIndex } = parseViewYM(viewYM);
   const dayCells = useMemo(
-    () => buildMonthDayCells(year, monthIndex),
-    [year, monthIndex]
+    () => buildMonthDayCells(year, monthIndex, todayIso),
+    [year, monthIndex, todayIso]
   );
 
   const {
@@ -128,6 +192,9 @@ export default function OrderQuotePageClient({
     setOrderContext,
     toggleBoutique,
   } = useBoutiquesSelectionStore();
+  const selectedImageByProductAndSlot = useBoutiqueOrderStore(
+    (s) => s.selectedImageByProductAndSlot
+  );
 
   const [productTitle, setProductTitle] = useState("Machine Embroidery Blouse");
 
@@ -166,8 +233,21 @@ export default function OrderQuotePageClient({
     [selectedBoutiques]
   );
 
-  const hasAddonsSelected = orderContext.hasAddonsSelected === true;
-  const hasMeasurementSelected = orderContext.hasMeasurementSelected === true;
+  const measurementsPayload = useMemo(
+    () => measurementsForSend(orderContext),
+    [orderContext]
+  );
+  const addonsPayload = useMemo(
+    () => addonsForSend(orderContext, selectedImageByProductAndSlot),
+    [orderContext, selectedImageByProductAndSlot]
+  );
+
+  const hasAddonsSelected =
+    orderContext.hasAddonsSelected === true || addonsPayload.length > 0;
+  const hasMeasurementSelected =
+    orderContext.hasMeasurementSelected === true ||
+    measurementsPayload.length > 0 ||
+    Boolean(orderContext.selectedSize || orderContext.selectedPresetId);
 
   const addonsHref = buildAddonsHref({
     returnTo: "order-quote",
@@ -236,21 +316,29 @@ export default function OrderQuotePageClient({
     });
   };
 
-  const goToSelectBoutiques = () => {
+  const selectBoutiquesFallback = () => {
     const params = new URLSearchParams();
     if (orderContext.productId) params.set("productId", orderContext.productId);
     if (orderContext.productImage) params.set("image", orderContext.productImage);
-    router.push(
-      params.size > 0 ? `/select-boutiques?${params.toString()}` : "/select-boutiques"
-    );
+    return params.size > 0
+      ? `/select-boutiques?${params.toString()}`
+      : "/select-boutiques";
+  };
+
+  const goToSelectBoutiques = () => {
+    navigateBack(router, selectBoutiquesFallback());
   };
 
   const handleCancel = () => {
-    router.back();
+    navigateBack(router, selectBoutiquesFallback());
   };
 
   const scrollToBoutiques = () => {
     boutiqueSectionRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+  };
+
+  const scrollToDate = () => {
+    dateSectionRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
   };
 
   const handleToggleBoutique = (b: {
@@ -270,10 +358,16 @@ export default function OrderQuotePageClient({
 
   const handleSend = async () => {
     if (selectedBoutiques.length === 0) {
+      setSendError("Select at least one boutique before sending.");
       scrollToBoutiques();
       return;
     }
-    if (!selectedDate || sending) return;
+    if (!selectedDate) {
+      setSendError("Please select a delivery date before sending.");
+      scrollToDate();
+      return;
+    }
+    if (sending) return;
 
     if (!getAccessToken()) {
       setLoginOpen(true);
@@ -295,8 +389,9 @@ export default function OrderQuotePageClient({
             : [productTitle],
           productImage: orderContext.productImage,
           sleeveDesignImage: orderContext.sleeveDesignImage,
-          measurements: hasMeasurementSelected ? orderContext.measurements : [],
-          addons: hasAddonsSelected ? orderContext.addons : [],
+          // Always send every selected measurement / addon value from select-boutiques
+          measurements: measurementsPayload,
+          addons: addonsPayload,
           requiredBy: localDateToRequiredByIso(selectedDate),
           description: `Order quote for ${boutique.name}`,
         };
@@ -308,7 +403,21 @@ export default function OrderQuotePageClient({
       }
 
       if (firstConversationId) {
-        router.push(`/chat/${encodeURIComponent(firstConversationId)}`);
+        const chatHref = `/chat/${encodeURIComponent(firstConversationId)}`;
+
+        // Wipe order state + mark select-boutiques to drop stale URL params
+        markOrderFlowReset();
+        resetBoutiquesSelection();
+        resetBoutiqueOrderImages();
+
+        router.push(chatHref);
+        // Hard fallback if soft navigation does not land on chat
+        window.setTimeout(() => {
+          if (typeof window !== "undefined" && !window.location.pathname.startsWith("/chat/")) {
+            window.location.assign(chatHref);
+          }
+        }, 400);
+        return;
       }
     } catch (e) {
       if (e instanceof ChatUnauthorizedError) {
@@ -433,7 +542,7 @@ export default function OrderQuotePageClient({
           ) : null}
         </section>
 
-        <section className={styles.dateSection}>
+        <section className={styles.dateSection} ref={dateSectionRef}>
           <div className={styles.dateLabel}>
             <span className={styles.dateLabelText}>Delivery Required By</span>
             <div className={styles.monthPicker}>
@@ -522,14 +631,24 @@ export default function OrderQuotePageClient({
               <button
                 key={d.iso}
                 type="button"
-                className={`${styles.dateCard} ${selectedDate === d.iso ? styles.selected : ""}`}
-                onClick={() => setSelectedDate(d.iso)}
+                disabled={d.disabled}
+                className={`${styles.dateCard} ${selectedDate === d.iso ? styles.selected : ""} ${
+                  d.disabled ? styles.dateDisabled : ""
+                }`}
+                onClick={() => {
+                  if (d.disabled) return;
+                  setSelectedDate(d.iso);
+                  setSendError(null);
+                }}
               >
                 <span className={styles.dateDay}>{d.day}</span>
                 <span className={styles.dateNum}>{d.num}</span>
               </button>
             ))}
           </div>
+          {!selectedDate ? (
+            <p className={styles.dateHint}>Select a delivery date to enable Send.</p>
+          ) : null}
         </section>
 
         <section className={styles.itemsSection}>

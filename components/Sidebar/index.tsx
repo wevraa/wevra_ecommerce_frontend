@@ -56,7 +56,9 @@ export default function Sidebar({ open, onClose }: SidebarProps) {
       >
         {/* Drawer header */}
         <div className={styles.drawerHeader}>
-          <span className={styles.logo}>WEVRAA</span>
+          <Link href="/" className={styles.logo} onClick={onClose}>
+            WEVRAA
+          </Link>
           <button
             type="button"
             className={styles.closeBtn}

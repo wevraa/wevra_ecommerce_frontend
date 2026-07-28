@@ -10,10 +10,6 @@ import {
   getTailorCategories,
   getTailorCategoriesTree,
 } from "@/lib/api";
-import {
-  userProfile,
-  selectedImages as defaultSelectedImages,
-} from "@/data/dummy";
 import styles from "./select-boutiques.module.scss";
 
 interface SelectBoutiquesPageProps {
@@ -45,12 +41,6 @@ export default async function SelectBoutiquesPage({
         ? rawProductId[0]
         : undefined;
 
-  const images = defaultSelectedImages.map((item) =>
-    item.id === "1" && selectedImageFromProduct
-      ? { ...item, image: selectedImageFromProduct }
-      : item
-  );
-
   return (
     <div className={styles.page}>
       <OrderParamsSync
@@ -59,10 +49,9 @@ export default async function SelectBoutiquesPage({
       />
       <SelectBoutiquesHeader />
       <main className={`main-with-bottom-nav ${styles.main}`}>
-        <ProfileBlock profile={userProfile} />
+        <ProfileBlock />
         <OrderTypeSelect categories={categories} tree={tree} />
         <SelectedImages
-          images={images}
           productId={productId}
           productImage={selectedImageFromProduct}
         />

@@ -391,6 +391,15 @@
     color: $color-white;
     box-shadow: 0 6px 16px rgba($color-deep-red, 0.35);
   }
+
+  &:disabled,
+  &.dateDisabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+    background: #f0f0f0;
+    color: #999;
+    box-shadow: none;
+  }
 }
 
 .dateDay {
@@ -406,6 +415,12 @@
 .dateNum {
   font-weight: $font-weight-bold;
   font-size: $font-size-base;
+}
+
+.dateHint {
+  margin: $space-sm 0 0;
+  font-size: $font-size-xs;
+  color: $color-deep-red;
 }
 
 .itemsSection {

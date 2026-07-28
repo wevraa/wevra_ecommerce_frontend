@@ -42,8 +42,7 @@ export default function MeasurementPageClient({
         setPresets(data);
         const preferred =
           data.find((p) => p.id === orderContext.selectedPresetId) ??
-          data.find((p) => p.label === orderContext.selectedSize) ??
-          data[0];
+          data.find((p) => p.label === orderContext.selectedSize);
         if (preferred) {
           setOrderContext({
             selectedSize: preferred.label,
@@ -88,7 +87,7 @@ export default function MeasurementPageClient({
       measurements: nextItems.map((m) => ({
         name: m.name,
         value: m.value,
-        unit: m.unit,
+        unit: m.unit || "INCHES",
       })),
       hasMeasurementSelected: true,
     });

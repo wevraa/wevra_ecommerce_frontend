@@ -8,6 +8,7 @@ import { resolveChatImageUrl } from "./upload";
 import { normalizeMessage } from "./normalize";
 import type {
   ChatAttachment,
+  ChatMeasurement,
   ChatMessage,
   CustomerOrderRequestInput,
   OrderRequestSocketPayload,
@@ -17,6 +18,40 @@ import { ChatApiError } from "./types";
 export { ChatUnauthorizedError };
 
 const PENDING_ORDER_PREFIX = "wevraa-pending-order-";
+
+/** Normalize measurement unit to what the chat/order API accepts. */
+export function normalizeMeasurementUnit(unit?: string | null): string {
+  const raw = (unit ?? "").trim().toUpperCase();
+  if (!raw || raw === "INCH" || raw === "IN" || raw === "INCHES" || raw === '"') {
+    return "INCHES";
+  }
+  if (raw === "CM" || raw === "CMS" || raw === "CENTIMETER" || raw === "CENTIMETRE") {
+    return "CM";
+  }
+  return raw;
+}
+
+/**
+ * Drop incomplete / zero / NaN rows so the socket API does not return
+ * "Invalid measurement". Returns undefined when nothing valid remains.
+ */
+export function sanitizeMeasurementsForApi(
+  list?: { name?: string; value?: number; unit?: string }[] | null
+): ChatMeasurement[] | undefined {
+  if (!list?.length) return undefined;
+  const cleaned: ChatMeasurement[] = [];
+  for (const item of list) {
+    const name = String(item?.name ?? "").trim();
+    const value = Number(item?.value);
+    if (!name || !Number.isFinite(value) || value <= 0) continue;
+    cleaned.push({
+      name,
+      value: Math.round(value * 100) / 100,
+      unit: normalizeMeasurementUnit(item?.unit),
+    });
+  }
+  return cleaned.length > 0 ? cleaned : undefined;
+}
 
 export function cachePendingOrder(conversationId: string, message: ChatMessage): void {
   if (typeof window === "undefined") return;
@@ -85,6 +120,10 @@ async function buildOrderPayload(
 
   const imageUrls = attachments.map((a) => a.url);
   const category = input.category.trim();
+  const measurements = sanitizeMeasurementsForApi(input.measurements);
+  const addons = input.addons?.length
+    ? input.addons.filter((a) => Boolean(a?.optionName?.trim()))
+    : undefined;
 
   return {
     conversationId,
@@ -93,8 +132,8 @@ async function buildOrderPayload(
     orderTypes: input.orderTypes?.length ? input.orderTypes : [category],
     attachments: attachments.length ? attachments : undefined,
     imageUrls: imageUrls.length ? imageUrls : undefined,
-    measurements: input.measurements?.length ? input.measurements : undefined,
-    addons: input.addons?.length ? input.addons : undefined,
+    measurements,
+    addons: addons?.length ? addons : undefined,
     requiredBy: input.requiredBy,
     description: input.description,
   };
@@ -140,7 +179,18 @@ export async function sendOrderRequestViaChat(
   chatSocket.joinConversation(conversationId);
 
   const payload = await buildOrderPayload(conversationId, input);
-  const ack = await chatSocket.sendOrderRequest(payload);
+  let ack = await chatSocket.sendOrderRequest(payload);
+
+  // Backend "Invalid measurement" — retry once without measurements so send still succeeds
+  const errMsg = (ack?.error?.message ?? "").toLowerCase();
+  if (
+    !ack?.ok &&
+    payload.measurements?.length &&
+    errMsg.includes("measurement")
+  ) {
+    const { measurements: _dropped, ...withoutMeasurements } = payload;
+    ack = await chatSocket.sendOrderRequest(withoutMeasurements);
+  }
 
   if (!ack?.ok) {
     throw new ChatApiError(

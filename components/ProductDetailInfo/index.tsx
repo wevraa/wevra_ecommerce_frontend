@@ -13,20 +13,28 @@ function formatPrice(price: number) {
   }).format(price);
 }
 
-const sizeSubset: SizeOption[] = sizes.filter((s) => ["xs", "s", "m", "l", "xl", "2xl"].includes(s.id));
+const sizeSubset: SizeOption[] = sizes.filter((s) =>
+  ["xs", "s", "m", "l", "xl", "2xl"].includes(s.id)
+);
 
 interface ProductDetailInfoProps {
   brand: string;
   price: number;
+  description?: string;
 }
 
-export default function ProductDetailInfo({ brand, price }: ProductDetailInfoProps) {
+export default function ProductDetailInfo({
+  brand,
+  price,
+  description,
+}: ProductDetailInfoProps) {
   const [selectedSize, setSelectedSize] = useState("s");
+  const desc = description?.trim();
 
   return (
     <div className={styles.section}>
       <h1 className={styles.brand}>{brand}</h1>
-      <p className={styles.descriptionLabel}>Description</p>
+      {desc ? <p className={styles.description}>{desc}</p> : null}
       <p className={styles.price}>{formatPrice(price)}</p>
       <p className={styles.sizeTitle}>Size</p>
       <div className={styles.sizeRow} role="group">
@@ -43,7 +51,8 @@ export default function ProductDetailInfo({ brand, price }: ProductDetailInfoPro
         ))}
       </div>
       <p className={styles.measurements}>
-        Bust : {sizeMeasurements.bust} Waist : {sizeMeasurements.waist} Hip : {sizeMeasurements.hip}
+        Bust : {sizeMeasurements.bust} Waist : {sizeMeasurements.waist} Hip :{" "}
+        {sizeMeasurements.hip}
       </p>
     </div>
   );

@@ -85,7 +85,9 @@ export default function Header({ showSearch = true, showPromo = true }: HeaderPr
                 <line x1="3" y1="18" x2="21" y2="18" />
               </svg>
             </button>
-            <span className={styles.logo}>WEVRAA</span>
+            <Link href="/" className={styles.logo}>
+              WEVRAA
+            </Link>
           </div>
 
           <div className={styles.actions}>

@@ -3,6 +3,7 @@
 import { useRouter } from "next/navigation";
 import type { AddonsNavParams } from "@/lib/addonsNavigation";
 import { getAddonsReturnHref } from "@/lib/addonsNavigation";
+import { navigateBack } from "@/lib/navigateBack";
 import styles from "./AddonsHeader.module.scss";
 
 export default function AddonsHeader({
@@ -14,15 +15,15 @@ export default function AddonsHeader({
   const router = useRouter();
 
   const handleBack = () => {
-    if (returnTo) {
-      router.push(getAddonsReturnHref({ returnTo, productId, productImage, boutiqueId }));
-      return;
-    }
-    if (typeof window !== "undefined" && window.history.length > 1) {
-      router.back();
-      return;
-    }
-    router.push(getAddonsReturnHref({ returnTo: "select-boutiques", productId, productImage }));
+    navigateBack(
+      router,
+      getAddonsReturnHref({
+        returnTo: returnTo ?? "select-boutiques",
+        productId,
+        productImage,
+        boutiqueId,
+      })
+    );
   };
 
   return (

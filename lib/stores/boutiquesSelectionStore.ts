@@ -77,3 +77,20 @@ export const useBoutiquesSelectionStore = create<BoutiquesSelectionState>()(
     { name: "boutiques-selection-store" }
   )
 );
+
+/** Wipe boutiques + order context in memory and persisted storage. */
+export function resetBoutiquesSelection() {
+  useBoutiquesSelectionStore.setState({
+    selectedBoutiques: [],
+    orderContext: {},
+  });
+  try {
+    useBoutiquesSelectionStore.persist?.clearStorage?.();
+  } catch {
+    /* ignore */
+  }
+  useBoutiquesSelectionStore.setState({
+    selectedBoutiques: [],
+    orderContext: {},
+  });
+}

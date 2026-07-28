@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import styles from "./SelectSleeveDesignHeader.module.scss";
 import { useBoutiqueOrderStore } from "@/lib/stores/boutiqueOrderStore";
+import { navigateBack } from "@/lib/navigateBack";
 
 interface SelectSleeveDesignHeaderProps {
   productId?: string;
@@ -39,11 +40,13 @@ export default function SelectSleeveDesignHeader({
     if (productId) backParams.set("productId", productId);
     if (returnImage) backParams.set("image", returnImage);
     if (slotId) backParams.set("slot", slotId);
-    if (returnTo === "addons") {
-      router.push("/addons");
-      return;
-    }
-    router.push(backParams.size > 0 ? `/select-boutiques?${backParams.toString()}` : "/select-boutiques");
+    const fallback =
+      returnTo === "addons"
+        ? "/addons"
+        : backParams.size > 0
+          ? `/select-boutiques?${backParams.toString()}`
+          : "/select-boutiques";
+    navigateBack(router, fallback);
   };
 
   return (

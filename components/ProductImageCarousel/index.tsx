@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import styles from "./ProductImageCarousel.module.scss";
 import measure from "../../app/assests/icons/measure.svg";
 import { getAccessToken } from "@/lib/auth";
+import { clearOrderFlowReset } from "@/lib/orderFlowReset";
 import {
   getWishlist,
   addToWishlist,
@@ -122,6 +123,7 @@ export default function ProductImageCarousel({ images, alt, productId }: Product
             const params = new URLSearchParams();
             if (productId) params.set("productId", productId);
             if (image) params.set("image", image);
+            clearOrderFlowReset();
             router.push(`/select-boutiques?${params.toString()}`);
           }
         }}
@@ -130,6 +132,7 @@ export default function ProductImageCarousel({ images, alt, productId }: Product
           const params = new URLSearchParams();
           if (productId) params.set("productId", productId);
           if (image) params.set("image", image);
+          clearOrderFlowReset();
           router.push(`/select-boutiques?${params.toString()}`);
         }}
       >

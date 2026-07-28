@@ -42,23 +42,27 @@
 .product_info{
   display: flex;
   justify-content: space-between;
-  align-items: center;
+  align-items: flex-start;
+  gap: $space-xs;
 }
 
 .body {
   padding: 0 16px;
+  min-width: 0;
+  flex: 1;
 }
 
 .shortDescription {
   font-size: $font-size-xs;
-  // color: $color-text-muted;
-  margin-bottom: $space-xs;
+  margin: 0 0 $space-xs;
   line-height: 1.3;
   display: -webkit-box;
   -webkit-box-orient: vertical;
   -webkit-line-clamp: 2;
+  line-clamp: 2;
   overflow: hidden;
   text-overflow: ellipsis;
+  word-break: break-word;
 }
 
 .brand {

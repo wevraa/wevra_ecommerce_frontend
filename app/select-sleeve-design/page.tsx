@@ -2,7 +2,6 @@
 
 import { Suspense } from "react";
 import { useSearchParams } from "next/navigation";
-import SelectSleeveDesignHeader from "@/components/SelectSleeveDesignHeader";
 import SelectSleeveDesignContent from "@/components/SelectSleeveDesignContent";
 import BottomNav from "@/components/BottomNav";
 
@@ -15,13 +14,7 @@ function SelectSleeveDesignInner() {
 
   return (
     <>
-      <SelectSleeveDesignHeader
-        productId={productId}
-        returnImage={returnImage}
-        slotId={slotId}
-        returnTo={returnTo}
-      />
-      <main className="main-with-bottom-nav">
+      <main>
         <SelectSleeveDesignContent
           productId={productId}
           returnImage={returnImage}

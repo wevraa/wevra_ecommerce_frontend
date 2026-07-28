@@ -1,6 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
+import { navigateBack } from "@/lib/navigateBack";
 import styles from "./SelectBoutiquesHeader.module.scss";
 
 function ChevronLeftIcon() {
@@ -20,7 +21,7 @@ export default function SelectBoutiquesHeader() {
         type="button"
         className={styles.backBtn}
         aria-label="Back"
-        onClick={() => router.back()}
+        onClick={() => navigateBack(router, "/")}
       >
         <ChevronLeftIcon />
       </button>

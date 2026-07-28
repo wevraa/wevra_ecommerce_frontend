@@ -14,6 +14,8 @@ interface BoutiqueOrderState {
   frontNeckDesignImage: string | null;
   setFrontNeckDesign: (imageUrl: string) => void;
   clearFrontNeckDesign: () => void;
+  /** Wipe all persisted order image / design selections. */
+  clearAllOrderImages: () => void;
 }
 
 export const useBoutiqueOrderStore = create<BoutiqueOrderState>()(
@@ -55,7 +57,32 @@ export const useBoutiqueOrderStore = create<BoutiqueOrderState>()(
       frontNeckDesignImage: null,
       setFrontNeckDesign: (imageUrl) => set({ frontNeckDesignImage: imageUrl }),
       clearFrontNeckDesign: () => set({ frontNeckDesignImage: null }),
+      clearAllOrderImages: () =>
+        set({
+          sleeveDesigns: {},
+          selectedImageByProductAndSlot: {},
+          frontNeckDesignImage: null,
+        }),
     }),
     { name: "boutique-order-store" }
   )
 );
+
+/** Wipe sleeve / slot / neck images in memory and persisted storage. */
+export function resetBoutiqueOrderImages() {
+  useBoutiqueOrderStore.setState({
+    sleeveDesigns: {},
+    selectedImageByProductAndSlot: {},
+    frontNeckDesignImage: null,
+  });
+  try {
+    useBoutiqueOrderStore.persist?.clearStorage?.();
+  } catch {
+    /* ignore */
+  }
+  useBoutiqueOrderStore.setState({
+    sleeveDesigns: {},
+    selectedImageByProductAndSlot: {},
+    frontNeckDesignImage: null,
+  });
+}

@@ -431,7 +431,7 @@ export function presetToMeasurementItems(
       id: m.id,
       name: m.name,
       value: Number(m.value) || 0,
-      unit: m.unit || "inches",
+      unit: m.unit || "INCHES",
       imageUrl: m.imageUrl ?? undefined,
     }));
 }
@@ -444,19 +444,104 @@ export interface ApiDesign {
   categoryId: string;
   subcategoryId: string;
   imageUrl: string;
+  imageUrls?: string[];
+  tags?: string[];
   createdAt: string;
   updatedAt: string;
   category: { id: string; name: string };
   subcategory: { id: string; name: string };
 }
 
+export interface ApiDesignsPage {
+  data: ApiDesign[];
+  total: number;
+  page: number;
+  limit: number;
+  totalPages: number;
+}
+
+export interface GetDesignsParams {
+  page?: number;
+  limit?: number;
+  /** Tag variants sent as repeated `tags` query params. */
+  tags?: string[];
+  search?: string;
+}
+
+export async function getDesignsPage(
+  params: GetDesignsParams = {}
+): Promise<ApiDesignsPage> {
+  const base = API_BASE || "https://api.wevraa.in/api";
+  const qs = new URLSearchParams();
+  qs.set("page", String(params.page ?? 1));
+  qs.set("limit", String(params.limit ?? 50));
+  if (params.search?.trim()) qs.set("search", params.search.trim());
+  for (const tag of params.tags ?? []) {
+    qs.append("tags", tag);
+  }
+  try {
+    const res = await fetch(`${base}/v1/designs?${qs.toString()}`, {
+      next: { revalidate: 0 },
+      cache: "no-store",
+    });
+    if (!res.ok) {
+      return { data: [], total: 0, page: 1, limit: 50, totalPages: 0 };
+    }
+    const json = await res.json();
+    if (Array.isArray(json)) {
+      return {
+        data: json as ApiDesign[],
+        total: json.length,
+        page: 1,
+        limit: json.length,
+        totalPages: 1,
+      };
+    }
+    const data = Array.isArray(json?.data) ? (json.data as ApiDesign[]) : [];
+    return {
+      data,
+      total: Number(json?.total) || data.length,
+      page: Number(json?.page) || 1,
+      limit: Number(json?.limit) || 50,
+      totalPages: Number(json?.totalPages) || 1,
+    };
+  } catch {
+    return { data: [], total: 0, page: 1, limit: 50, totalPages: 0 };
+  }
+}
+
+/** @deprecated Prefer getDesignsPage for pagination. */
 export async function getDesigns(): Promise<ApiDesign[]> {
+  const page = await getDesignsPage({ page: 1, limit: 50 });
+  return page.data;
+}
+
+// Reference images (Hangings / Drawing for add-ons)
+export type ReferenceImageType = "HANGING" | "DRAWING";
+
+export interface ApiReferenceImage {
+  id: string;
+  type: ReferenceImageType | string;
+  imageUrl: string;
+  label: string | null;
+  sortOrder: number;
+  createdAt?: string;
+  updatedAt?: string;
+}
+
+export async function getReferenceImages(
+  type: ReferenceImageType
+): Promise<ApiReferenceImage[]> {
   const base = API_BASE || "https://api.wevraa.in/api";
   try {
-    const res = await fetch(`${base}/v1/designs`, { next: { revalidate: 60 } });
+    const res = await fetch(
+      `${base}/v1/reference-images?type=${encodeURIComponent(type)}`,
+      { next: { revalidate: 60 } }
+    );
     if (!res.ok) return [];
     const data = await res.json();
-    return Array.isArray(data) ? (data as ApiDesign[]) : [];
+    const list = Array.isArray(data) ? (data as ApiReferenceImage[]) : [];
+    return list.sort((a, b) => a.sortOrder - b.sortOrder);
   } catch {
     return [];
   }

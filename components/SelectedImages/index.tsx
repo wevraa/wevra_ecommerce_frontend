@@ -3,13 +3,19 @@
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { useMemo, useState } from "react";
-import type { SelectedImage } from "@/data/dummy";
 import { useBoutiqueOrderStore } from "@/lib/stores/boutiqueOrderStore";
 import { useBoutiquesSelectionStore } from "@/lib/stores/boutiquesSelectionStore";
 import styles from "./SelectedImages.module.scss";
 
+/** Slot labels only — images come from product URL / store selections. */
+const STYLE_SLOTS = [
+  { id: "1", label: "Fabric" },
+  { id: "2", label: "Front Neck Design" },
+  { id: "3", label: "Back Design" },
+  { id: "4", label: "Sleeves Design" },
+] as const;
+
 interface SelectedImagesProps {
-  images: SelectedImage[];
   productId?: string;
   productImage?: string;
 }
@@ -22,7 +28,7 @@ function AddCircleIcon() {
   );
 }
 
-export default function SelectedImages({ images, productId, productImage }: SelectedImagesProps) {
+export default function SelectedImages({ productId, productImage }: SelectedImagesProps) {
   const router = useRouter();
   const [expanded, setExpanded] = useState(false);
   const frontNeckDesignImage = useBoutiqueOrderStore((s) => s.frontNeckDesignImage);
@@ -42,27 +48,27 @@ export default function SelectedImages({ images, productId, productImage }: Sele
   const displayImages = useMemo(() => {
     const key = resolvedProductId ?? "global";
     const slotMap = selectedImageByProductAndSlot[key] ?? {};
-    return images.map((item, index) => {
+
+    return STYLE_SLOTS.map((item) => {
       const override = slotMap[item.id];
+      const isFabric = item.id === "1";
       const isFrontNeck = item.label.toLowerCase().includes("front neck");
 
       if (override) {
-        return { ...item, image: override, filled: true };
+        return { ...item, image: override, filled: true as const };
       }
-      if (item.id === "1" && resolvedProductImage) {
-        return { ...item, image: resolvedProductImage, filled: true };
+
+      if (isFabric && resolvedProductImage) {
+        return { ...item, image: resolvedProductImage, filled: true as const };
       }
+
       if (isFrontNeck && effectiveDesign) {
-        return { ...item, image: effectiveDesign, filled: true };
+        return { ...item, image: effectiveDesign, filled: true as const };
       }
-      // First two slots use default images; extra slots stay empty until chosen
-      if (index < 2) {
-        return { ...item, filled: true };
-      }
-      return { ...item, filled: false };
+
+      return { ...item, image: "", filled: false as const };
     });
   }, [
-    images,
     effectiveDesign,
     resolvedProductId,
     resolvedProductImage,
@@ -83,7 +89,7 @@ export default function SelectedImages({ images, productId, productImage }: Sele
   };
 
   const renderCard = (item: (typeof displayImages)[0]) => {
-    if (!item.filled) {
+    if (!item.filled || !item.image) {
       return (
         <button
           key={item.id}

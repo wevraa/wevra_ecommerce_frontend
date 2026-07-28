@@ -100,7 +100,11 @@ export default function ProductDetailClient({ id }: ProductDetailClientProps) {
         alt={product.title}
         productId={product.id}
       />
-      <ProductDetailInfo brand={product.title} price={priceNumber} />
+      <ProductDetailInfo
+        brand={product.title}
+        price={priceNumber}
+        description={product.productDescription ?? undefined}
+      />
       <ProductDetailActions onAddToBag={handleAddToBag} />
       <ProductTabs
         details={product.productDetails ?? ""}
