@@ -459,6 +459,17 @@
   margin-bottom: $space-md;
 }
 
+.noQuoteItems {
+  margin: 0;
+  padding: $space-md;
+  text-align: center;
+  font-size: $font-size-sm;
+  color: $color-text-muted;
+  background: $color-white;
+  border-radius: 12px;
+  border: 1px dashed #e5e5e5;
+}
+
 .itemCard {
   display: flex;
   gap: $space-md;
@@ -484,10 +495,91 @@
 }
 
 .itemTitle {
-  margin: 0 0 $space-sm;
+  margin: 0;
   font-size: $font-size-sm;
   font-weight: $font-weight-bold;
   color: $color-text;
+  min-width: 0;
+  flex: 1;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+  overflow: hidden;
+  word-break: break-word;
+}
+
+.itemTitleRow {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 6px;
+}
+
+.itemActions {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-shrink: 0;
+}
+
+.itemActionBtn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  padding: 0;
+  border: 1px solid #e5e5e5;
+  border-radius: 8px;
+  background: #fff;
+  color: #85072e;
+  cursor: pointer;
+
+  &:hover {
+    background: #fcf9f8;
+  }
+}
+
+.itemDeleteBtn {
+  color: #b42318;
+  border-color: #f0c7c2;
+}
+
+.styleRow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: $space-sm;
+}
+
+.styleThumbs {
+  display: flex;
+  align-items: center;
+}
+
+.styleThumb {
+  position: relative;
+  width: 28px;
+  height: 28px;
+  border-radius: 6px;
+  overflow: hidden;
+  border: 1.5px solid #fff;
+  background: #eee;
+  margin-left: -6px;
+  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.06);
+
+  &:first-child {
+    margin-left: 0;
+  }
+}
+
+.styleCount {
+  margin: 0;
+  font-size: 12px;
+  color: $color-text-muted;
+  font-weight: $font-weight-medium;
 }
 
 .statusRow {

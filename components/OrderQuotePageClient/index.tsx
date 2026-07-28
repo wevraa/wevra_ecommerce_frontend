@@ -21,15 +21,18 @@ import {
   useBoutiquesSelectionStore,
   MAX_BOUTIQUE_SELECTION,
   resetBoutiquesSelection,
+  markAddingQuoteItem,
+  markEditingQuoteItem,
   type OrderAddon,
   type OrderContext,
+  type QuoteLineItem,
 } from "@/lib/stores/boutiquesSelectionStore";
 import {
   resetBoutiqueOrderImages,
   useBoutiqueOrderStore,
 } from "@/lib/stores/boutiqueOrderStore";
 import { buildAddonsHref } from "@/lib/addonsNavigation";
-import { markOrderFlowReset } from "@/lib/orderFlowReset";
+import { markOrderFlowReset, clearOrderFlowReset } from "@/lib/orderFlowReset";
 import { navigateBack } from "@/lib/navigateBack";
 import type { ApiTailor } from "@/lib/api";
 import styles from "./OrderQuotePageClient.module.scss";
@@ -191,10 +194,18 @@ export default function OrderQuotePageClient({
     orderContext,
     setOrderContext,
     toggleBoutique,
+    quoteItems: storedQuoteItems,
+    quoteItemsReady,
+    removeQuoteItem,
   } = useBoutiquesSelectionStore();
   const selectedImageByProductAndSlot = useBoutiqueOrderStore(
     (s) => s.selectedImageByProductAndSlot
   );
+  const sleeveDesigns = useBoutiqueOrderStore((s) => s.sleeveDesigns);
+  const frontNeckDesignImage = useBoutiqueOrderStore((s) => s.frontNeckDesignImage);
+  const setSelectedImageForSlot = useBoutiqueOrderStore((s) => s.setSelectedImageForSlot);
+  const setFrontNeckDesign = useBoutiqueOrderStore((s) => s.setFrontNeckDesign);
+  const setSleeveDesign = useBoutiqueOrderStore((s) => s.setSleeveDesign);
 
   const [productTitle, setProductTitle] = useState("Machine Embroidery Blouse");
 
@@ -255,31 +266,125 @@ export default function OrderQuotePageClient({
     productImage: orderContext.productImage,
   });
 
-  const quoteItems = useMemo(() => {
-    const items: { id: string; title: string; image: string }[] = [];
-    if (orderContext.productImage) {
-      items.push({
-        id: "fabric",
-        title: productTitle,
-        image: orderContext.productImage,
-      });
+  const quoteItems = useMemo((): QuoteLineItem[] => {
+    // After Next / edit / delete, store is source of truth (even if empty)
+    if (quoteItemsReady) return storedQuoteItems;
+
+    // Fallback when navigating before commit
+    const key = orderContext.productId ?? "global";
+    const slotMap = selectedImageByProductAndSlot[key] ?? {};
+    const sleeveFallback =
+      (orderContext.productId
+        ? sleeveDesigns[orderContext.productId]
+        : undefined) ??
+      frontNeckDesignImage ??
+      orderContext.sleeveDesignImage ??
+      undefined;
+
+    const filledStyles: { id: string; label: string; image: string }[] = [];
+    const fabricImg = slotMap["1"] || orderContext.productImage;
+    if (fabricImg) {
+      filledStyles.push({ id: "1", label: "Fabric", image: fabricImg });
     }
-    if (orderContext.sleeveDesignImage) {
-      items.push({
-        id: "sleeve",
-        title: productTitle,
-        image: orderContext.sleeveDesignImage,
-      });
+    const frontImg = slotMap["2"] || sleeveFallback;
+    if (frontImg) {
+      filledStyles.push({ id: "2", label: "Front Neck Design", image: frontImg });
     }
-    if (items.length === 0) {
-      items.push({
-        id: "default",
-        title: productTitle,
-        image: "/images/product-5.svg",
-      });
+    if (slotMap["3"]) {
+      filledStyles.push({ id: "3", label: "Back Design", image: slotMap["3"] });
     }
-    return items;
-  }, [orderContext.productImage, orderContext.sleeveDesignImage, productTitle]);
+    if (slotMap["4"]) {
+      filledStyles.push({ id: "4", label: "Sleeves Design", image: slotMap["4"] });
+    }
+
+    if (filledStyles.length === 0 && !orderContext.productId) return [];
+
+    return [
+      {
+        id: "custom-order",
+        title: productTitle,
+        image: filledStyles[0]?.image ?? "/images/placeholder-rect.svg",
+        styleCount: filledStyles.length,
+        styleImages: filledStyles.map((s) => s.image),
+        styleLabels: filledStyles.map((s) => s.label),
+        productId: orderContext.productId,
+        productImage: orderContext.productImage,
+        sleeveDesignImage: orderContext.sleeveDesignImage,
+        category: orderContext.category,
+        orderTypes: orderContext.orderTypes,
+        measurements: orderContext.measurements,
+        addons: orderContext.addons,
+        hasMeasurementSelected: orderContext.hasMeasurementSelected,
+        hasAddonsSelected: orderContext.hasAddonsSelected,
+      },
+    ];
+  }, [
+    quoteItemsReady,
+    storedQuoteItems,
+    orderContext,
+    productTitle,
+    selectedImageByProductAndSlot,
+    sleeveDesigns,
+    frontNeckDesignImage,
+  ]);
+
+  const handleAddMoreItems = () => {
+    markAddingQuoteItem();
+    clearOrderFlowReset();
+    router.push("/");
+  };
+
+  const handleDeleteQuoteItem = (id: string) => {
+    removeQuoteItem(id);
+  };
+
+  const handleEditQuoteItem = (item: QuoteLineItem) => {
+    markEditingQuoteItem(item.id);
+    clearOrderFlowReset();
+
+    setOrderContext({
+      productId: item.productId,
+      productImage: item.productImage ?? item.image,
+      sleeveDesignImage: item.sleeveDesignImage,
+      category: item.category,
+      tailorCategoryId: item.tailorCategoryId,
+      orderTypeId: item.orderTypeId,
+      orderTypes: item.orderTypes,
+      selectedSize: item.selectedSize,
+      selectedPresetId: item.selectedPresetId,
+      measurements: item.measurements,
+      addons: item.addons,
+      hasMeasurementSelected: item.hasMeasurementSelected,
+      hasAddonsSelected: item.hasAddonsSelected,
+    });
+
+    const key = item.productId ?? "global";
+    const labelToSlot: Record<string, string> = {
+      Fabric: "1",
+      "Front Neck Design": "2",
+      "Back Design": "3",
+      "Sleeves Design": "4",
+    };
+    item.styleLabels.forEach((label, i) => {
+      const slotId = labelToSlot[label];
+      const url = item.styleImages[i];
+      if (slotId && url) setSelectedImageForSlot(key, slotId, url);
+    });
+    if (item.productImage) setSelectedImageForSlot(key, "1", item.productImage);
+    if (item.sleeveDesignImage) {
+      setFrontNeckDesign(item.sleeveDesignImage);
+      if (item.productId) setSleeveDesign(item.productId, item.sleeveDesignImage);
+    }
+
+    const params = new URLSearchParams();
+    if (item.productId) params.set("productId", item.productId);
+    if (item.productImage || item.image) {
+      params.set("image", item.productImage || item.image);
+    }
+    router.push(
+      params.size > 0 ? `/select-boutiques?${params.toString()}` : "/select-boutiques"
+    );
+  };
 
   /** All boutiques from backend, selected first. */
   const boutiqueCards = useMemo(() => {
@@ -357,6 +462,10 @@ export default function OrderQuotePageClient({
   };
 
   const handleSend = async () => {
+    if (quoteItems.length === 0) {
+      setSendError("Add at least one item for quote before sending.");
+      return;
+    }
     if (selectedBoutiques.length === 0) {
       setSendError("Select at least one boutique before sending.");
       scrollToBoutiques();
@@ -382,22 +491,38 @@ export default function OrderQuotePageClient({
       for (const boutique of selectedBoutiques) {
         const conversation = await startChatWithTailor(boutique.id);
 
-        const orderInput: CustomerOrderRequestInput = {
-          category: orderContext.category ?? productTitle,
-          orderTypes: orderContext.orderTypes?.length
-            ? orderContext.orderTypes
-            : [productTitle],
-          productImage: orderContext.productImage,
-          sleeveDesignImage: orderContext.sleeveDesignImage,
-          // Always send every selected measurement / addon value from select-boutiques
-          measurements: measurementsPayload,
-          addons: addonsPayload,
-          requiredBy: localDateToRequiredByIso(selectedDate),
-          description: `Order quote for ${boutique.name}`,
-        };
+        for (const item of quoteItems) {
+          const orderInput: CustomerOrderRequestInput = {
+            category: item.category ?? orderContext.category ?? productTitle,
+            orderTypes: item.orderTypes?.length
+              ? item.orderTypes
+              : orderContext.orderTypes?.length
+                ? orderContext.orderTypes
+                : [item.title || productTitle],
+            productImage: item.productImage ?? item.image,
+            sleeveDesignImage:
+              item.sleeveDesignImage ?? item.styleImages[1] ?? orderContext.sleeveDesignImage,
+            measurements:
+              item.hasMeasurementSelected === false
+                ? []
+                : item.measurements?.length
+                  ? item.measurements
+                  : measurementsPayload,
+            addons:
+              item.hasAddonsSelected === false
+                ? []
+                : item.addons?.length
+                  ? item.addons
+                  : addonsPayload,
+            requiredBy: localDateToRequiredByIso(selectedDate),
+            description: `Order quote for ${boutique.name}${
+              quoteItems.length > 1 ? ` — ${item.title}` : ""
+            }`,
+          };
 
-        prepareAndCachePendingOrder(conversation.id, orderInput, getAuthUserId());
-        await sendOrderRequestViaChat(conversation.id, orderInput);
+          prepareAndCachePendingOrder(conversation.id, orderInput, getAuthUserId());
+          await sendOrderRequestViaChat(conversation.id, orderInput);
+        }
 
         if (!firstConversationId) firstConversationId = conversation.id;
       }
@@ -660,6 +785,9 @@ export default function OrderQuotePageClient({
           </div>
 
           <div className={styles.itemList}>
+            {quoteItems.length === 0 ? (
+              <p className={styles.noQuoteItems}>No items for quote. Add an item to continue.</p>
+            ) : null}
             {quoteItems.map((item) => (
               <article key={item.id} className={styles.itemCard}>
                 <div className={styles.itemThumb}>
@@ -672,16 +800,90 @@ export default function OrderQuotePageClient({
                   />
                 </div>
                 <div className={styles.itemBody}>
-                  <h3 className={styles.itemTitle}>{item.title}</h3>
+                  <div className={styles.itemTitleRow}>
+                    <h3 className={styles.itemTitle}>{item.title}</h3>
+                    <div className={styles.itemActions}>
+                      <button
+                        type="button"
+                        className={styles.itemActionBtn}
+                        onClick={() => handleEditQuoteItem(item)}
+                        aria-label={`Edit ${item.title}`}
+                      >
+                        <svg
+                          width="16"
+                          height="16"
+                          viewBox="0 0 24 24"
+                          fill="none"
+                          stroke="currentColor"
+                          strokeWidth="2"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          aria-hidden
+                        >
+                          <path d="M12 20h9" />
+                          <path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z" />
+                        </svg>
+                      </button>
+                      <button
+                        type="button"
+                        className={`${styles.itemActionBtn} ${styles.itemDeleteBtn}`}
+                        onClick={() => handleDeleteQuoteItem(item.id)}
+                        aria-label={`Delete ${item.title}`}
+                      >
+                        <svg
+                          width="16"
+                          height="16"
+                          viewBox="0 0 24 24"
+                          fill="none"
+                          stroke="currentColor"
+                          strokeWidth="2"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          aria-hidden
+                        >
+                          <path d="M3 6h18" />
+                          <path d="M8 6V4h8v2" />
+                          <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6" />
+                          <path d="M10 11v6" />
+                          <path d="M14 11v6" />
+                        </svg>
+                      </button>
+                    </div>
+                  </div>
+                  {item.styleCount > 0 ? (
+                    <div className={styles.styleRow}>
+                      <div className={styles.styleThumbs} aria-hidden>
+                        {item.styleImages.slice(0, 4).map((src, i) => (
+                          <span key={`${item.id}-style-${i}`} className={styles.styleThumb}>
+                            <Image
+                              src={src}
+                              alt=""
+                              fill
+                              sizes="28px"
+                              style={{ objectFit: "cover" }}
+                            />
+                          </span>
+                        ))}
+                      </div>
+                      <p className={styles.styleCount}>
+                        {item.styleCount} style{item.styleCount === 1 ? "" : "s"} selected
+                      </p>
+                    </div>
+                  ) : (
+                    <p className={styles.styleCount}>No styles selected yet</p>
+                  )}
                   <Link
                     href={addonsHref}
                     className={`${styles.statusRow} ${
-                      hasAddonsSelected ? styles.statusOk : styles.statusMuted
+                      item.hasAddonsSelected || (quoteItems.length === 1 && hasAddonsSelected)
+                        ? styles.statusOk
+                        : styles.statusMuted
                     }`}
                   >
                     <span className={styles.statusLeft}>
                       <span className={styles.statusIcon} aria-hidden>
-                        {hasAddonsSelected ? (
+                        {item.hasAddonsSelected ||
+                        (quoteItems.length === 1 && hasAddonsSelected) ? (
                           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
                             <polyline points="20 6 9 17 4 12" />
                           </svg>
@@ -693,23 +895,32 @@ export default function OrderQuotePageClient({
                           </svg>
                         )}
                       </span>
-                      {hasAddonsSelected ? "Add-ons selected" : "No Add-ons selected"}
+                      {item.hasAddonsSelected ||
+                      (quoteItems.length === 1 && hasAddonsSelected)
+                        ? "Add-ons selected"
+                        : "No Add-ons selected"}
                     </span>
                     <span aria-hidden>›</span>
                   </Link>
                   <Link
                     href={
-                      orderContext.orderTypeId
-                        ? `/measurement?subcategoryId=${encodeURIComponent(orderContext.orderTypeId)}`
+                      item.orderTypeId || orderContext.orderTypeId
+                        ? `/measurement?subcategoryId=${encodeURIComponent(
+                            item.orderTypeId || orderContext.orderTypeId || ""
+                          )}`
                         : "/measurement"
                     }
                     className={`${styles.statusRow} ${
-                      hasMeasurementSelected ? styles.statusOk : styles.statusMuted
+                      item.hasMeasurementSelected ||
+                      (quoteItems.length === 1 && hasMeasurementSelected)
+                        ? styles.statusOk
+                        : styles.statusMuted
                     }`}
                   >
                     <span className={styles.statusLeft}>
                       <span className={styles.statusIcon} aria-hidden>
-                        {hasMeasurementSelected ? (
+                        {item.hasMeasurementSelected ||
+                        (quoteItems.length === 1 && hasMeasurementSelected) ? (
                           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
                             <polyline points="20 6 9 17 4 12" />
                           </svg>
@@ -721,7 +932,8 @@ export default function OrderQuotePageClient({
                           </svg>
                         )}
                       </span>
-                      {hasMeasurementSelected
+                      {item.hasMeasurementSelected ||
+                      (quoteItems.length === 1 && hasMeasurementSelected)
                         ? "Measurement Added"
                         : "No measurement selected"}
                     </span>
@@ -735,7 +947,7 @@ export default function OrderQuotePageClient({
           <button
             type="button"
             className={styles.addMoreBtn}
-            onClick={() => router.push(addonsHref)}
+            onClick={handleAddMoreItems}
           >
             <span className={styles.addMorePlus} aria-hidden>
               +
@@ -842,7 +1054,12 @@ export default function OrderQuotePageClient({
             type="button"
             className={styles.sendBtn}
             onClick={handleSend}
-            disabled={!selectedDate || selectedCount === 0 || sending}
+            disabled={
+              !selectedDate ||
+              selectedCount === 0 ||
+              quoteItems.length === 0 ||
+              sending
+            }
           >
             {sending ? "Sending…" : "Send"}
           </button>
