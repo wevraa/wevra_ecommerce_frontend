@@ -2,6 +2,9 @@
 @use "../../styles/mixins" as *;
 
 $measure-blue: #1a3560;
+$measure-blue-soft: #eef2f8;
+$measure-blue-mid: rgba(26, 53, 96, 0.45);
+$measure-tick-faint: #c5cede;
 
 .wrap {
   display: flex;
@@ -12,54 +15,134 @@ $measure-blue: #1a3560;
 .list {
   display: flex;
   flex-direction: column;
-  gap: $space-sm;
+  gap: 10px;
+  padding-bottom: $space-lg;
 }
 
 .card {
-  border-radius: 10px;
-  overflow: hidden;
+  border-radius: 16px;
   background: $color-white;
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1), 0 0 1px rgba(0, 0, 0, 0.08);
+  box-shadow: 0 2px 10px rgba(26, 53, 96, 0.08), 0 0 1px rgba(26, 53, 96, 0.1);
+  border: 1.5px solid transparent;
+  overflow: hidden;
+  transition: border-color 0.2s ease, background 0.2s ease, box-shadow 0.2s ease;
 }
 
-/* ── Blue label bar ─────────────────────────────────── */
-.bar {
+.cardExpanded {
+  background: $measure-blue-soft;
+  border-color: $measure-blue;
+  box-shadow: 0 4px 16px rgba(26, 53, 96, 0.12);
+}
+
+.cardHeader {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 7px 12px;
-  background: $measure-blue;
-  color: $color-white;
-  font-size: $font-size-sm;
-  font-weight: $font-weight-semibold;
-  line-height: 1.2;
+  gap: 12px;
+  width: 100%;
+  margin: 0;
+  padding: 14px 16px;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  font-family: inherit;
+  text-align: left;
+}
+
+.cardExpanded .cardHeader {
+  padding-bottom: 8px;
 }
 
 .barName {
+  font-size: $font-size-base;
+  font-weight: $font-weight-bold;
+  color: $color-text;
   text-transform: capitalize;
   letter-spacing: 0.01em;
 }
 
-.barValue {
-  font-variant-numeric: tabular-nums;
-  letter-spacing: 0.02em;
+.cardExpanded .barName {
+  color: $measure-blue;
 }
 
-/* ── Ruler strip (navy bg + white ticks) ────────────── */
-.ruler {
+.valueDisplay {
+  display: inline-flex;
+  align-items: flex-start;
+  gap: 2px;
+  font-variant-numeric: tabular-nums;
+  line-height: 1;
+}
+
+.valueWhole {
+  font-size: 22px;
+  font-weight: $font-weight-bold;
+  color: $color-text;
+}
+
+.valueFrac {
+  margin-top: 1px;
+  font-size: 13px;
+  font-weight: $font-weight-bold;
+  color: $measure-blue;
+}
+
+.cardBody {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 0 14px 16px;
+}
+
+/* ── Pill ruler ─────────────────────────────────────── */
+.rulerShell {
+  position: relative;
+  height: 64px;
+  border-radius: 999px;
+  background: $color-white;
+  box-shadow: inset 0 0 0 1px rgba(26, 53, 96, 0.08);
+  overflow: hidden;
+}
+
+.rulerCenter {
+  position: absolute;
+  top: 10px;
+  bottom: 18px;
+  left: 50%;
+  z-index: 2;
+  width: 3px;
+  margin-left: -1.5px;
+  border-radius: 2px;
   background: $measure-blue;
-  padding: 8px 0 10px;
-  overflow-x: scroll;
+  pointer-events: none;
+  box-shadow: 0 0 0 3px rgba(26, 53, 96, 0.12);
+}
+
+.ruler {
+  height: 100%;
+  overflow-x: auto;
   overflow-y: hidden;
   cursor: grab;
   user-select: none;
   -webkit-overflow-scrolling: touch;
   touch-action: pan-x;
-  scroll-behavior: smooth;
   overscroll-behavior-x: contain;
-
+  scroll-snap-type: x mandatory;
   scrollbar-width: none;
   -ms-overflow-style: none;
+  mask-image: linear-gradient(
+    90deg,
+    transparent 0%,
+    #000 12%,
+    #000 88%,
+    transparent 100%
+  );
+  -webkit-mask-image: linear-gradient(
+    90deg,
+    transparent 0%,
+    #000 12%,
+    #000 88%,
+    transparent 100%
+  );
 
   &::-webkit-scrollbar {
     display: none;
@@ -73,66 +156,101 @@ $measure-blue: #1a3560;
 .rulerTrack {
   display: flex;
   align-items: flex-end;
-  min-width: min-content;
+  height: 100%;
   width: max-content;
-  height: 28px;
-  padding: 0 8px;
+  min-width: 100%;
+  padding: 0 calc(50% - 14px);
+  box-sizing: content-box;
 }
 
-.rulerLine {
+.tickCell {
+  position: relative;
+  flex-shrink: 0;
   display: flex;
-  align-items: flex-end;
-  gap: 3px;
-  height: 28px;
-  flex-shrink: 0;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-end;
+  height: 100%;
+  padding-bottom: 16px;
+  scroll-snap-align: center;
+  scroll-snap-stop: always;
+  box-sizing: border-box;
 }
 
-/* minor tick */
 .tick {
-  width: 1.5px;
-  height: 10px;
-  background: rgba(255, 255, 255, 0.35);
+  display: block;
+  width: 2px;
   border-radius: 1px;
-  flex-shrink: 0;
+  background: $measure-tick-faint;
 }
 
-/* major tick (every 5th) */
+.tickMinor {
+  height: 14px;
+}
+
 .tickMajor {
-  height: 20px;
-  background: rgba(255, 255, 255, 0.9);
-  width: 2px;
+  height: 26px;
+  width: 2.5px;
+  background: $measure-blue-mid;
+}
+
+.tickLabel {
+  position: absolute;
+  bottom: 2px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 9px;
+  font-weight: $font-weight-semibold;
+  color: $measure-blue-mid;
+  line-height: 1;
+  pointer-events: none;
+}
+
+/* ── Fraction buttons ───────────────────────────────── */
+.fracRow {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+}
+
+.fracBtn {
+  height: 44px;
+  border-radius: 12px;
+  border: 1.5px solid #dde3ec;
+  background: $color-white;
+  color: $color-text;
+  font-size: 18px;
+  font-weight: $font-weight-bold;
+  font-family: inherit;
+  cursor: pointer;
+  transition: border-color 0.15s ease, color 0.15s ease, background 0.15s ease;
+
+  &:active {
+    transform: scale(0.98);
+  }
+}
+
+.fracBtnActive {
+  border-color: $measure-blue;
+  color: $measure-blue;
+  background: rgba(26, 53, 96, 0.06);
+  box-shadow: 0 0 0 1px rgba(26, 53, 96, 0.08);
 }
 
 @include mobile-first($desktop) {
   .list {
-    gap: $space-md;
+    gap: 12px;
   }
 
-  .bar {
-    padding: 8px 16px;
-    font-size: $font-size-base;
+  .cardHeader {
+    padding: 16px 18px;
   }
 
-  .ruler {
-    padding: 10px 0 12px;
+  .valueWhole {
+    font-size: 24px;
   }
 
-  .rulerTrack {
-    height: 36px;
-  }
-
-  .rulerLine {
-    height: 36px;
-    gap: 4px;
-  }
-
-  .tick {
-    height: 13px;
-    width: 2px;
-  }
-
-  .tickMajor {
-    height: 26px;
-    width: 2.5px;
+  .rulerShell {
+    height: 72px;
   }
 }

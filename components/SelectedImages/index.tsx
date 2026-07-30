@@ -2,7 +2,8 @@
 
 import Image from "next/image";
 import { useRouter } from "next/navigation";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
+import BottomSheet from "@/components/BottomSheet";
 import { useBoutiqueOrderStore } from "@/lib/stores/boutiqueOrderStore";
 import { useBoutiquesSelectionStore } from "@/lib/stores/boutiquesSelectionStore";
 import styles from "./SelectedImages.module.scss";
@@ -14,6 +15,8 @@ const STYLE_SLOTS = [
   { id: "3", label: "Back Design" },
   { id: "4", label: "Sleeves Design" },
 ] as const;
+
+const FABRIC_SLOT_ID = "1";
 
 interface SelectedImagesProps {
   productId?: string;
@@ -31,31 +34,61 @@ function AddCircleIcon() {
 export default function SelectedImages({ productId, productImage }: SelectedImagesProps) {
   const router = useRouter();
   const [expanded, setExpanded] = useState(false);
+  const [fabricUploadOpen, setFabricUploadOpen] = useState(false);
+  /** Suppress product/design fallbacks after the user clears a slot. */
+  const [suppressedSlots, setSuppressedSlots] = useState<Set<string>>(() => new Set());
+  const galleryRef = useRef<HTMLInputElement>(null);
+  const cameraRef = useRef<HTMLInputElement>(null);
   const frontNeckDesignImage = useBoutiqueOrderStore((s) => s.frontNeckDesignImage);
   const sleeveDesigns = useBoutiqueOrderStore((s) => s.sleeveDesigns);
   const selectedImageByProductAndSlot = useBoutiqueOrderStore(
     (s) => s.selectedImageByProductAndSlot
   );
+  const setSelectedImageForSlot = useBoutiqueOrderStore((s) => s.setSelectedImageForSlot);
+  const clearSelectedImageForSlot = useBoutiqueOrderStore((s) => s.clearSelectedImageForSlot);
+  const clearSleeveDesign = useBoutiqueOrderStore((s) => s.clearSleeveDesign);
+  const clearFrontNeckDesign = useBoutiqueOrderStore((s) => s.clearFrontNeckDesign);
   const orderContext = useBoutiquesSelectionStore((s) => s.orderContext);
+  const setOrderContext = useBoutiquesSelectionStore((s) => s.setOrderContext);
 
   const resolvedProductId = productId ?? orderContext.productId;
   const resolvedProductImage = productImage ?? orderContext.productImage;
+  const storeKey = resolvedProductId ?? "global";
 
   const effectiveDesign = resolvedProductId
     ? (sleeveDesigns[resolvedProductId] ?? frontNeckDesignImage)
     : frontNeckDesignImage;
 
+  // If a new image is chosen for a cleared slot, allow it again
+  useEffect(() => {
+    const slotMap = selectedImageByProductAndSlot[storeKey] ?? {};
+    setSuppressedSlots((prev) => {
+      let changed = false;
+      const next = new Set(prev);
+      for (const id of prev) {
+        if (slotMap[id]) {
+          next.delete(id);
+          changed = true;
+        }
+      }
+      return changed ? next : prev;
+    });
+  }, [storeKey, selectedImageByProductAndSlot]);
+
   const displayImages = useMemo(() => {
-    const key = resolvedProductId ?? "global";
-    const slotMap = selectedImageByProductAndSlot[key] ?? {};
+    const slotMap = selectedImageByProductAndSlot[storeKey] ?? {};
 
     return STYLE_SLOTS.map((item) => {
       const override = slotMap[item.id];
-      const isFabric = item.id === "1";
+      const isFabric = item.id === FABRIC_SLOT_ID;
       const isFrontNeck = item.label.toLowerCase().includes("front neck");
 
       if (override) {
         return { ...item, image: override, filled: true as const };
+      }
+
+      if (suppressedSlots.has(item.id)) {
+        return { ...item, image: "", filled: false as const };
       }
 
       if (isFabric && resolvedProductImage) {
@@ -70,9 +103,10 @@ export default function SelectedImages({ productId, productImage }: SelectedImag
     });
   }, [
     effectiveDesign,
-    resolvedProductId,
     resolvedProductImage,
     selectedImageByProductAndSlot,
+    storeKey,
+    suppressedSlots,
   ]);
 
   const primaryImages = displayImages.slice(0, 2);
@@ -84,8 +118,71 @@ export default function SelectedImages({ productId, productImage }: SelectedImag
     const params = new URLSearchParams();
     params.set("slot", slotId);
     if (resolvedProductId) params.set("productId", resolvedProductId);
-    if (resolvedProductImage) params.set("image", resolvedProductImage);
+    if (resolvedProductImage && !suppressedSlots.has(FABRIC_SLOT_ID)) {
+      params.set("image", resolvedProductImage);
+    }
     router.push(`/select-sleeve-design?${params.toString()}`);
+  };
+
+  const openFabricUpload = () => {
+    setFabricUploadOpen(true);
+  };
+
+  const handleSlotActivate = (slotId: string) => {
+    if (slotId === FABRIC_SLOT_ID) {
+      openFabricUpload();
+      return;
+    }
+    goToSlot(slotId);
+  };
+
+  const persistFabricImage = (imageUrl: string) => {
+    setSelectedImageForSlot(storeKey, FABRIC_SLOT_ID, imageUrl);
+    setOrderContext({ productImage: imageUrl });
+    setSuppressedSlots((prev) => {
+      if (!prev.has(FABRIC_SLOT_ID)) return prev;
+      const next = new Set(prev);
+      next.delete(FABRIC_SLOT_ID);
+      return next;
+    });
+  };
+
+  const handleFabricFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    e.target.value = "";
+    if (!file || !file.type.startsWith("image/")) return;
+    persistFabricImage(URL.createObjectURL(file));
+  };
+
+  const pickGallery = () => {
+    setFabricUploadOpen(false);
+    requestAnimationFrame(() => galleryRef.current?.click());
+  };
+
+  const pickCamera = () => {
+    setFabricUploadOpen(false);
+    requestAnimationFrame(() => cameraRef.current?.click());
+  };
+
+  const handleClearSlot = (slotId: string) => {
+    clearSelectedImageForSlot(storeKey, slotId);
+    setSuppressedSlots((prev) => new Set(prev).add(slotId));
+
+    if (slotId === FABRIC_SLOT_ID) {
+      setOrderContext({ productImage: undefined });
+      const params = new URLSearchParams(
+        typeof window !== "undefined" ? window.location.search : ""
+      );
+      params.delete("image");
+      const q = params.toString();
+      router.replace(q ? `/select-boutiques?${q}` : "/select-boutiques");
+    }
+
+    if (slotId === "2") {
+      clearFrontNeckDesign();
+      if (resolvedProductId) clearSleeveDesign(resolvedProductId);
+      setOrderContext({ sleeveDesignImage: undefined });
+    }
   };
 
   const renderCard = (item: (typeof displayImages)[0]) => {
@@ -95,7 +192,7 @@ export default function SelectedImages({ productId, productImage }: SelectedImag
           key={item.id}
           type="button"
           className={styles.emptyCard}
-          onClick={() => goToSlot(item.id)}
+          onClick={() => handleSlotActivate(item.id)}
         >
           <span className={styles.emptyIcon}>
             <AddCircleIcon />
@@ -106,21 +203,36 @@ export default function SelectedImages({ productId, productImage }: SelectedImag
     }
 
     return (
-      <button
-        key={item.id}
-        type="button"
-        className={`${styles.card} ${styles.cardInteractive}`}
-        onClick={() => goToSlot(item.id)}
-      >
-        <Image
-          src={item.image}
-          alt=""
-          fill
-          className={styles.image}
-          sizes="50vw"
-        />
-        <span className={styles.label}>{item.label}</span>
-      </button>
+      <div key={item.id} className={`${styles.card} ${styles.cardInteractive}`}>
+        <button
+          type="button"
+          className={styles.cardSelect}
+          onClick={() => handleSlotActivate(item.id)}
+          aria-label={
+            item.id === FABRIC_SLOT_ID
+              ? `Upload or change ${item.label}`
+              : `Change ${item.label}`
+          }
+        >
+          <Image
+            src={item.image}
+            alt=""
+            fill
+            className={styles.image}
+            sizes="50vw"
+            unoptimized={item.image.startsWith("blob:")}
+          />
+          <span className={styles.label}>{item.label}</span>
+        </button>
+        <button
+          type="button"
+          className={styles.clearBtn}
+          aria-label={`Remove ${item.label}`}
+          onClick={() => handleClearSlot(item.id)}
+        >
+          ×
+        </button>
+      </div>
     );
   };
 
@@ -155,6 +267,41 @@ export default function SelectedImages({ productId, productImage }: SelectedImag
           </button>
         ) : null}
       </div>
+
+      <input
+        ref={galleryRef}
+        type="file"
+        accept="image/*"
+        className={styles.hiddenInput}
+        onChange={handleFabricFileChange}
+        tabIndex={-1}
+        aria-hidden
+      />
+      <input
+        ref={cameraRef}
+        type="file"
+        accept="image/*"
+        capture="environment"
+        className={styles.hiddenInput}
+        onChange={handleFabricFileChange}
+        tabIndex={-1}
+        aria-hidden
+      />
+
+      <BottomSheet
+        open={fabricUploadOpen}
+        onClose={() => setFabricUploadOpen(false)}
+        title="Upload fabric"
+      >
+        <div className={styles.uploadOptions}>
+          <button type="button" className={styles.uploadOptionBtn} onClick={pickCamera}>
+            Camera
+          </button>
+          <button type="button" className={styles.uploadOptionBtn} onClick={pickGallery}>
+            Gallery
+          </button>
+        </div>
+      </BottomSheet>
     </section>
   );
 }

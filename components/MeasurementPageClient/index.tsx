@@ -94,9 +94,9 @@ export default function MeasurementPageClient({
   };
 
   return (
-    <>
+    <div className={styles.page}>
       <MeasurementHeader sizeLabel={activePreset?.label} />
-      <main className={`${styles.main} main-with-bottom-nav`}>
+      <main className={styles.main}>
         {!subcategoryId ? (
           <p className={styles.message}>
             Select an order type on Custom Order first to load measurement presets.
@@ -145,6 +145,6 @@ export default function MeasurementPageClient({
           </>
         )}
       </main>
-    </>
+    </div>
   );
 }

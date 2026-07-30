@@ -25,6 +25,7 @@ function formatPrice(price: number) {
 
 export default function ProductCard({ product, showShortDescription }: ProductCardProps) {
   const [isSizeSheetOpen, setIsSizeSheetOpen] = useState(false);
+  const showDesc = showShortDescription !== false;
 
   return (
     <>
@@ -38,29 +39,31 @@ export default function ProductCard({ product, showShortDescription }: ProductCa
             sizes="(max-width: 768px) 50vw, (max-width: 1024px) 33vw, 25vw"
           />
           <span className={styles.overlayIcon} aria-hidden>
-            <Image src={measure} alt="measure" />
+            <Image src={measure} alt="" width={18} height={18} />
           </span>
         </Link>
 
-        <section className={styles.product_info}>
-          <div className={styles.body}>
-            {showShortDescription !== false && (
+        <div className={styles.body}>
+          <div className={styles.topRow}>
+            {showDesc ? (
               <p className={styles.shortDescription}>{product.shortDescription}</p>
+            ) : (
+              <span className={styles.topRowSpacer} />
             )}
-            <div className={styles.brand}>
-              <span>{product.brand}</span>
-            </div>
+            <button
+              type="button"
+              className={styles.addBtn}
+              onClick={() => setIsSizeSheetOpen(true)}
+              aria-label="Select size"
+            >
+              <Image src={add} alt="" width={16} height={16} />
+            </button>
+          </div>
+          <Link href={`/product/${product.id}`} className={styles.metaLink}>
+            <p className={styles.brand}>{product.brand}</p>
             <p className={styles.price}>{formatPrice(product.price)}</p>
-          </div>
-          <div
-           
-            className={styles.addbtn}
-            onClick={() => setIsSizeSheetOpen(true)}
-            aria-label="Select size"
-          >
-            <Image src={add} alt="add" />
-          </div>
-        </section>
+          </Link>
+        </div>
       </article>
 
       <BottomSheet

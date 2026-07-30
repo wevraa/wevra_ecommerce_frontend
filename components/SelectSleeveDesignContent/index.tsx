@@ -287,23 +287,22 @@ export default function SelectSleeveDesignContent({
     requestAnimationFrame(() => fileCameraRef.current?.click());
   };
 
-  const handleFrontSlotClick = () => {
-    if (activeSlot !== "front") {
+  const handleSlotClick = (key: DesignSlotKey) => {
+    if (activeSlot !== key) {
       // First click: only select / activate the slot
-      setActiveSlot("front");
+      setActiveSlot(key);
       return;
     }
-    // Second click while already selected: open Camera / Gallery options
+    // Already selected: open Camera / Gallery options
     openUploadSheet();
   };
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
-    if (!file) return;
-    const objectUrl = URL.createObjectURL(file);
-    persistSelection(objectUrl, "front");
-    setActiveSlot("front");
     e.target.value = "";
+    if (!file || !file.type.startsWith("image/")) return;
+    const objectUrl = URL.createObjectURL(file);
+    persistSelection(objectUrl, activeSlot);
   };
 
   const getSlotImage = (key: DesignSlotKey) => {
@@ -376,20 +375,13 @@ export default function SelectSleeveDesignContent({
         {SLOT_META.map((slot) => {
           const img = getSlotImage(slot.key);
           const isActive = activeSlot === slot.key;
-          const isFrontUpload = slot.key === "front" && !img;
 
           return (
             <button
               key={slot.key}
               type="button"
               className={`${styles.slotCard} ${isActive ? styles.slotCardActive : ""}`}
-              onClick={() => {
-                if (slot.key === "front") {
-                  handleFrontSlotClick();
-                  return;
-                }
-                setActiveSlot(slot.key);
-              }}
+              onClick={() => handleSlotClick(slot.key)}
               aria-pressed={isActive}
             >
               <div className={styles.slotMedia}>
@@ -401,6 +393,7 @@ export default function SelectSleeveDesignContent({
                       fill
                       className={styles.slotImage}
                       sizes="33vw"
+                      unoptimized={img.startsWith("blob:")}
                     />
                     <span
                       className={styles.slotClear}
@@ -419,15 +412,10 @@ export default function SelectSleeveDesignContent({
                       ×
                     </span>
                   </>
-                ) : isFrontUpload ? (
-                  <div className={styles.uploadPlaceholder}>
-                    <span className={styles.uploadPlus}>+</span>
-                    <span className={styles.uploadText}>Upload photo</span>
-                  </div>
                 ) : (
                   <div className={styles.uploadPlaceholder}>
                     <span className={styles.uploadPlus}>+</span>
-                    <span className={styles.uploadText}>Select</span>
+                    <span className={styles.uploadText}>Upload photo</span>
                   </div>
                 )}
               </div>
@@ -459,7 +447,7 @@ export default function SelectSleeveDesignContent({
       <BottomSheet
         open={uploadSheetOpen}
         onClose={() => setUploadSheetOpen(false)}
-        title="Upload photo"
+        title={`Upload ${activeMeta.label}`}
       >
         <div className={styles.uploadOptions}>
           <button type="button" className={styles.uploadOptionBtn} onClick={pickFromCamera}>
