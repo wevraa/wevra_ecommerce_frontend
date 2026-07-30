@@ -17,8 +17,9 @@ const FRACTIONS = [
   { label: "¾", value: 0.75 },
 ] as const;
 
-/** Fixed width per integer step — used for scroll ↔ value mapping. */
-const TICK_STEP_PX = 28;
+/** Width of one integer step (two half-ticks). */
+const TICK_STEP_PX = 24;
+const HALF_TICK_PX = TICK_STEP_PX / 2;
 
 function splitValue(value: number): { whole: number; frac: number } {
   const clamped = Math.max(RULER_MIN, Math.min(RULER_MAX, value));
@@ -248,9 +249,9 @@ export default function MeasurementList({ items }: MeasurementListProps) {
     updateValue(id, combineValue(whole, nextFrac));
   };
 
-  const integerTicks = Array.from(
-    { length: RULER_MAX - RULER_MIN + 1 },
-    (_, i) => RULER_MIN + i
+  const visualTicks = Array.from(
+    { length: (RULER_MAX - RULER_MIN) * 2 + 1 },
+    (_, i) => RULER_MIN + i * 0.5
   );
 
   return (
@@ -299,22 +300,30 @@ export default function MeasurementList({ items }: MeasurementListProps) {
                       tabIndex={0}
                     >
                       <div className={styles.rulerTrack}>
-                        {integerTicks.map((n) => (
-                          <div
-                            key={n}
-                            className={styles.tickCell}
-                            style={{ width: TICK_STEP_PX }}
-                          >
-                            <span
-                              className={`${styles.tick} ${
-                                n % 5 === 0 ? styles.tickMajor : styles.tickMinor
+                        {visualTicks.map((n) => {
+                          const isInteger = Number.isInteger(n);
+                          const isMajor = isInteger && n % 5 === 0;
+                          return (
+                            <div
+                              key={n}
+                              className={`${styles.tickCell} ${
+                                isInteger ? styles.tickCellSnap : ""
                               }`}
-                            />
-                            {n % 5 === 0 ? (
-                              <span className={styles.tickLabel}>{n}</span>
-                            ) : null}
-                          </div>
-                        ))}
+                              style={{ width: HALF_TICK_PX }}
+                            >
+                              <span
+                                className={`${styles.tick} ${
+                                  isMajor
+                                    ? styles.tickMajor
+                                    : isInteger
+                                      ? styles.tickTall
+                                      : styles.tickShort
+                                }`}
+                                aria-hidden
+                              />
+                            </div>
+                          );
+                        })}
                       </div>
                     </div>
                   </div>

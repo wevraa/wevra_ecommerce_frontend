@@ -13,7 +13,7 @@
 .grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: $space-md;
+  gap: 12px $space-sm;
 }
 
 @include mobile-first($tablet) {

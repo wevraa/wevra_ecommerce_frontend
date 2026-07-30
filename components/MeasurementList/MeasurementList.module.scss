@@ -3,8 +3,6 @@
 
 $measure-blue: #1a3560;
 $measure-blue-soft: #eef2f8;
-$measure-blue-mid: rgba(26, 53, 96, 0.45);
-$measure-tick-faint: #c5cede;
 
 .wrap {
   display: flex;
@@ -96,7 +94,7 @@ $measure-tick-faint: #c5cede;
 /* ── Pill ruler ─────────────────────────────────────── */
 .rulerShell {
   position: relative;
-  height: 64px;
+  height: 56px;
   border-radius: 999px;
   background: $color-white;
   box-shadow: inset 0 0 0 1px rgba(26, 53, 96, 0.08);
@@ -105,16 +103,15 @@ $measure-tick-faint: #c5cede;
 
 .rulerCenter {
   position: absolute;
-  top: 10px;
-  bottom: 18px;
+  top: 8px;
+  bottom: 8px;
   left: 50%;
   z-index: 2;
   width: 3px;
   margin-left: -1.5px;
-  border-radius: 2px;
+  border-radius: 999px;
   background: $measure-blue;
   pointer-events: none;
-  box-shadow: 0 0 0 3px rgba(26, 53, 96, 0.12);
 }
 
 .ruler {
@@ -129,18 +126,31 @@ $measure-tick-faint: #c5cede;
   scroll-snap-type: x mandatory;
   scrollbar-width: none;
   -ms-overflow-style: none;
+  /* Strong center focus — ticks near indicator stay solid, edges fade out */
   mask-image: linear-gradient(
     90deg,
     transparent 0%,
-    #000 12%,
-    #000 88%,
+    rgba(0, 0, 0, 0.08) 6%,
+    rgba(0, 0, 0, 0.28) 16%,
+    rgba(0, 0, 0, 0.55) 28%,
+    #000 42%,
+    #000 58%,
+    rgba(0, 0, 0, 0.55) 72%,
+    rgba(0, 0, 0, 0.28) 84%,
+    rgba(0, 0, 0, 0.08) 94%,
     transparent 100%
   );
   -webkit-mask-image: linear-gradient(
     90deg,
     transparent 0%,
-    #000 12%,
-    #000 88%,
+    rgba(0, 0, 0, 0.08) 6%,
+    rgba(0, 0, 0, 0.28) 16%,
+    rgba(0, 0, 0, 0.55) 28%,
+    #000 42%,
+    #000 58%,
+    rgba(0, 0, 0, 0.55) 72%,
+    rgba(0, 0, 0, 0.28) 84%,
+    rgba(0, 0, 0, 0.08) 94%,
     transparent 100%
   );
 
@@ -155,11 +165,11 @@ $measure-tick-faint: #c5cede;
 
 .rulerTrack {
   display: flex;
-  align-items: flex-end;
+  align-items: center;
   height: 100%;
   width: max-content;
   min-width: 100%;
-  padding: 0 calc(50% - 14px);
+  padding: 0 calc(50% - 6px);
   box-sizing: content-box;
 }
 
@@ -167,43 +177,39 @@ $measure-tick-faint: #c5cede;
   position: relative;
   flex-shrink: 0;
   display: flex;
-  flex-direction: column;
   align-items: center;
-  justify-content: flex-end;
+  justify-content: center;
   height: 100%;
-  padding-bottom: 16px;
+  box-sizing: border-box;
+}
+
+.tickCellSnap {
   scroll-snap-align: center;
   scroll-snap-stop: always;
-  box-sizing: border-box;
 }
 
 .tick {
   display: block;
   width: 2px;
-  border-radius: 1px;
-  background: $measure-tick-faint;
+  border-radius: 999px;
+  background: $measure-blue;
+  flex-shrink: 0;
 }
 
-.tickMinor {
+.tickShort {
   height: 14px;
+  opacity: 0.35;
+}
+
+.tickTall {
+  height: 26px;
+  opacity: 0.7;
 }
 
 .tickMajor {
-  height: 26px;
+  height: 30px;
   width: 2.5px;
-  background: $measure-blue-mid;
-}
-
-.tickLabel {
-  position: absolute;
-  bottom: 2px;
-  left: 50%;
-  transform: translateX(-50%);
-  font-size: 9px;
-  font-weight: $font-weight-semibold;
-  color: $measure-blue-mid;
-  line-height: 1;
-  pointer-events: none;
+  opacity: 0.85;
 }
 
 /* ── Fraction buttons ───────────────────────────────── */
@@ -251,6 +257,18 @@ $measure-tick-faint: #c5cede;
   }
 
   .rulerShell {
-    height: 72px;
+    height: 64px;
+  }
+
+  .tickShort {
+    height: 16px;
+  }
+
+  .tickTall {
+    height: 30px;
+  }
+
+  .tickMajor {
+    height: 34px;
   }
 }
