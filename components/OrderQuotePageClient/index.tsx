@@ -166,6 +166,7 @@ export default function OrderQuotePageClient({
   const router = useRouter();
   const boutiqueSectionRef = useRef<HTMLElement | null>(null);
   const dateSectionRef = useRef<HTMLElement | null>(null);
+  const dateStripRef = useRef<HTMLDivElement | null>(null);
   const [sending, setSending] = useState(false);
   const [loginOpen, setLoginOpen] = useState(false);
   const [sendError, setSendError] = useState<string | null>(null);
@@ -177,17 +178,37 @@ export default function OrderQuotePageClient({
   const initialYM =
     monthSlots[0]?.value ??
     `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}`;
+  const todayIso = useMemo(() => toIsoDateLocal(now), [now]);
 
   const [viewYM, setViewYM] = useState(initialYM);
-  /** Must be explicitly chosen before Send is allowed. */
-  const [selectedDate, setSelectedDate] = useState<string | null>(null);
+  /** Defaults to today so Send is ready without an extra tap. */
+  const [selectedDate, setSelectedDate] = useState<string | null>(todayIso);
 
-  const todayIso = useMemo(() => toIsoDateLocal(now), [now]);
   const { year, monthIndex } = parseViewYM(viewYM);
   const dayCells = useMemo(
     () => buildMonthDayCells(year, monthIndex, todayIso),
     [year, monthIndex, todayIso]
   );
+
+  /** Keep today’s / selected card in view when the strip is scrollable. */
+  useEffect(() => {
+    if (!selectedDate) return;
+    if (!isoBelongsToMonth(selectedDate, year, monthIndex)) return;
+    const strip = dateStripRef.current;
+    if (!strip) return;
+    const card = strip.querySelector<HTMLElement>(
+      `[data-date-iso="${selectedDate}"]`
+    );
+    if (!card) return;
+    const frame = requestAnimationFrame(() => {
+      const left = card.offsetLeft - strip.clientWidth / 2 + card.clientWidth / 2;
+      strip.scrollTo({
+        left: Math.max(0, left),
+        behavior: "smooth",
+      });
+    });
+    return () => cancelAnimationFrame(frame);
+  }, [selectedDate, year, monthIndex, dayCells]);
 
   const {
     selectedBoutiques,
@@ -416,8 +437,9 @@ export default function OrderQuotePageClient({
     setViewYM(value);
     const { year: y, monthIndex: mi } = parseViewYM(value);
     setSelectedDate((prev) => {
-      if (!prev) return null;
-      return isoBelongsToMonth(prev, y, mi) ? prev : null;
+      if (prev && isoBelongsToMonth(prev, y, mi)) return prev;
+      if (isoBelongsToMonth(todayIso, y, mi)) return todayIso;
+      return null;
     });
   };
 
@@ -751,11 +773,12 @@ export default function OrderQuotePageClient({
               </Select.Root>
             </div>
           </div>
-          <div className={styles.dateStrip}>
+          <div className={styles.dateStrip} ref={dateStripRef}>
             {dayCells.map((d) => (
               <button
                 key={d.iso}
                 type="button"
+                data-date-iso={d.iso}
                 disabled={d.disabled}
                 className={`${styles.dateCard} ${selectedDate === d.iso ? styles.selected : ""} ${
                   d.disabled ? styles.dateDisabled : ""
