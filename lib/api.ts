@@ -548,10 +548,54 @@ export async function getReferenceImages(
 }
 
 // Add-ons → accessory options (addons page)
+export interface ApiAccessorySubOption {
+  id: string;
+  accessoryOptionId?: string;
+  name: string;
+  sortOrder?: number;
+}
+
 export interface ApiAccessoryOption {
   id: string;
   name: string;
+  sortOrder?: number;
+  subOptions?: ApiAccessorySubOption[];
   [key: string]: unknown;
+}
+
+function normalizeAccessoryOption(item: unknown, index: number): ApiAccessoryOption | null {
+  if (!item || typeof item !== "object") return null;
+  const o = item as Record<string, unknown>;
+  const id = typeof o.id === "string" ? o.id : `opt-${index}`;
+  const name = typeof o.name === "string" ? o.name : "";
+  if (!name) return null;
+  const rawSubs = Array.isArray(o.subOptions)
+    ? o.subOptions
+    : Array.isArray(o.sub_options)
+      ? o.sub_options
+      : [];
+  const subOptions: ApiAccessorySubOption[] = rawSubs
+    .map((sub, i) => {
+      if (!sub || typeof sub !== "object") return null;
+      const s = sub as Record<string, unknown>;
+      const subId = typeof s.id === "string" ? s.id : `${id}-sub-${i}`;
+      const subName = typeof s.name === "string" ? s.name : "";
+      if (!subName) return null;
+      return {
+        id: subId,
+        accessoryOptionId: typeof s.accessoryOptionId === "string" ? s.accessoryOptionId : id,
+        name: subName,
+        sortOrder: typeof s.sortOrder === "number" ? s.sortOrder : i,
+      };
+    })
+    .filter((s): s is ApiAccessorySubOption => s != null)
+    .sort((a, b) => (a.sortOrder ?? 0) - (b.sortOrder ?? 0));
+  return {
+    id,
+    name,
+    sortOrder: typeof o.sortOrder === "number" ? o.sortOrder : index,
+    subOptions,
+  };
 }
 
 export async function getAccessoryOptions(): Promise<ApiAccessoryOption[]> {
@@ -564,7 +608,10 @@ export async function getAccessoryOptions(): Promise<ApiAccessoryOption[]> {
     const json = await res.json();
     const raw = Array.isArray(json) ? json : (json as { data?: unknown[] })?.data ?? [];
     const list = Array.isArray(raw) ? raw : [];
-    return list.filter((item): item is ApiAccessoryOption => typeof item === "object" && item !== null && "name" in item);
+    return list
+      .map((item, index) => normalizeAccessoryOption(item, index))
+      .filter((item): item is ApiAccessoryOption => item != null)
+      .sort((a, b) => (a.sortOrder ?? 0) - (b.sortOrder ?? 0));
   } catch {
     return [];
   }

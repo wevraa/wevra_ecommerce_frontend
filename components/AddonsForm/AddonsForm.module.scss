@@ -19,16 +19,56 @@
 
 /* ROWS */
 
-.row {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: $space-md 0;
+.optionBlock {
   border-bottom: 1px solid rgba(0, 0, 0, 0.08);
 
   &:last-of-type {
     border-bottom: none;
   }
+}
+
+.row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: $space-md 0;
+}
+
+.subSegmentWrap {
+  padding: 0 0 $space-md;
+}
+
+.subSegment {
+  display: flex;
+  width: 100%;
+  padding: 4px;
+  border-radius: 999px;
+  background: $color-deep-red;
+  overflow: hidden;
+}
+
+.subSegmentBtn {
+  flex: 1;
+  min-width: 0;
+  padding: 12px 8px;
+  border: none;
+  border-radius: 999px;
+  background: transparent;
+  color: $color-white;
+  font-size: $font-size-sm;
+  font-weight: $font-weight-bold;
+  font-family: inherit;
+  cursor: pointer;
+  transition: background 0.2s ease, color 0.2s ease;
+
+  &:active {
+    opacity: 0.92;
+  }
+}
+
+.subSegmentBtnSelected {
+  background: $color-white;
+  color: $color-deep-red;
 }
 
 .label {
