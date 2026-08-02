@@ -16,12 +16,6 @@ import styles from "./AddonsForm.module.scss";
 
 type GarmentView = "back" | "front" | "side";
 
-const VIEWS: { key: GarmentView; label: string }[] = [
-  { key: "back", label: "Back" },
-  { key: "front", label: "Front" },
-  { key: "side", label: "Side" },
-];
-
 function buildReferenceHref(
   path: "/addons/hangings" | "/addons/drawing",
   view: GarmentView,
@@ -81,7 +75,8 @@ export default function AddonsForm({
   /** Selected sub-option ids keyed by parent accessory option id. */
   const [selectedSubs, setSelectedSubs] = useState<Record<string, string[]>>({});
   const [loaded, setLoaded] = useState(false);
-  const [activeView, setActiveView] = useState<GarmentView>("front");
+  /** Hangings / drawing use front view slots (Back/Front/Side is only for Zip/Hooks). */
+  const activeView: GarmentView = "front";
 
   const navParams: AddonsNavParams = {
     returnTo,
@@ -261,23 +256,6 @@ export default function AddonsForm({
             );
           })
         )}
-
-        <div className={styles.segmentWrap}>
-          <div className={styles.segment} role="tablist" aria-label="Garment view">
-            {VIEWS.map(({ key, label }) => (
-              <button
-                key={key}
-                type="button"
-                role="tab"
-                aria-selected={activeView === key}
-                className={`${styles.segmentBtn} ${activeView === key ? styles.selected : ""}`}
-                onClick={() => setActiveView(key)}
-              >
-                {label}
-              </button>
-            ))}
-          </div>
-        </div>
 
         <div className={styles.twoCol}>
           <div>
