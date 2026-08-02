@@ -2,11 +2,16 @@
 
 import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
 import type { MeasurementItem } from "@/data/measurement";
-import { useBoutiquesSelectionStore } from "@/lib/stores/boutiquesSelectionStore";
 import styles from "./MeasurementList.module.scss";
 
 interface MeasurementListProps {
   items: MeasurementItem[];
+  /** Fires when the expanded measurement changes (for guide image). */
+  onActiveChange?: (item: MeasurementItem | null) => void;
+  /** Fires whenever draft ruler values change (parent commits on Save). */
+  onDraftChange?: (
+    measurements: { name: string; value: number; unit: string }[]
+  ) => void;
 }
 
 const RULER_MIN = 0;
@@ -63,8 +68,11 @@ function ValueDisplay({ value }: { value: number }) {
   );
 }
 
-export default function MeasurementList({ items }: MeasurementListProps) {
-  const setOrderContext = useBoutiquesSelectionStore((s) => s.setOrderContext);
+export default function MeasurementList({
+  items,
+  onActiveChange,
+  onDraftChange,
+}: MeasurementListProps) {
   const [values, setValues] = useState<Record<string, number>>(() =>
     Object.fromEntries(items.map((item) => [item.id, item.value]))
   );
@@ -78,6 +86,10 @@ export default function MeasurementList({ items }: MeasurementListProps) {
   const wheelAccumRef = useRef<Record<string, number>>({});
   const wheelRafRef = useRef<number | null>(null);
   const wheelEndTimerRef = useRef<Record<string, ReturnType<typeof setTimeout> | undefined>>({});
+  const onActiveChangeRef = useRef(onActiveChange);
+  const onDraftChangeRef = useRef(onDraftChange);
+  onActiveChangeRef.current = onActiveChange;
+  onDraftChangeRef.current = onDraftChange;
 
   const updateValue = useCallback((id: string, value: number) => {
     setValues((prev) => ({ ...prev, [id]: value }));
@@ -125,16 +137,18 @@ export default function MeasurementList({ items }: MeasurementListProps) {
   }, [items]);
 
   useEffect(() => {
+    const active = items.find((i) => i.id === expandedId) ?? items[0] ?? null;
+    onActiveChangeRef.current?.(active);
+  }, [expandedId, items]);
+
+  useEffect(() => {
     const measurements = items.map((item) => ({
       name: item.name,
       value: values[item.id] ?? item.value,
       unit: item.unit ?? "INCHES",
     }));
-    setOrderContext({
-      hasMeasurementSelected: items.length > 0,
-      measurements,
-    });
-  }, [values, items, setOrderContext]);
+    onDraftChangeRef.current?.(measurements);
+  }, [values, items]);
 
   const snapRuler = useCallback(
     (id: string) => {

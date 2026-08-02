@@ -2,6 +2,7 @@
 @use "../../styles/mixins" as *;
 
 .page {
+  position: relative;
   display: flex;
   flex-direction: column;
   height: 100dvh;
@@ -89,7 +90,7 @@
   overflow-y: auto;
   overflow-x: hidden;
   padding: $space-sm;
-  padding-bottom: $space-2xl;
+  padding-bottom: calc($space-2xl + 72px);
   -webkit-overflow-scrolling: touch;
   overscroll-behavior: contain;
   scrollbar-width: thin;
@@ -112,4 +113,41 @@
   background: #e8ecf0;
   position: relative;
   overflow: hidden;
+}
+
+.saveBar {
+  position: absolute;
+  right: $space-md;
+  bottom: calc(#{$bottom-nav-height} + #{$space-md} + env(safe-area-inset-bottom, 0px));
+  z-index: 40;
+  display: flex;
+  justify-content: flex-end;
+  padding: 0;
+  background: transparent;
+  border: none;
+  pointer-events: none;
+
+  @include mobile-first($desktop) {
+    bottom: $space-lg;
+  }
+}
+
+.saveBtn {
+  pointer-events: auto;
+  min-width: 112px;
+  height: 48px;
+  padding: 0 24px;
+  border: none;
+  border-radius: 999px;
+  background: #85072e;
+  color: $color-white;
+  font-size: $font-size-base;
+  font-weight: $font-weight-bold;
+  font-family: inherit;
+  cursor: pointer;
+  box-shadow: 0 6px 18px rgba(133, 7, 46, 0.35);
+
+  &:active {
+    transform: scale(0.98);
+  }
 }
