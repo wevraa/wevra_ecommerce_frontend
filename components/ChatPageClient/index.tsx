@@ -8,12 +8,14 @@ import LoginModal from "@/components/LoginModal";
 import ChatBillCard from "@/components/ChatBillCard";
 import { formatMessageTime, formatSenderName } from "@/lib/chat/api";
 import { formatRequiredBy } from "@/lib/chat/format";
+import { hydrateOrderQuoteFromChatMessage } from "@/lib/chat/hydrateOrderQuote";
 import type { ChatAttachment, ChatMessage, ChatReplyTo } from "@/lib/chat/types";
 import {
   getTailorName,
   useConversationChat,
   type DisplayMessage,
 } from "@/hooks/useConversationChat";
+import type { SelectedBoutique } from "@/lib/stores/boutiquesSelectionStore";
 import styles from "./ChatPageClient.module.scss";
 
 const MAX_MESSAGE_LENGTH = 4000;
@@ -110,16 +112,26 @@ function OrderRequestCard({
   timeLabel,
   onReply,
   isOwn,
+  boutique,
 }: {
   msg: ChatMessage;
   timeLabel: string;
   onReply: () => void;
   isOwn: boolean;
+  boutique?: SelectedBoutique | null;
 }) {
+  const router = useRouter();
   const images = getOrderImages(msg);
   const primaryImage = images[0]?.url ?? "/images/placeholder-rect.svg";
   const hasMeasurements = msg.measurements.length > 0;
   const hasAddons = msg.addons.length > 0;
+  const canEdit = isOwn;
+
+  const openOrderQuote = () => {
+    if (!canEdit) return;
+    hydrateOrderQuoteFromChatMessage(msg, boutique);
+    router.push("/order-quote");
+  };
 
   return (
     <div className={`${styles.quoteRowWrap} ${isOwn ? "" : styles.quoteRowWrapIn}`}>
@@ -127,19 +139,78 @@ function OrderRequestCard({
       <div className={styles.quoteBubble}>
         <div className={styles.quoteImages}>
           {images.length > 0 ? (
-            images.map((img) => (
-              <div key={img.url} className={styles.quoteImageWrap}>
-                <Image
-                  src={img.url}
-                  alt={img.label ?? "Attachment"}
-                  fill
-                  className={styles.quoteImage}
-                  sizes="72px"
-                  unoptimized={img.url.startsWith("blob:")}
-                />
-                {img.label ? <span className={styles.imageCaption}>{img.label}</span> : null}
-              </div>
-            ))
+            images.map((img) =>
+              canEdit ? (
+                <button
+                  key={img.url}
+                  type="button"
+                  className={`${styles.quoteImageWrap} ${styles.quoteImageEditable}`}
+                  onClick={openOrderQuote}
+                  aria-label={`Edit order — ${img.label ?? "attachment"}`}
+                >
+                  <Image
+                    src={img.url}
+                    alt={img.label ?? "Attachment"}
+                    fill
+                    className={styles.quoteImage}
+                    sizes="72px"
+                    unoptimized={img.url.startsWith("blob:")}
+                  />
+                  {img.label ? <span className={styles.imageCaption}>{img.label}</span> : null}
+                  <span className={styles.quoteEditBadge} aria-hidden>
+                    <svg
+                      width="12"
+                      height="12"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2.2"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    >
+                      <path d="M12 20h9" />
+                      <path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z" />
+                    </svg>
+                  </span>
+                </button>
+              ) : (
+                <div key={img.url} className={styles.quoteImageWrap}>
+                  <Image
+                    src={img.url}
+                    alt={img.label ?? "Attachment"}
+                    fill
+                    className={styles.quoteImage}
+                    sizes="72px"
+                    unoptimized={img.url.startsWith("blob:")}
+                  />
+                  {img.label ? <span className={styles.imageCaption}>{img.label}</span> : null}
+                </div>
+              )
+            )
+          ) : canEdit ? (
+            <button
+              type="button"
+              className={`${styles.quoteImageWrap} ${styles.quoteImageEditable}`}
+              onClick={openOrderQuote}
+              aria-label="Edit order quote"
+            >
+              <Image src={primaryImage} alt="" fill className={styles.quoteImage} sizes="72px" />
+              <span className={styles.quoteEditBadge} aria-hidden>
+                <svg
+                  width="12"
+                  height="12"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2.2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                >
+                  <path d="M12 20h9" />
+                  <path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z" />
+                </svg>
+              </span>
+            </button>
           ) : (
             <div className={styles.quoteImageWrap}>
               <Image src={primaryImage} alt="" fill className={styles.quoteImage} sizes="72px" />
@@ -174,10 +245,12 @@ function MessageBubble({
   msg,
   messageById,
   onReply,
+  boutique,
 }: {
   msg: DisplayMessage;
   messageById: Map<string, DisplayMessage>;
   onReply: (msg: DisplayMessage) => void;
+  boutique?: SelectedBoutique | null;
 }) {
   const timeLabel = formatMessageTime(msg.createdAt);
   const senderName = formatSenderName(msg.sender);
@@ -191,6 +264,7 @@ function MessageBubble({
           timeLabel={timeLabel}
           onReply={() => onReply(msg)}
           isOwn={msg.isOwn}
+          boutique={boutique}
         />
       </div>
     );
@@ -317,6 +391,13 @@ export default function ChatPageClient({ conversationId }: ChatPageClientProps) 
 
   const boutiqueName = getTailorName(conversation);
   const logoUrl = conversation?.tailor?.logoUrl;
+  const editBoutique = useMemo((): SelectedBoutique | null => {
+    if (!conversation?.tailorId) return null;
+    return {
+      id: conversation.tailorId,
+      name: boutiqueName || conversation.tailor?.boutiqueName || "Boutique",
+    };
+  }, [conversation, boutiqueName]);
 
   useEffect(() => {
     if (unauthorized) setLoginOpen(true);
@@ -453,6 +534,7 @@ export default function ChatPageClient({ conversationId }: ChatPageClientProps) 
               msg={msg}
               messageById={messageById}
               onReply={handleReply}
+              boutique={editBoutique}
             />
           ))
         )}

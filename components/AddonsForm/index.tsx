@@ -211,7 +211,9 @@ export default function AddonsForm({
                   className={styles.uploadPreview}
                 />
               ) : (
-                <span aria-hidden>🎀</span>
+                <span className={styles.uploadPlus} aria-hidden>
+                  +
+                </span>
               )}
             </button>
           </div>
