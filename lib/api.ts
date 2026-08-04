@@ -574,8 +574,8 @@ function normalizeAccessoryOption(item: unknown, index: number): ApiAccessoryOpt
     : Array.isArray(o.sub_options)
       ? o.sub_options
       : [];
-  const subOptions: ApiAccessorySubOption[] = rawSubs
-    .map((sub, i) => {
+  const subOptions = rawSubs
+    .map((sub, i): ApiAccessorySubOption | null => {
       if (!sub || typeof sub !== "object") return null;
       const s = sub as Record<string, unknown>;
       const subId = typeof s.id === "string" ? s.id : `${id}-sub-${i}`;
