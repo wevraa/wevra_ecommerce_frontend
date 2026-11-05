@@ -191,11 +191,6 @@ export default function BillDetailsPageClient({ billId, shareToken }: BillDetail
       </div>
 
       <main className={styles.wrap}>
-        <div className={styles.top}>
-          <div className={styles.wordmark}>wevraa</div>
-          <div className={styles.tag}>E-BILL</div>
-        </div>
-
         <section className={styles.hero}>
           <div className={styles.cover} aria-hidden>
             <span className={styles.c1} /><span className={styles.c2} /><span className={styles.c3} />
